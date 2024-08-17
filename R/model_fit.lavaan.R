@@ -17,11 +17,11 @@
 #' fit <- cfa(model, data = HolzingerSwineford1939)
 #' model_fit(fit)
 
-model_fit.lavaan <- function(x, type = NULL) {
-  # Determinar si se usa un estimador robusto
+model_fit.lavaan <- function(x, type = NULL, metrics = "essential") {
+  # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(x)
 
-  # Determinar el tipo de índice a utilizar
+  # Determine the type of index to use
   if (is.null(type)) {
     if (robust_type == "robust") {
       type <- "scaled"
@@ -30,59 +30,90 @@ model_fit.lavaan <- function(x, type = NULL) {
     }
   }
 
-  # Validaciones de 'type'
+  # Validate 'type'
   if (type %in% c("scaled", "robust") && robust_type != "robust") {
-    cli::cli_alert_danger("The model was not estimated with a robust estimator.
-                          'scaled' and 'robust' indices are not available.")
+    cli::cli_alert_danger(
+      paste0(
+        "The model was not estimated with a robust estimator. ",
+        "'scaled' and 'robust' indices are not available."
+      )
+    )
     return(data.frame())
   }
 
   if (type == "standard" && robust_type == "robust") {
-    cli::cli_alert_warning("You are using a robust estimator but requesting 'standard' indices.
-                          It is recommended to use 'scaled' or 'robust' indices that correspond
-                          to the estimator used.")
+    cli::cli_alert_warning(
+      paste0(
+        "You are using a robust estimator but requesting 'standard' indices. ",
+        "It is recommended to use 'scaled' or 'robust' indices that correspond ",
+        "to the estimator used."
+      )
+    )
   }
 
-  # Verificar si el modelo convergió
+  # Check if the model converged
   if (!lavaan::lavInspect(x, "converged")) {
-    cli::cli_alert_danger("The model did not converge. Fit indices are not available.")
+    cli::cli_alert_danger(
+      paste0(
+        "The model did not converge. ",
+        "Fit indices are not available."
+      )
+    )
     return(data.frame())
   }
 
-  # Extraer los índices de ajuste basados en el tipo
-  fit_measure <- extract_fit_lavaan(x, type)
+  # Extract fit indices based on the type and metrics
+  fit_measure <- extract_fit_lavaan(x, type, metrics = metrics)
 
   return(fit_measure)
 }
 
-# Internal function to extract fit indices based on type
-extract_fit_lavaan <- function(x, type) {
-  # Define the fit indices based on the type
-  fit_measures <- lavaan::fitmeasures(
-    x,
-    fit.measures = c(
-      "npar",
-      switch(type,
-             "standard" = c("chisq", "df", "pvalue", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr"),
-             "scaled"   = c("chisq.scaled", "df.scaled", "pvalue.scaled",
-                            "cfi.scaled", "tli.scaled", "rmsea.scaled",
-                            "rmsea.ci.lower.scaled", "rmsea.ci.upper.scaled", "srmr"),
-             "robust"   = c("chisq.scaled", "df.scaled", "pvalue.scaled",
-                            "cfi.robust", "tli.robust", "rmsea.robust",
-                            "rmsea.ci.lower.robust", "rmsea.ci.upper.robust", "srmr")
-      )
-    )
-  )
+# Internal function to extract fit indices based on type and metrics
+extract_fit_lavaan <- function(x, type, metrics = "essential") {
+  # Define essential (classical) metrics if metrics is "essential"
+  if (length(metrics) == 1 && metrics == "essential") {
+    metrics <- c("chisq", "df", "pvalue", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
+  } else{
+    metrics <- tolower(metrics)
+  }
+
+  # Lists of available scaled and robust metrics
+  scaled_metrics <- c("chisq", "df", "pvalue", "baseline.chisq", "baseline.df", "baseline.pvalue",
+                      "cfi", "tli", "nnfi", "rfi", "nfi", "pnfi", "ifi", "rni",
+                      "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "rmsea.notclose.pvalue")
+
+  robust_metrics <- c("cfi", "tli", "nnfi", "rni", "rmsea",
+                      "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "rmsea.notclose.pvalue")
+
+  # Adjust metrics based on the selected type
+  metrics_to_use <- sapply(metrics, function(metric) {
+    if (type == "scaled") {
+      if (metric %in% scaled_metrics) {
+        return(paste0(metric, ".scaled"))
+      } else {
+        return(metric)
+      }
+    } else if (type == "robust") {
+      if (metric %in% robust_metrics) {
+        return(paste0(metric, ".robust"))
+      } else if (metric %in% scaled_metrics) {
+        return(paste0(metric, ".scaled"))
+      } else {
+        return(metric)
+      }
+    } else {
+      return(metric)
+    }
+  })
+
+  # Extract the metrics based on metrics_to_use
+  fit_measures <- lavaan::fitmeasures(x, fit.measures = c("npar", metrics_to_use))
 
   # Transpose and convert to a data frame, removing the special class
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
 
   # Rename the columns to be more descriptive
-  colnames(fit_measure_df) <- c(
-    "npar", "Chi2", "Chi2_df", "p_Chi2",
-    "CFI", "TLI", "RMSEA",
-    "RMSEA_CI_Lower", "RMSEA_CI_Upper", "SRMR"
-  )
+  colnames(fit_measure_df) <- c("npar", toupper(metrics))
 
   # Add additional columns
   fit_measure_df <- data.frame(
