@@ -17,7 +17,7 @@
 #' fit <- cfa(model, data = HolzingerSwineford1939)
 #' model_fit(fit)
 
-model_fit.lavaan <- function(x, type = NULL, metrics = "essential") {
+model_fit.lavaan <- function(x, type = NULL, metrics = "essential", verbose = TRUE) {
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(x)
 
@@ -63,13 +63,16 @@ model_fit.lavaan <- function(x, type = NULL, metrics = "essential") {
   }
 
   # Extract fit indices based on the type and metrics
-  fit_measure <- extract_fit_lavaan(x, type, metrics = metrics)
+  fit_measure <- extract_fit_lavaan(x, type, metrics = metrics, verbose = verbose)
 
   return(fit_measure)
 }
 
 # Internal function to extract fit indices based on type and metrics
-extract_fit_lavaan <- function(x, type, metrics = "essential") {
+extract_fit_lavaan <- function(x, type, metrics, verbose) {
+
+  original_metrics <- metrics
+
   # Define essential (classical) metrics if metrics is "essential"
   if (length(metrics) == 1 && metrics == "essential") {
     metrics <- c("chisq", "df", "pvalue", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
@@ -110,11 +113,10 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
     }
   })
 
-  # Display an informational message if any metrics were adjusted
-  if (length(adjusted_metrics) > 0) {
+  # Display an informational message if any metrics were adjusted and verbose is TRUE
+  if (verbose && length(adjusted_metrics) > 0 && length(original_metrics) != 1) {
     cli::cli_inform(c(
-      "The following metrics were adjusted based on the {.field type} argument:",
-      cli::cli_ul(glue::glue("{adjusted_metrics} were adjusted to their {type} versions.")),
+      cli::cli_text("{.field {adjusted_metrics}} were adjusted to their {type} version{?s}."),
       "If you want to control the specific metric type used, specify it explicitly (e.g., {.code cfi.robust}) or modify the {.field type} argument."
     ))
   }
@@ -126,16 +128,19 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
 
   # Rename the columns to be more descriptive
-  colnames(fit_measure_df) <- c("npar", toupper(metrics))
+  colnames(fit_measure_df) <- c("NPAR", toupper(metrics))
 
   # Add additional columns
   fit_measure_df <- data.frame(
-    nobs = sum(lavaan::lavInspect(x, "nobs")),
-    estimator = lavaan_estimator(x),
-    ngroups = lavaan::lavInspect(x, "ngroups"),
+    NOBS = sum(lavaan::lavInspect(x, "nobs")),
+    ESTIMATOR = lavaan_estimator(x),
+    NGROUPS = lavaan::lavInspect(x, "ngroups"),
     fit_measure_df,
     row.names = NULL  # Remove row names
   )
+
+  # Clean up the column names to remove ".scaled" and ".robust"
+  colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
 
   # Add a "converged" column only if the model did not converge
   if (!lavaan::lavInspect(x, "converged")) {
