@@ -29,7 +29,7 @@ You can install the development version of psymetrics from [GitHub](https://gith
 pak::pak("brianmsm/psymetrics")
 ```
 
-## Example
+## Getting Fit Indices
 
 Here is an example of how to use the psymetrics package with a model created using lavaan.
 
@@ -56,3 +56,15 @@ model_fit(fit, metrics = c("cfi", "tli"))
 ```
 
 This example demonstrates how to extract and print various fit indices from a confirmatory factor analysis (CFA) model using psymetrics. You can choose between standard, scaled, or robust fit indices, and even specify custom sets of indices to extract.
+
+## Comparing Fit Indices
+
+```{r}
+fit_1 <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
+fit_2 <- cfa(model, data = HolzingerSwineford1939, estimator = "ULSM")
+
+compare_model_fit(fit_1, fit_2)
+```
+
+In this example, compare_model_fit is used to compare the fit indices of two different models. This function allows you to easily see the differences in model fit across different estimation methods or model specifications.
+

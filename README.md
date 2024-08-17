@@ -20,7 +20,7 @@ You can install the development version of psymetrics from
 pak::pak("brianmsm/psymetrics")
 ```
 
-## Example
+## Getting Fit Indices
 
 Here is an example of how to use the psymetrics package with a model
 created using lavaan.
@@ -65,3 +65,23 @@ This example demonstrates how to extract and print various fit indices
 from a confirmatory factor analysis (CFA) model using psymetrics. You
 can choose between standard, scaled, or robust fit indices, and even
 specify custom sets of indices to extract.
+
+## Comparing Fit Indices
+
+``` r
+fit_1 <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
+fit_2 <- cfa(model, data = HolzingerSwineford1939, estimator = "ULSM")
+
+compare_model_fit(fit_1, fit_2)
+#> # Model Fit Comparison:
+#> 
+#> model |    NOBS | ESTIMATOR |   NPAR | Chi2(24) | p (Chi2) |   CFI |   TLI | RMSEA |    RMSEA  CI |  SRMR
+#> ---------------------------------------------------------------------------------------------------------
+#> fit_1 | 301.000 |       MLR | 21.000 |   87.132 |   < .001 | 0.925 | 0.888 | 0.093 | [0.07, 0.12] | 0.065
+#> fit_2 | 301.000 |      ULSM | 21.000 |   90.600 |   < .001 | 0.931 | 0.897 | 0.096 | [0.07, 0.12] | 0.059
+```
+
+In this example, compare_model_fit is used to compare the fit indices of
+two different models. This function allows you to easily see the
+differences in model fit across different estimation methods or model
+specifications.
