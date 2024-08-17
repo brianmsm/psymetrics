@@ -1,3 +1,26 @@
+# psymetrics 0.1.2
+
+## New Features
+
+### `compare_model_fit()` Function
+- **Added:** New function `compare_model_fit()` allows for comparing fit indices across multiple `lavaan` model objects.
+- **Usage:** You can pass multiple fitted `lavaan` model objects to `compare_model_fit()` and it will return a data frame with fit indices for each model, enabling easy comparison.
+- **Verbose Option:** Added a `verbose` argument to control the display of informational messages during comparison.
+- **Print Method:** Implemented a `print.compare_model_fit` method to provide a formatted output for easy reading of model comparisons.
+
+### Enhanced `model_fit()` Function
+- **Updated:** Improved the `model_fit()` function to handle multiple types of fit indices, including "standard", "scaled", and "robust".
+- **Custom Metrics:** Introduced the `metrics` argument, allowing users to specify exactly which fit indices they want to extract. If `metrics` is set to "essential", a predefined set of common indices is returned.
+- **Verbose Option:** Added a `verbose` argument to control the display of informational messages when metrics are adjusted according to the estimator type.
+- **Print Method:** Implemented a `print.model_fit` method to provide a clean and formatted output for the fit indices, with customizable precision.
+
+
+### Documentation
+- **Updated:** Improved the documentation for `model_fit()` and added comprehensive examples showcasing how to use `compare_model_fit()`.
+
+## Note
+- **Tests Pending:** Unit tests for `model_fit()` and `compare_model_fit()` will be added in the next update to ensure consistent functionality and output formatting.
+
 # psymetrics 0.1.1
 
 ## New Features
