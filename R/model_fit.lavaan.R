@@ -146,7 +146,6 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
   fit_measure_df <- data.frame(
     NOBS = sum(lavaan::lavInspect(fit, "nobs")),
     ESTIMATOR = lavaan_estimator(fit),
-    NGROUPS = lavaan::lavInspect(fit, "ngroups"),
     fit_measure_df,
     row.names = NULL  # Remove row names
   )
@@ -154,10 +153,19 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
   # Clean up the column names to remove ".scaled" and ".robust"
   colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
 
+  # Further clean-up of column names
+  colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames(fit_measure_df))
+  colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames(fit_measure_df))
+  colnames(fit_measure_df) <- gsub("^CHISQ$", "Chi2", colnames(fit_measure_df))
+  colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
+  colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
+
   # Add a "converged" column only if the model did not converge
   if (!lavaan::lavInspect(fit, "converged")) {
     fit_measure_df$converged <- FALSE
   }
+
+  class(fit_measure_df) <- c("model_fit", class(fit_measure_df))
 
   return(fit_measure_df)
 }
