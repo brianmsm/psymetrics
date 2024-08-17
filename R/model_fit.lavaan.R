@@ -1,21 +1,32 @@
 #' Extract Fit Indices from a lavaan Model
 #'
-#' @description `model_fit.lavaan` extracts fit indices from a lavaan model.
-#' You can specify the type of indices to extract: `"standard"`, `"scaled"`,
-#' or `"robust"`. If the model uses a robust estimator and you specify `type = "scaled"`
-#' or `type = "robust"`, the corresponding indices will be returned.
+#' @description `model_fit.lavaan` extracts fit indices from a `lavaan` model object.
+#' The function allows you to specify the type of indices to extract: `"standard"`,
+#' `"scaled"`, or `"robust"`. If the model uses a robust estimator and you specify
+#' `type = "scaled"` or `type = "robust"`, the corresponding indices will be returned.
+#' If no type is specified, the function automatically chooses `"scaled"` for robust estimators
+#' and `"standard"` otherwise.
 #'
-#' @param x A `lavaan` object estimated with `lavaan::cfa()` or `lavaan::sem()`.
+#' @param x A `lavaan` object estimated with `lavaan::cfa()`, `lavaan::sem()`, or similar functions.
 #' @param type A character string specifying the type of fit indices to extract.
 #'   Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
-#'   which will choose `"scaled"` if a robust estimator is used; otherwise `"standard"`.
-#' @return A data frame containing the fit indices of the model.
+#'   which will automatically choose `"scaled"` if a robust estimator is used; otherwise `"standard"`.
+#' @param metrics A character vector specifying the fit indices to return. The default is `"essential"`,
+#'   which includes common fit indices. You can also specify a custom set of metrics.
+#' @param verbose A logical value indicating whether to display informational messages about
+#'   metric adjustments. Defaults to `TRUE`.
+#' @return A data frame containing the specified fit indices of the model.
 #' @export
 #' @examples
 #' library(lavaan)
-#' model <- 'visual  =~ x1 + x2 + x3'
-#' fit <- cfa(model, data = HolzingerSwineford1939)
+#' model <- 'visual  =~ x1 + x2 + x3
+#'           textual =~ x4 + x5 + x6
+#'           speed   =~ x7 + x8 + x9'
+#' fit <- cfa(model, data = HolzingerSwineford1939,
+#'            estimator = "MLR")
 #' model_fit(fit)
+#' model_fit(fit, type = "robust")
+#' model_fit(fit, metrics = c("cfi", "tli"))
 
 model_fit.lavaan <- function(x, type = NULL, metrics = "essential", verbose = TRUE) {
   # Determine if a robust estimator is being used
