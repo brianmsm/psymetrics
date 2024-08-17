@@ -7,7 +7,7 @@
 #' If no type is specified, the function automatically chooses `"scaled"` for robust estimators
 #' and `"standard"` otherwise.
 #'
-#' @param x A `lavaan` object estimated with `lavaan::cfa()`, `lavaan::sem()`, or similar functions.
+#' @param fit A `lavaan` object estimated with `lavaan::cfa()`, `lavaan::sem()`, or similar functions.
 #' @param type A character string specifying the type of fit indices to extract.
 #'   Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
 #'   which will automatically choose `"scaled"` if a robust estimator is used; otherwise `"standard"`.
@@ -15,6 +15,7 @@
 #'   which includes common fit indices. You can also specify a custom set of metrics.
 #' @param verbose A logical value indicating whether to display informational messages about
 #'   metric adjustments. Defaults to `TRUE`.
+#' @param ... Additional arguments passed to methods.
 #' @return A data frame containing the specified fit indices of the model.
 #' @export
 #' @examples
@@ -28,9 +29,9 @@
 #' model_fit(fit, type = "robust")
 #' model_fit(fit, metrics = c("cfi", "tli"))
 
-model_fit.lavaan <- function(x, type = NULL, metrics = "essential", verbose = TRUE) {
+model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
   # Determine if a robust estimator is being used
-  robust_type <- is_robust_estimator_lavaan(x)
+  robust_type <- is_robust_estimator_lavaan(fit)
 
   # Determine the type of index to use
   if (is.null(type)) {
@@ -63,7 +64,7 @@ model_fit.lavaan <- function(x, type = NULL, metrics = "essential", verbose = TR
   }
 
   # Check if the model converged
-  if (!lavaan::lavInspect(x, "converged")) {
+  if (!lavaan::lavInspect(fit, "converged")) {
     cli::cli_alert_danger(
       paste0(
         "The model did not converge. ",
@@ -74,13 +75,13 @@ model_fit.lavaan <- function(x, type = NULL, metrics = "essential", verbose = TR
   }
 
   # Extract fit indices based on the type and metrics
-  fit_measure <- extract_fit_lavaan(x, type, metrics = metrics, verbose = verbose)
+  fit_measure <- extract_fit_lavaan(fit, type, metrics = metrics, verbose = verbose)
 
   return(fit_measure)
 }
 
 # Internal function to extract fit indices based on type and metrics
-extract_fit_lavaan <- function(x, type, metrics, verbose) {
+extract_fit_lavaan <- function(fit, type, metrics, verbose) {
 
   original_metrics <- metrics
 
@@ -133,7 +134,7 @@ extract_fit_lavaan <- function(x, type, metrics, verbose) {
   }
 
   # Extract the metrics based on metrics_to_use
-  fit_measures <- lavaan::fitmeasures(x, fit.measures = c("npar", metrics_to_use))
+  fit_measures <- lavaan::fitmeasures(fit, fit.measures = c("npar", metrics_to_use))
 
   # Transpose and convert to a data frame, removing the special class
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
@@ -143,9 +144,9 @@ extract_fit_lavaan <- function(x, type, metrics, verbose) {
 
   # Add additional columns
   fit_measure_df <- data.frame(
-    NOBS = sum(lavaan::lavInspect(x, "nobs")),
-    ESTIMATOR = lavaan_estimator(x),
-    NGROUPS = lavaan::lavInspect(x, "ngroups"),
+    NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+    ESTIMATOR = lavaan_estimator(fit),
+    NGROUPS = lavaan::lavInspect(fit, "ngroups"),
     fit_measure_df,
     row.names = NULL  # Remove row names
   )
@@ -154,7 +155,7 @@ extract_fit_lavaan <- function(x, type, metrics, verbose) {
   colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
 
   # Add a "converged" column only if the model did not converge
-  if (!lavaan::lavInspect(x, "converged")) {
+  if (!lavaan::lavInspect(fit, "converged")) {
     fit_measure_df$converged <- FALSE
   }
 
@@ -164,75 +165,75 @@ extract_fit_lavaan <- function(x, type, metrics, verbose) {
 
 # Helper functions ------------------------------------------------------------
 
-lavaan_estimator <- function(x) {
-  if (lavaan::lavInspect(x, "options")$estimator == "DWLS") {
-    if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-        lavaan::lavInspect(x, "options")$test == "satorra.bentler") {
+lavaan_estimator <- function(fit) {
+  if (lavaan::lavInspect(fit, "options")$estimator == "DWLS") {
+    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
       estimator <- "WLSM"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "mean.var.adjusted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
       estimator <- "WLSMVS"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "scaled.shifted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
       estimator <- "WLSMV"
-    } else if (lavaan::lavInspect(x, "options")$se == "standard" &
-               lavaan::lavInspect(x, "options")$test == "standard") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
+               lavaan::lavInspect(fit, "options")$test == "standard") {
       estimator <- "DWLS"
     } else {
       estimator <- "DWLS_variant"
     }
-  } else if (lavaan::lavInspect(x, "options")$estimator == "ULS") {
-    if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-        lavaan::lavInspect(x, "options")$test == "satorra.bentler") {
+  } else if (lavaan::lavInspect(fit, "options")$estimator == "ULS") {
+    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
       estimator <- "ULSM"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "mean.var.adjusted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
       estimator <- "ULSMVS"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "scaled.shifted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
       estimator <- "ULSMV"
-    } else if (lavaan::lavInspect(x, "options")$se == "standard" &
-               lavaan::lavInspect(x, "options")$test == "standard") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
+               lavaan::lavInspect(fit, "options")$test == "standard") {
       estimator <- "ULS"
     } else {
       estimator <- "ULS_variant"
     }
-  } else if (lavaan::lavInspect(x, "options")$estimator == "ML") {
-    if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-        lavaan::lavInspect(x, "options")$test == "satorra.bentler") {
+  } else if (lavaan::lavInspect(fit, "options")$estimator == "ML") {
+    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
       estimator <- "MLM"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.huber.white" &
-               lavaan::lavInspect(x, "options")$test %in% c(
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.huber.white" &
+               lavaan::lavInspect(fit, "options")$test %in% c(
                  "yuan.bentler.mplus",
                  "yuan.bentler"
                )) {
       estimator <- "MLR"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "mean.var.adjusted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
       estimator <- "MLMVS"
-    } else if (lavaan::lavInspect(x, "options")$se == "robust.sem" &
-               lavaan::lavInspect(x, "options")$test == "scaled.shifted") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
+               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
       estimator <- "MLMV"
-    } else if (lavaan::lavInspect(x, "options")$se == "standard" &
-               lavaan::lavInspect(x, "options")$test == "standard" &
-               unique(lavaan::lavInspect(x, "options")$information) == "expected") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
+               lavaan::lavInspect(fit, "options")$test == "standard" &
+               unique(lavaan::lavInspect(fit, "options")$information) == "expected") {
       estimator <- "ML"
-    } else if (lavaan::lavInspect(x, "options")$se == "standard" &
-               lavaan::lavInspect(x, "options")$test == "standard" &
-               unique(lavaan::lavInspect(x, "options")$information) == "first.order") {
+    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
+               lavaan::lavInspect(fit, "options")$test == "standard" &
+               unique(lavaan::lavInspect(fit, "options")$information) == "first.order") {
       estimator <- "MLF"
     } else {
       estimator <- "ML_variant"
     }
   } else {
-    estimator <- lavaan::lavInspect(x, "options")$estimator
+    estimator <- lavaan::lavInspect(fit, "options")$estimator
   }
 
   return(estimator)
 }
 
-is_robust_estimator_lavaan <- function(x) {
-  if (lavaan::lavInspect(x, "options")$test %in% c(
+is_robust_estimator_lavaan <- function(fit) {
+  if (lavaan::lavInspect(fit, "options")$test %in% c(
     "satorra.bentler",
     "yuan.bentler",
     "yuan.bentler.mplus",
