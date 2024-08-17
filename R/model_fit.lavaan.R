@@ -73,7 +73,7 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
   # Define essential (classical) metrics if metrics is "essential"
   if (length(metrics) == 1 && metrics == "essential") {
     metrics <- c("chisq", "df", "pvalue", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
-  } else{
+  } else {
     metrics <- tolower(metrics)
   }
 
@@ -85,18 +85,22 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
   robust_metrics <- c("cfi", "tli", "nnfi", "rni", "rmsea",
                       "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "rmsea.notclose.pvalue")
 
+  # Initialize a vector to track which metrics have been automatically adjusted
+  adjusted_metrics <- c()
+
   # Adjust metrics based on the selected type
   metrics_to_use <- sapply(metrics, function(metric) {
-    if (type == "scaled") {
-      if (metric %in% scaled_metrics) {
-        return(paste0(metric, ".scaled"))
-      } else {
-        return(metric)
-      }
+    if (grepl("\\.(scaled|robust)$", metric)) {
+      return(metric)  # Return as is if already specified
+    } else if (type == "scaled" && metric %in% scaled_metrics) {
+      adjusted_metrics <<- c(adjusted_metrics, metric)
+      return(paste0(metric, ".scaled"))
     } else if (type == "robust") {
       if (metric %in% robust_metrics) {
+        adjusted_metrics <<- c(adjusted_metrics, metric)
         return(paste0(metric, ".robust"))
       } else if (metric %in% scaled_metrics) {
+        adjusted_metrics <<- c(adjusted_metrics, metric)
         return(paste0(metric, ".scaled"))
       } else {
         return(metric)
@@ -105,6 +109,15 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
       return(metric)
     }
   })
+
+  # Display an informational message if any metrics were adjusted
+  if (length(adjusted_metrics) > 0) {
+    cli::cli_inform(c(
+      "The following metrics were adjusted based on the {.field type} argument:",
+      cli::cli_ul(glue::glue("{adjusted_metrics} were adjusted to their {type} versions.")),
+      "If you want to control the specific metric type used, specify it explicitly (e.g., {.code cfi.robust}) or modify the {.field type} argument."
+    ))
+  }
 
   # Extract the metrics based on metrics_to_use
   fit_measures <- lavaan::fitmeasures(x, fit.measures = c("npar", metrics_to_use))
@@ -121,7 +134,7 @@ extract_fit_lavaan <- function(x, type, metrics = "essential") {
     estimator = lavaan_estimator(x),
     ngroups = lavaan::lavInspect(x, "ngroups"),
     fit_measure_df,
-    row.names = NULL # Remove row names
+    row.names = NULL  # Remove row names
   )
 
   # Add a "converged" column only if the model did not converge
