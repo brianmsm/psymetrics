@@ -1,11 +1,15 @@
 Package: psymetrics
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools for Psychometric Analysis
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R:
+    c(person("Brian",
+             "Peña Calero",
+             role = c("aut", "cre"),
+             email = "brianmsm@gmail.com",
+             comment = c(ORCID = "0000-0002-1073-9306", Twitter = "@brianmsm"))
+Description: Provides tools for extracting and visualizing psychometric model fit indices, 
+    compatible with various models like those from 'lavaan', 'psych', and 'mirt'.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
