@@ -15,7 +15,9 @@
 
 \item{format}{Output format for the table. Can be "text", "markdown" (or "md"), or "html". Default is "text".}
 
-\item{...}{Additional arguments passed to `insight::export_table`.}
+\item{...}{Additional arguments passed to formatting functions.
+If `format = "text"`, these arguments are passed to `insight::export_table`.
+If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.}
 }
 \value{
 The formatted table is printed to the console.

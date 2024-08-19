@@ -8,7 +8,9 @@
 #' @param digits Number of digits for rounding numeric values. Default is 3.
 #' @param p_digits Number of digits for rounding p-values. Default is 3.
 #' @param format Output format for the table. Can be "text", "markdown" (or "md"), or "html". Default is "text".
-#' @param ... Additional arguments passed to `insight::export_table`.
+#' @param ... Additional arguments passed to formatting functions.
+#'   If `format = "text"`, these arguments are passed to `insight::export_table`.
+#'   If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.
 #' @return The formatted table is printed to the console.
 #' @method print model_fit
 #' @export
@@ -22,7 +24,8 @@
 #' result <- model_fit(fit)
 #' print(result)
 #' }
-print.model_fit <- function(x, digits = 3, p_digits = 3, format = "text", ...) {
+print.model_fit <- function(x, digits = 3, p_digits = 3,
+                            format = "text", ...) {
 
   # List of columns to round and convert to character
   columns_to_format <- c("NOBS", "NPAR", "Chi2_df")
@@ -52,7 +55,7 @@ print.model_fit <- function(x, digits = 3, p_digits = 3, format = "text", ...) {
       )
     )
   } else if (format == "html") {
-    return(tinytable::tt(formatted_table, digits = digits))
+    return(tinytable::tt(formatted_table, digits = digits, ...))
   }
 
   invisible(x)
