@@ -23,6 +23,20 @@
 #' print(result)
 #' }
 print.model_fit <- function(x, digits = 3, p_digits = 3, format = "text", ...) {
+
+  # List of columns to round and convert to character
+  columns_to_format <- c("NOBS", "NPAR", "Chi2_df")
+
+  # Check if these columns are present in x
+  common_columns <- intersect(columns_to_format, colnames(x))
+
+  if (length(common_columns) > 0) {
+    # Round to 0 decimals and convert to character
+    x[common_columns] <- lapply(x[common_columns], function(col) {
+      as.character(round(col, 0))
+    })
+  }
+
   formatted_table <- insight::format_table(
     x, digits = digits, ci_digits = digits,
     p_digits = p_digits
