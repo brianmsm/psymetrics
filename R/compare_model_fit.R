@@ -27,12 +27,14 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
 
   # Ensure at least two models are provided for comparison
   if (length(fits) < 2) {
-    cli::cli_alert_danger("At least two model fits must be provided for comparison.")
-    stop("At least two model fits must be provided for comparison.")
+    cli::cli_abort(
+      c("At least two model fits must be provided for comparison")
+    )
   }
 
   # Apply model_fit to each model in the list
-  fit_measures <- lapply(fits, model_fit, type = type, metrics = metrics, verbose = verbose)
+  fit_measures <- lapply(fits, model_fit, type = type,
+                         metrics = metrics, verbose = verbose)
 
   # Combine the dataframes vertically
   combined_measures <- do.call(rbind, fit_measures)
