@@ -11,6 +11,7 @@
 #' @param ... Additional arguments passed to formatting functions.
 #'   If `format = "text"`, these arguments are passed to `insight::export_table`.
 #'   If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.
+#'
 #' @return The formatted table is printed to the console.
 #' @method print model_fit
 #' @export
@@ -33,18 +34,10 @@ print.model_fit <- function(x, digits = 3, p_digits = 3,
                                    p_digits = 3,
                                    ci_digits = 3)
 
-  if (format == "text") {
-    cat(
-      insight::export_table(
-        x = formatted_table,
-        digits = digits,
-        format = format,
-        ...
-      )
-    )
-  } else if (format == "html") {
-    return(tinytable::tt(formatted_table, digits = digits, ...))
-  }
+  return(
+    print_format(formatted_table, format = format,
+                 digits = digits, ...)
+  )
 
   invisible(x)
 }
