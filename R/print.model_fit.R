@@ -23,7 +23,10 @@
 #' print(result)
 #' }
 print.model_fit <- function(x, digits = 3, p_digits = 3, format = "text", ...) {
-  formatted_table <- insight::format_table(x, digits = digits, p_digits = p_digits)
+  formatted_table <- insight::format_table(
+    x, digits = digits, ci_digits = digits,
+    p_digits = p_digits
+  )
 
   if (format == "text") {
     cat(
