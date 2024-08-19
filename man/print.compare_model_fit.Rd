@@ -15,7 +15,9 @@
 
 \item{format}{Character. The format in which to print the table. Options are `"text"`, `"markdown"`, or `"html"`. Defaults to `"text"`.}
 
-\item{...}{Additional arguments passed to `insight::export_table()`.}
+\item{...}{Additional arguments passed to formatting functions.
+If `format = "text"`, these arguments are passed to `insight::export_table`.
+If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.}
 }
 \value{
 Invisibly returns the `compare_model_fit` object. The main purpose of this function is to print the formatted comparison table.
