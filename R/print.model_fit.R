@@ -25,14 +25,18 @@
 print.model_fit <- function(x, digits = 3, p_digits = 3, format = "text", ...) {
   formatted_table <- insight::format_table(x, digits = digits, p_digits = p_digits)
 
-  cat(
-    insight::export_table(
-      x = formatted_table,
-      digits = digits,
-      format = format,
-      ...
+  if (format == "text") {
+    cat(
+      insight::export_table(
+        x = formatted_table,
+        digits = digits,
+        format = format,
+        ...
+      )
     )
-  )
+  } else if (format == "html") {
+    return(tinytable::tt(formatted_table, digits = digits))
+  }
 
   invisible(x)
 }
