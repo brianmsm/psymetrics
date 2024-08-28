@@ -9,32 +9,30 @@ model_fit(fit, ...)
 \arguments{
 \item{fit}{A model object from which to extract fit indices. The class of this
 object determines the specific method that will be used. For example, objects
-of class `lavaan` will use the method `model_fit.lavaan()`.}
+of class \code{lavaan} will use the method \code{\link[=model_fit.lavaan]{model_fit.lavaan()}}.}
 
 \item{...}{Additional arguments passed to the specific method for the model class.}
 }
 \value{
-A `data.frame` containing the fit indices of the model. The specific indices
-  returned depend on the model type and the method used.
+A \code{data.frame} containing the fit indices of the model. The specific indices
+returned depend on the model type and the method used.
 }
 \description{
-`model_fit()` is a generic function designed to extract fit indices from a
+\code{model_fit()} is a generic function designed to extract fit indices from a
 variety of statistical model objects. It serves as a unified interface for
 obtaining key fit metrics, which can vary depending on the type of model and
 the specific method implemented for that model class.
+\itemize{
+\item \strong{Confirmatory Factor Analysis}: \code{\link[=model_fit.lavaan]{model_fit.lavaan()}}
+\item \strong{Exploratory Factor Analysis} (Future): Future methods may include support for models from the
+\code{psych} package.
+\item \strong{IRT models}: Future methods may include support for models from the
+\code{mirt} package.
+}
 }
 \details{
-The `model_fit()` function is intended to provide a consistent interface for
+The \code{model_fit()} function is intended to provide a consistent interface for
 extracting fit indices from various types of models. Methods for specific
 classes of models should implement the necessary logic to retrieve and return
 relevant fit indices in a tidy format.
-
-**Methods currently implemented:**
-
-- `lavaan`: For models estimated using the `lavaan` package, use the
-  `model_fit.lavaan()` method.
-- `psych` (Future): Future methods may include support for models from the
-  `psych` package.
-- `mirt` (Future): Future methods may include support for models from the
-  `mirt` package.
 }

@@ -1,7 +1,7 @@
 #' Compare Model Fit Indices Across Multiple Models
 #'
 #' @description `compare_model_fit()` compares the fit indices of two or more
-#' models. It extracts the fit indices using `model_fit` and combines them into
+#' models. It extracts the fit indices using [`model_fit`] and combines them into
 #' a single data frame for easy comparison.
 #'
 #' @param ... Two or more model objects to be compared.
@@ -27,12 +27,14 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
 
   # Ensure at least two models are provided for comparison
   if (length(fits) < 2) {
-    cli::cli_alert_danger("At least two model fits must be provided for comparison.")
-    stop("At least two model fits must be provided for comparison.")
+    cli::cli_abort(
+      c("At least two model fits must be provided for comparison")
+    )
   }
 
   # Apply model_fit to each model in the list
-  fit_measures <- lapply(fits, model_fit, type = type, metrics = metrics, verbose = verbose)
+  fit_measures <- lapply(fits, model_fit, type = type,
+                         metrics = metrics, verbose = verbose)
 
   # Combine the dataframes vertically
   combined_measures <- do.call(rbind, fit_measures)
@@ -43,6 +45,9 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
 
   # Reorder columns so that "model" is the first column
   combined_measures <- combined_measures[, c("model", setdiff(names(combined_measures), "model"))]
+
+  # Upper Text
+  names(combined_measures)[1] <- "MODEL"
 
   # Assign the custom class for print method
   class(combined_measures) <- c("compare_model_fit", class(combined_measures))
