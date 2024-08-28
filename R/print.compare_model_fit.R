@@ -29,17 +29,18 @@
 
 
 print.compare_model_fit <- function(x, digits = 3, p_digits = 3,
-                                    format = "text", ...) {
+                                    format = "text", align = "firstleft",
+                                    ...) {
 
   formatted_table <- prepare_table(x,
                                    columns_to_format = c("NOBS", "NPAR", "Chi2_df"),
-                                   digits = 3,
-                                   p_digits = 3,
-                                   ci_digits = 3)
+                                   digits = digits,
+                                   ci_digits = digits,
+                                   p_digits = p_digits)
 
   return(
     print_format(formatted_table, format = format,
-                 digits = digits, ...)
+                 align = align, ...)
   )
 
   invisible(x)
