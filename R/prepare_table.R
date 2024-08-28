@@ -2,8 +2,8 @@
 prepare_table <- function(x,
                           columns_to_format = c("NOBS", "NPAR", "Chi2_df"),
                           digits = 3,
-                          p_digits = 3,
                           ci_digits = 3,
+                          p_digits = 3,
                           ...) {
 
   # Round and convert specific columns to character
@@ -17,8 +17,8 @@ prepare_table <- function(x,
 
   # Apply format_table from insight
   formatted_table <- insight::format_table(
-    x, digits = digits, p_digits = p_digits,
-    ci_digits = digits, ...
+    x, digits = digits, ci_digits = digits,
+    p_digits = p_digits, ...
   )
 
   return(formatted_table)
