@@ -46,6 +46,9 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   # Reorder columns so that "model" is the first column
   combined_measures <- combined_measures[, c("model", setdiff(names(combined_measures), "model"))]
 
+  # Upper Text
+  names(combined_measures)[1] <- "MODEL"
+
   # Assign the custom class for print method
   class(combined_measures) <- c("compare_model_fit", class(combined_measures))
 
