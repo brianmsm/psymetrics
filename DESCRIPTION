@@ -19,6 +19,7 @@ RoxygenNote: 7.3.2.9000
 Imports: 
     cli,
     insight,
-    lavaan
+    lavaan,
+    tinytable
 Suggests: 
     rlang

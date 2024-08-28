@@ -4,7 +4,7 @@
 \alias{print.model_fit}
 \title{Print Method for Model Fit Indices}
 \usage{
-\method{print}{model_fit}(x, digits = 3, p_digits = 3, format = "text", ...)
+\method{print}{model_fit}(x, digits = 3, p_digits = 3, format = "text", align = "firstleft", ...)
 }
 \arguments{
 \item{x}{An object of class `model_fit`, typically created by the `model_fit` function.}
@@ -16,8 +16,8 @@
 \item{format}{Output format for the table. Can be "text", "markdown" (or "md"), or "html". Default is "text".}
 
 \item{...}{Additional arguments passed to formatting functions.
-If `format = "text"`, these arguments are passed to `insight::export_table`.
-If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.}
+If `format = "text"` or `format = "markdown"` they are passed to `insight::export_table`.
+If `format = "html"` these arguments are passed to `tinytable::tt`.}
 }
 \value{
 The formatted table is printed to the console.
@@ -27,13 +27,14 @@ The formatted table is printed to the console.
 It formats the output table using `insight::format_table` and exports it using `insight::export_table`.
 }
 \examples{
-\dontrun{
 library(lavaan)
+library(psymetrics)
+
 model <- 'visual  =~ x1 + x2 + x3
           textual =~ x4 + x5 + x6
           speed   =~ x7 + x8 + x9'
 fit <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
 result <- model_fit(fit)
-print(result)
-}
+result
+print(result, format = "html")
 }

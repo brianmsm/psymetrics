@@ -10,8 +10,8 @@
 #' @param p_digits Integer. Number of digits to use for displaying p-values. Defaults to 3.
 #' @param format Character. The format in which to print the table. Options are `"text"`, `"markdown"`, or `"html"`. Defaults to `"text"`.
 #' @param ... Additional arguments passed to formatting functions.
-#'   If `format = "text"`, these arguments are passed to `insight::export_table`.
-#'   If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.
+#'   If `format = "text"` or `format = "markdown"` they are passed to `insight::export_table`.
+#'   If `format = "html"` these arguments are passed to `tinytable::tt`.
 #'
 #' @return Invisibly returns the `compare_model_fit` object. The main purpose of this function is to print the formatted comparison table.
 #' @export
@@ -20,14 +20,13 @@
 #' library(psymetrics)
 #' library(lavaan)
 #'
-#' model1 <- 'visual  =~ x1 + x2 + x3'
-#' model2 <- 'visual  =~ x1 + x2 + x3 + x4'
-#' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-#' fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+#' model1 <- 'visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6'
+#' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "ML")
+#' fit2 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
 #' comparison <- compare_model_fit(fit1, fit2)
-#' print(comparison, digits = 2)
-
-
+#' comparison
+#' print(comparison, format = "html")
 print.compare_model_fit <- function(x, digits = 3, p_digits = 3,
                                     format = "text", align = "firstleft",
                                     ...) {

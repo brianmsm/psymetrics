@@ -9,22 +9,23 @@
 #' @param p_digits Number of digits for rounding p-values. Default is 3.
 #' @param format Output format for the table. Can be "text", "markdown" (or "md"), or "html". Default is "text".
 #' @param ... Additional arguments passed to formatting functions.
-#'   If `format = "text"`, these arguments are passed to `insight::export_table`.
-#'   If `format = "html"` or `format = "markdown"`, they are passed to `tinytable::tt`.
+#'   If `format = "text"` or `format = "markdown"` they are passed to `insight::export_table`.
+#'   If `format = "html"` these arguments are passed to `tinytable::tt`.
 #'
 #' @return The formatted table is printed to the console.
 #' @method print model_fit
 #' @export
 #' @examples
-#' \dontrun{
 #' library(lavaan)
+#' library(psymetrics)
+#'
 #' model <- 'visual  =~ x1 + x2 + x3
 #'           textual =~ x4 + x5 + x6
 #'           speed   =~ x7 + x8 + x9'
 #' fit <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
 #' result <- model_fit(fit)
-#' print(result)
-#' }
+#' result
+#' print(result, format = "html")
 print.model_fit <- function(x, digits = 3, p_digits = 3,
                             format = "text", align = "firstleft",
                             ...) {
