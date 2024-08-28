@@ -1,12 +1,14 @@
 # Function to handle the common print logic
 print_format <- function(formatted_table, format = "text",
-                         digits = 3, ...) {
+                         digits = 3, align = "firstleft",
+                         ...) {
   if (format == "text") {
     cat(
       insight::export_table(
         x = formatted_table,
         digits = digits,
         format = format,
+        align = align,
         ...
       )
     )
@@ -17,6 +19,7 @@ print_format <- function(formatted_table, format = "text",
       x = formatted_table,
       digits = digits,
       format = format,
+      align = align,
       ...
     )
   }
