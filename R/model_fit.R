@@ -8,7 +8,7 @@
 #'
 #' @param fit A model object from which to extract fit indices. The class of this
 #'   object determines the specific method that will be used. For example, objects
-#'   of class `lavaan` will use the method `model_fit.lavaan()`.
+#'   of class `lavaan` will use the method [`model_fit.lavaan()`].
 #' @param ... Additional arguments passed to the specific method for the model class.
 #'
 #' @return A `data.frame` containing the fit indices of the model. The specific indices
@@ -23,7 +23,7 @@
 #' **Methods currently implemented:**
 #'
 #' - `lavaan`: For models estimated using the `lavaan` package, use the
-#'   `model_fit.lavaan()` method.
+#'   [`model_fit.lavaan()`] method.
 #' - `psych` (Future): Future methods may include support for models from the
 #'   `psych` package.
 #' - `mirt` (Future): Future methods may include support for models from the

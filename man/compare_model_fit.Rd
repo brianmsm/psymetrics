@@ -10,20 +10,20 @@ compare_model_fit(..., type = NULL, metrics = "essential", verbose = TRUE)
 \item{...}{Two or more model objects to be compared.}
 
 \item{type}{A character string specifying the type of fit indices to extract.
-Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
-which automatically selects `"scaled"` if a robust estimator is used, otherwise `"standard"`.}
+Options are \code{"standard"}, \code{"scaled"}, and \code{"robust"}. Defaults to \code{NULL},
+which automatically selects \code{"scaled"} if a robust estimator is used, otherwise \code{"standard"}.}
 
 \item{metrics}{A character vector specifying which fit indices to extract.
-Defaults to `"essential"`, or a custom vector of indices.}
+Defaults to \code{"essential"}, or a custom vector of indices.}
 
-\item{verbose}{Logical. If `TRUE`, prints messages about the indices being adjusted.}
+\item{verbose}{Logical. If \code{TRUE}, prints messages about the indices being adjusted.}
 }
 \value{
 A data frame containing the fit indices for each model, with an additional column identifying the models.
 }
 \description{
-`compare_model_fit()` compares the fit indices of two or more
-models. It extracts the fit indices using `model_fit` and combines them into
+\code{compare_model_fit()} compares the fit indices of two or more
+models. It extracts the fit indices using \code{\link{model_fit}} and combines them into
 a single data frame for easy comparison.
 }
 \examples{

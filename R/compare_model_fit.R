@@ -1,7 +1,7 @@
 #' Compare Model Fit Indices Across Multiple Models
 #'
 #' @description `compare_model_fit()` compares the fit indices of two or more
-#' models. It extracts the fit indices using `model_fit` and combines them into
+#' models. It extracts the fit indices using [`model_fit`] and combines them into
 #' a single data frame for easy comparison.
 #'
 #' @param ... Two or more model objects to be compared.
