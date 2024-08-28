@@ -1,3 +1,16 @@
+# psymetrics 0.1.3
+
+## New Features
+
+- **Enhanced Output Formats in `print.model_fit` and `print.compare_model_fit`:** Added support for exporting tables in additional formats, including `markdown` and `html`, using the `print.model_fit` and `print.compare_model_fit` functions.
+- **Customizable Alignment:** Introduced the `align` argument to control table alignment in text and markdown formats. Available options include "left", "right", "center", and "firstleft". For more details, refer to the `insight::export_table` documentation.
+- **Improved Error Handling:** Functions now use `cli::cli_abort` for error handling, providing clearer and more detailed messages when unsupported parameters are passed.
+
+## Improvements
+
+- **Code Refactoring:** Made improvements to the structure of the `print_format` function and related code, optimizing format handling and code clarity.
+- **Documentation Update:** The documentation has been updated to reflect new parameters and features, including additional usage examples.
+
 # psymetrics 0.1.2
 
 ## New Features
