@@ -17,7 +17,7 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics")
+pak::pak("brianmsm/psymetrics@v0.1.3")
 ```
 
 ## Getting Fit Indices
@@ -41,24 +41,24 @@ fit <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
 
 # Extract and print fit indices
 model_fit(fit)
-#> NOBS    | ESTIMATOR |   NPAR | Chi2(24) | p (Chi2) |   CFI |   TLI | RMSEA |    RMSEA  CI |  SRMR
-#> -------------------------------------------------------------------------------------------------
-#> 301.000 |       MLR | 21.000 |   87.132 |   < .001 | 0.925 | 0.888 | 0.093 | [0.07, 0.12] | 0.065
+#> NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |  CFI  |  TLI  | RMSEA |   RMSEA  CI    | SRMR 
+#> ----------------------------------------------------------------------------------------------
+#> 301  |    MLR    |  21  |  87.132  |  < .001  | 0.925 | 0.888 | 0.093 | [0.073, 0.115] | 0.065
 
 # You can also request specific types of indices, such as 'robust'
 model_fit(fit, type = "robust")
-#> NOBS    | ESTIMATOR |   NPAR | Chi2(24) | p (Chi2) |   CFI |   TLI | RMSEA |    RMSEA  CI |  SRMR
-#> -------------------------------------------------------------------------------------------------
-#> 301.000 |       MLR | 21.000 |   87.132 |   < .001 | 0.930 | 0.895 | 0.092 | [0.07, 0.11] | 0.065
+#> NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |  CFI  |  TLI  | RMSEA |   RMSEA  CI    | SRMR 
+#> ----------------------------------------------------------------------------------------------
+#> 301  |    MLR    |  21  |  87.132  |  < .001  | 0.930 | 0.895 | 0.092 | [0.072, 0.114] | 0.065
 
 # Or specify which indices to extract
 model_fit(fit, metrics = c("cfi", "tli"))
 #> cfi and tli were adjusted to their scaled version.
 #> If you want to control the specific metric type used, specify it explicitly
 #> (e.g., `cfi.robust`) or modify the type argument.
-#> NOBS    | ESTIMATOR |   NPAR |   CFI |   TLI
-#> --------------------------------------------
-#> 301.000 |       MLR | 21.000 | 0.925 | 0.888
+#> NOBS | ESTIMATOR | NPAR |  CFI  |  TLI 
+#> ---------------------------------------
+#> 301  |    MLR    |  21  | 0.925 | 0.888
 ```
 
 This example demonstrates how to extract and print various fit indices
@@ -72,16 +72,43 @@ specify custom sets of indices to extract.
 fit_1 <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
 fit_2 <- cfa(model, data = HolzingerSwineford1939, estimator = "ULSM")
 
-compare_model_fit(fit_1, fit_2)
-#> # Model Fit Comparison:
-#> 
-#> model |    NOBS | ESTIMATOR |   NPAR | Chi2(24) | p (Chi2) |   CFI |   TLI | RMSEA |    RMSEA  CI |  SRMR
-#> ---------------------------------------------------------------------------------------------------------
-#> fit_1 | 301.000 |       MLR | 21.000 |   87.132 |   < .001 | 0.925 | 0.888 | 0.093 | [0.07, 0.12] | 0.065
-#> fit_2 | 301.000 |      ULSM | 21.000 |   90.600 |   < .001 | 0.931 | 0.897 | 0.096 | [0.07, 0.12] | 0.059
+fit_table <- compare_model_fit(fit_1, fit_2)
+fit_table
+#> MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |  CFI  |  TLI  | RMSEA |   RMSEA  CI    | SRMR 
+#> ------------------------------------------------------------------------------------------------------
+#> fit_1 | 301  |    MLR    |  21  |  87.132  |  < .001  | 0.925 | 0.888 | 0.093 | [0.073, 0.115] | 0.065
+#> fit_2 | 301  |   ULSM    |  21  |  90.600  |  < .001  | 0.931 | 0.897 | 0.096 | [0.073, 0.120] | 0.059
 ```
 
 In this example, compare_model_fit is used to compare the fit indices of
 two different models. This function allows you to easily see the
 differences in model fit across different estimation methods or model
 specifications.
+
+## Print the fit indices in HTML format
+
+This is useful when you want to embed the output directly in HTML
+reports or web pages.
+
+``` r
+print(fit_table, format = "html")
+```
+
+| MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) | CFI   | TLI   | RMSEA | RMSEA CI         | SRMR  |
+|-------|------|-----------|------|----------|----------|-------|-------|-------|------------------|-------|
+| fit_1 | 301  | MLR       | 21   | 87.132   | \< .001  | 0.925 | 0.888 | 0.093 | \[0.073, 0.115\] | 0.065 |
+| fit_2 | 301  | ULSM      | 21   | 90.600   | \< .001  | 0.931 | 0.897 | 0.096 | \[0.073, 0.120\] | 0.059 |
+
+## Print the fit indices in Markdown format
+
+This is ideal for including the output in Markdown documents, such as
+GitHub READMEs or R Markdown reports.
+
+``` r
+print(fit_table, format = "markdown")
+```
+
+    #> |MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |   CFI |   TLI | RMSEA |      RMSEA  CI |  SRMR |
+    #> |:-----|:----:|:---------:|:----:|:--------:|:--------:|:-----:|:-----:|:-----:|:--------------:|:-----:|
+    #> |fit_1 |  301 |       MLR |   21 |   87.132 |   < .001 | 0.925 | 0.888 | 0.093 | [0.073, 0.115] | 0.065 |
+    #> |fit_2 |  301 |      ULSM |   21 |   90.600 |   < .001 | 0.931 | 0.897 | 0.096 | [0.073, 0.120] | 0.059 |
