@@ -35,14 +35,4 @@ The \code{model_fit()} function is intended to provide a consistent interface fo
 extracting fit indices from various types of models. Methods for specific
 classes of models should implement the necessary logic to retrieve and return
 relevant fit indices in a tidy format.
-
-\strong{Methods currently implemented:}
-\itemize{
-\item \code{lavaan}: For models estimated using the \code{lavaan} package, use the
-\code{\link[=model_fit.lavaan]{model_fit.lavaan()}} method.
-\item \code{psych} (Future): Future methods may include support for models from the
-\code{psych} package.
-\item \code{mirt} (Future): Future methods may include support for models from the
-\code{mirt} package.
-}
 }
