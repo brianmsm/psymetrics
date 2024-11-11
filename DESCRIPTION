@@ -23,4 +23,6 @@ Imports:
     lavaan,
     tinytable
 Suggests: 
+    flextable,
+    officer,
     rlang
