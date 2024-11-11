@@ -15,8 +15,9 @@
 #' @export
 #' @examples
 #' library(lavaan)
-#' model1 <- 'visual  =~ x1 + x2 + x3'
-#' model2 <- 'visual  =~ x1 + x2 + x3 + x4'
+#' library(psymetrics)
+#' model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+#' model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
 #' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
 #' fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
 #' compare_model_fit(fit1, fit2)
