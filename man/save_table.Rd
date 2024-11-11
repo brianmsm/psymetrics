@@ -35,18 +35,13 @@ If the \code{path} has a .docx extension, the table will be saved as a Word docu
 aligns the table to APA style, and the font is set to Arial with a font size of 10.
 }
 \examples{
-\dontrun{
+library(lavaan)
 library(psymetrics)
-
-table_data <- data.frame(
-  Model = c("fit1", "fit2"),
-  NOBS = c(301, 301),
-  Chi2 = c(87.13, 24.37),
-  DF = c(24, 8),
-  pvalue = c(0.000, 0.002)
-)
-
-save_table(table_data, path = "model_fit.docx")
-}
+model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
+fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
+fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+fit_compared <- compare_model_fit(fit1, fit2)
+save_table(fit_compared, path = "model_fit.docx")
 
 }
