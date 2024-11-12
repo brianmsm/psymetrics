@@ -47,8 +47,6 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = T
 }
 
 
-
-
 #' Plot Factor Loadings for lavaan Models
 #'
 #' @description Creates a dot plot of standardized factor loadings for a `lavaan` model. The plot shows factor loadings along with optional confidence intervals for each item in the model.
@@ -62,6 +60,7 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = T
 #' @param ... Additional arguments passed to `ggplot2::ggplot`.
 #'
 #' @return A ggplot object if `ggplot2` is installed, otherwise an error message.
+#' @importFrom rlang .data
 #' @export
 plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized = TRUE, CI = TRUE, autofit = TRUE, ...) {
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
@@ -80,16 +79,18 @@ plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized
 
   # Set the order of `rhs` based on `sort`
   loadings$rhs <- if (sort) {
-    factor(loadings$rhs, levels = levels(reorder(loadings$rhs, loadings$est)))
+    factor(loadings$rhs, levels = levels(stats::reorder(loadings$rhs, loadings$est)))
   } else {
     factor(loadings$rhs)
   }
 
   # Adjust x-axis range if autofit is TRUE
-  x_limits <- if (autofit) {
+  x_limits <- if (autofit & standardized) {
     c(NA, 1)
-  } else {
+  } else if (standardized) {
     c(0, 1)
+  } else {
+    c(NA, NA)
   }
 
   # Grouping by factors if multiple factors are present and group_by is TRUE
@@ -99,9 +100,9 @@ plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized
     loadings$Factor <- "All Items"
   }
 
-  # Plot
-  plot <- ggplot2::ggplot(loadings, ggplot2::aes(x = est, y = rhs)) +
-    ggplot2::geom_point(size = 3, ggplot2::aes(color = Factor)) +
+  # Plot with .data to avoid global variable warnings
+  plot <- ggplot2::ggplot(loadings, ggplot2::aes(x = .data$est, y = .data$rhs)) +
+    ggplot2::geom_point(size = 3, ggplot2::aes(color = .data$Factor)) +
     ggplot2::scale_color_brewer(palette = "Dark2") +
     ggplot2::labs(
       x = "Factor Loadings",
@@ -115,7 +116,7 @@ plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized
   # Add confidence intervals if CI is TRUE
   if (CI) {
     plot <- plot + ggplot2::geom_errorbarh(
-      ggplot2::aes(xmin = ci.lower, xmax = ci.upper),
+      ggplot2::aes(xmin = .data$ci.lower, xmax = .data$ci.upper),
       height = 0.2, color = "grey50"
     )
   }
