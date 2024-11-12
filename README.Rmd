@@ -110,6 +110,9 @@ The exported document will have a clean and professional format that you can dir
 You can visualize the factor loadings of your model with the `plot_factor_loadings()` function. This function creates a dot plot of standardized factor loadings, with the option to display confidence intervals for each loading.
 
 ```{r}
+#| fig-dpi: 300
+#| fig-width: 5
+#| fig-height: 4.5
 plot_factor_loadings(fit)
 ```
 
