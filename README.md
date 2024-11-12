@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-<img src="man/figures/hexlogo.png" align="right" width="120" />
+<img src="man/figures/hexlogo.png" align="right" width="200" />
 
 The goal of psymetrics is to provide tools for extracting and
 visualizing psychometric model fit indices. It is compatible with models
