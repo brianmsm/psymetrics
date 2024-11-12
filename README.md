@@ -6,6 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
+<img src="man/figures/hexlogo.png" align="right" width="120" />
+
 The goal of psymetrics is to provide tools for extracting and
 visualizing psychometric model fit indices. It is compatible with models
 created using packages like lavaan, psych, and mirt.
@@ -17,7 +19,7 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.3")
+pak::pak("brianmsm/psymetrics@v0.1.4")
 ```
 
 ## Getting Fit Indices
@@ -28,7 +30,7 @@ created using lavaan.
 ``` r
 library(psymetrics)
 library(lavaan)
-#> This is lavaan 0.6-18
+#> This is lavaan 0.6-19
 #> lavaan is FREE software! Please report any bugs.
 
 # Define a simple CFA model
@@ -94,10 +96,10 @@ reports or web pages.
 print(fit_table, format = "html")
 ```
 
-| MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) | CFI   | TLI   | RMSEA | RMSEA CI         | SRMR  |
-|-------|------|-----------|------|----------|----------|-------|-------|-------|------------------|-------|
-| fit_1 | 301  | MLR       | 21   | 87.132   | \< .001  | 0.925 | 0.888 | 0.093 | \[0.073, 0.115\] | 0.065 |
-| fit_2 | 301  | ULSM      | 21   | 90.600   | \< .001  | 0.931 | 0.897 | 0.096 | \[0.073, 0.120\] | 0.059 |
+| MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) | CFI | TLI | RMSEA | RMSEA CI | SRMR |
+|----|----|----|----|----|----|----|----|----|----|----|
+| fit_1 | 301 | MLR | 21 | 87.132 | \< .001 | 0.925 | 0.888 | 0.093 | \[0.073, 0.115\] | 0.065 |
+| fit_2 | 301 | ULSM | 21 | 90.600 | \< .001 | 0.931 | 0.897 | 0.096 | \[0.073, 0.120\] | 0.059 |
 
 ## Print the fit indices in Markdown format
 
@@ -112,3 +114,35 @@ print(fit_table, format = "markdown")
     #> |:-----|:----:|:---------:|:----:|:--------:|:--------:|:-----:|:-----:|:-----:|:--------------:|:-----:|
     #> |fit_1 |  301 |       MLR |   21 |   87.132 |   < .001 | 0.925 | 0.888 | 0.093 | [0.073, 0.115] | 0.065 |
     #> |fit_2 |  301 |      ULSM |   21 |   90.600 |   < .001 | 0.931 | 0.897 | 0.096 | [0.073, 0.120] | 0.059 |
+
+## Saving Fit Indices to Word
+
+The `save_table()` function allows you to export the fit indices to a
+Word document (.docx) with APA-style formatting and optional templates
+for vertical or landscape orientation.
+
+``` r
+# Save the fit comparison table to Word
+save_table(fit_table, path = "model_fit.docx", orientation = "landscape")
+```
+
+The exported document will have a clean and professional format that you
+can directly include in reports or presentations.
+
+## Plotting Factor Loadings
+
+You can visualize the factor loadings of your model with the
+`plot_factor_loadings()` function. This function creates a dot plot of
+standardized factor loadings, with the option to display confidence
+intervals for each loading.
+
+``` r
+plot_factor_loadings(fit)
+```
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+
+In this example, plot_factor_loadings() displays the factor loadings for
+each item on the respective factors, with confidence intervals. The plot
+can be adjusted to automatically scale the x-axis or group items by
+factor.

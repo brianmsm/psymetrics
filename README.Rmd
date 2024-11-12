@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -15,8 +17,8 @@ knitr::opts_chunk$set(
 
 # psymetrics
 
-<!-- badges: start -->
-<!-- badges: end -->
+<!-- badges: start --> <!-- badges: end --> 
+<img src="man/figures/hexlogo.png" align="right" width="120" />
 
 The goal of psymetrics is to provide tools for extracting and visualizing psychometric model fit indices. It is compatible with models created using packages like lavaan, psych, and mirt.
 
@@ -26,7 +28,7 @@ You can install the development version of psymetrics from [GitHub](https://gith
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.3")
+pak::pak("brianmsm/psymetrics@v0.1.4")
 ```
 
 ## Getting Fit Indices
@@ -91,4 +93,25 @@ print(fit_table, format = "markdown")
 cat(print(fit_table, format = "markdown"), sep = "\n")
 ```
 
+## Saving Fit Indices to Word
+
+The `save_table()` function allows you to export the fit indices to a Word document (.docx) with APA-style formatting and optional templates for vertical or landscape orientation.
+
+```{r}
+#| eval: false
+# Save the fit comparison table to Word
+save_table(fit_table, path = "model_fit.docx", orientation = "landscape")
+```
+
+The exported document will have a clean and professional format that you can directly include in reports or presentations.
+
+## Plotting Factor Loadings
+
+You can visualize the factor loadings of your model with the `plot_factor_loadings()` function. This function creates a dot plot of standardized factor loadings, with the option to display confidence intervals for each loading.
+
+```{r}
+plot_factor_loadings(fit)
+```
+
+In this example, plot_factor_loadings() displays the factor loadings for each item on the respective factors, with confidence intervals. The plot can be adjusted to automatically scale the x-axis or group items by factor.
 

@@ -1,3 +1,24 @@
+# psymetrics 0.1.4
+
+## New Features
+
+- **save_table()**: A new utility function for saving tables generated from model outputs to different formats, starting with Word (`.docx`). This function automatically checks for the necessary packages (`flextable` and `officer`) and provides formatting for tables in accordance with APA style. Key features:
+  - Default template in landscape orientation.
+  - Options to customize the file path and template.
+  - Digit precision control, with options for different font styles and cell alignment.
+
+- **plot() method for lavaan objects**: Introduced a `plot` method specifically designed for `lavaan` objects, enabling users to easily visualize key model results. Supported plots:
+  - **Factor Loadings Plot** (`type = "loadings"`): Displays standardized factor loadings for CFA models with options to display confidence intervals and adjust axis limits.
+  - **Residuals Plot** (`type = "residuals"`) (future): Will display residuals for model diagnostics and evaluation.
+  - **Path Diagram Plot** (`type = "path"`) (future): Will generate path diagrams for SEM models.
+  
+  The factor loadings plot includes parameters for sorting and grouping items, along with flexible display options for confidence intervals and standardized estimates.
+
+## Bug Fixes and Improvements
+
+- **Internal Function Enhancements**: Improved `prepare_table` function for consistent table formatting across different outputs. This includes automatic rounding and character conversion for key columns (`NOBS`, `NPAR`, `Chi2_df`) where applicable.
+- **Improved Handling of Global Variables**: Adopted `.data` pronoun within `ggplot2` to avoid unnecessary global variable bindings and improve compatibility with `R CMD check`.
+
 # psymetrics 0.1.3
 
 ## New Features
