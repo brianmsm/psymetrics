@@ -19,10 +19,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
 Imports: 
     cli,
+    ggplot2,
     insight,
     lavaan,
+    rlang,
     tinytable
 Suggests: 
     flextable,
-    officer,
-    rlang
+    officer
