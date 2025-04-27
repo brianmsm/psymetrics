@@ -17,18 +17,25 @@
 #'   If `format = "html"` these arguments are passed to [`tinytable::tt`].
 #'
 #' @return Invisibly returns the `compare_model_fit` object. The main purpose of this function is to print the formatted comparison table.
-#' @export
 #' @examples
-#' library(psymetrics)
-#' library(lavaan)
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(psymetrics)
+#'   library(lavaan)
 #'
-#' model1 <- 'visual  =~ x1 + x2 + x3
+#'   model1 <- 'visual  =~ x1 + x2 + x3
 #'            textual =~ x4 + x5 + x6'
-#' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "ML")
-#' fit2 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-#' comparison <- compare_model_fit(fit1, fit2)
-#' comparison
-#' print(comparison, format = "html")
+#'   fit1 <- cfa(model1, data = HolzingerSwineford1939,
+#'               estimator = "ML")
+#'   fit2 <- cfa(model1, data = HolzingerSwineford1939,
+#'               estimator = "MLR")
+#'   comparison <- compare_model_fit(fit1, fit2)
+#'   comparison
+#'   print(comparison, format = "html")
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
+#'
+#' @export
 print.compare_model_fit <- function(x, digits = 3, p_digits = 3,
                                     format = "text", align = "firstleft",
                                     ...) {

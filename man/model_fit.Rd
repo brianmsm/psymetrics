@@ -36,3 +36,6 @@ extracting fit indices from various types of models. Methods for specific
 classes of models should implement the necessary logic to retrieve and return
 relevant fit indices in a tidy format.
 }
+\seealso{
+\code{\link[=model_fit.lavaan]{model_fit.lavaan()}} for lavaan objects
+}

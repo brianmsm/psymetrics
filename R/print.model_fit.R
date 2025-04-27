@@ -16,18 +16,25 @@
 #'   If `format = "html"` these arguments are passed to [`tinytable::tt`].
 #'
 #' @return The formatted table is printed to the console.
-#' @export
 #' @examples
-#' library(lavaan)
-#' library(psymetrics)
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
 #'
-#' model <- 'visual  =~ x1 + x2 + x3
+#'   model <- 'visual  =~ x1 + x2 + x3
 #'           textual =~ x4 + x5 + x6
 #'           speed   =~ x7 + x8 + x9'
-#' fit <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
-#' result <- model_fit(fit)
-#' result
-#' print(result, format = "html")
+#'
+#'   fit <- cfa(model, data = HolzingerSwineford1939,
+#'              estimator = "MLR")
+#'   result <- model_fit(fit)
+#'   result
+#'   print(result, format = "html")
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
+#'
+#' @export
 print.model_fit <- function(x, digits = 3, p_digits = 3,
                             format = "text", align = "firstleft",
                             ...) {

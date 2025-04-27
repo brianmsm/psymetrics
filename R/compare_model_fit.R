@@ -1,7 +1,7 @@
 #' Compare Model Fit Indices Across Multiple Models
 #'
 #' @description `compare_model_fit()` compares the fit indices of two or more
-#' models. It extracts the fit indices using [`model_fit`] and combines them into
+#' models. It extracts the fit indices using [`model_fit()`] and combines them into
 #' a single data frame for easy comparison.
 #'
 #' @param ... Two or more model objects to be compared.
@@ -12,7 +12,10 @@
 #'   Defaults to `"essential"`, or a custom vector of indices.
 #' @param verbose Logical. If `TRUE`, prints messages about the indices being adjusted.
 #' @return A data frame containing the fit indices for each model, with an additional column identifying the models.
-#' @export
+#'
+#' @seealso
+#'   [model_fit] for an overview of model fit methods in the package.
+#'
 #' @examples
 #' if (requireNamespace("lavaan", quietly = TRUE)) {
 #'   library(lavaan)
@@ -25,7 +28,8 @@
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
-
+#'
+#' @export
 compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose = TRUE) {
   # Capture all the fit objects as a list
   fits <- list(...)

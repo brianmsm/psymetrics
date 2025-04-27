@@ -58,4 +58,8 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
 } else {
   message("Please install 'lavaan' to run this example.")
 }
+
+}
+\seealso{
+\link{model_fit} for an overview of model fit methods in the package.
 }

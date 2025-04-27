@@ -31,14 +31,21 @@ The formatted table is printed to the console.
 It formats the output table using \code{\link[insight:format_table]{insight::format_table}} and exports it using \code{\link[insight:export_table]{insight::export_table}}.
 }
 \examples{
-library(lavaan)
-library(psymetrics)
+if (requireNamespace("lavaan", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
 
-model <- 'visual  =~ x1 + x2 + x3
+  model <- 'visual  =~ x1 + x2 + x3
           textual =~ x4 + x5 + x6
           speed   =~ x7 + x8 + x9'
-fit <- cfa(model, data = HolzingerSwineford1939, estimator = "MLR")
-result <- model_fit(fit)
-result
-print(result, format = "html")
+
+  fit <- cfa(model, data = HolzingerSwineford1939,
+             estimator = "MLR")
+  result <- model_fit(fit)
+  result
+  print(result, format = "html")
+} else {
+  message("Please install 'lavaan' to run this example.")
+}
+
 }

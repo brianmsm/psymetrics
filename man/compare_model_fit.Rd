@@ -23,7 +23,7 @@ A data frame containing the fit indices for each model, with an additional colum
 }
 \description{
 \code{compare_model_fit()} compares the fit indices of two or more
-models. It extracts the fit indices using \code{\link{model_fit}} and combines them into
+models. It extracts the fit indices using \code{\link[=model_fit]{model_fit()}} and combines them into
 a single data frame for easy comparison.
 }
 \examples{
@@ -38,4 +38,8 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
 } else {
   message("Please install 'lavaan' to run this example.")
 }
+
+}
+\seealso{
+\link{model_fit} for an overview of model fit methods in the package.
 }

@@ -17,7 +17,10 @@
 #'   metric adjustments. Defaults to `TRUE`.
 #' @param ... Additional arguments passed to methods.
 #' @return A data frame containing the specified fit indices of the model.
-#' @export
+#'
+#' @seealso
+#'   [model_fit] for an overview of model fit methods in the package.
+#'
 #' @examples
 #' if (requireNamespace("lavaan", quietly = TRUE) &&
 #'     requireNamespace("ggplot2", quietly = TRUE)) {
@@ -44,6 +47,8 @@
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
+#'
+#' @export
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used

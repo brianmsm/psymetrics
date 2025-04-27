@@ -25,6 +25,9 @@
 #' classes of models should implement the necessary logic to retrieve and return
 #' relevant fit indices in a tidy format.
 #'
+#' @seealso
+#'  [model_fit.lavaan()] for lavaan objects
+#'
 #' @export
 model_fit <- function(fit, ...) {
   UseMethod("model_fit")

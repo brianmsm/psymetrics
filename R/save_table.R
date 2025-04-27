@@ -38,7 +38,6 @@
 #'   message("Please install 'lavaan' to run this example.")
 #' }
 #' @export
-
 save_table <- function(table_data, path, orientation = "landscape",
                        template = NULL, digits = 3, ...) {
   # Check if required packages are installed
