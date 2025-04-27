@@ -45,3 +45,7 @@ fit <- cfa(HS.model, data = HolzingerSwineford1939)
 plot_factor_loadings(fit)
 
 }
+\seealso{
+\link{plot-methods} for an overview of plotting in the package.
+\code{\link[=plot_factor_loadings]{plot_factor_loadings()}} which is called by this method for type = "factor_loadings".
+}

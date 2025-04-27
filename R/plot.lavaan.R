@@ -27,7 +27,11 @@
 #' fit <- cfa(HS.model, data = HolzingerSwineford1939)
 #' plot_factor_loadings(fit)
 #'
-#' @export
+#' @seealso
+#'   [plot-methods] for an overview of plotting in the package.
+#'   [plot_factor_loadings()] which is called by this method for type = "factor_loadings".
+#'
+#' @exportS3Method graphics::plot lavaan
 plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = TRUE, ...) {
   if (!inherits(x, "lavaan")) {
     cli::cli_abort("The object is not a valid lavaan model.")
@@ -61,6 +65,10 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = T
 #'
 #' @return A ggplot object if `ggplot2` is installed, otherwise an error message.
 #' @importFrom rlang .data
+#'
+#' #' @seealso
+#'   [plot-methods] for an overview of plotting in the package.
+#'   [plot.lavaan()] for more lavaan object plots
 #' @export
 plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized = TRUE, CI = TRUE, autofit = TRUE, ...) {
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
