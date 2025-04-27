@@ -25,15 +25,18 @@
 #' `template` argument, it takes precedence over the `orientation` setting.
 #'
 #' @examples
-#' library(lavaan)
-#' library(psymetrics)
-#' model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-#' model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-#' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-#' fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
-#' fit_compared <- compare_model_fit(fit1, fit2)
-#' save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
-#'
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+#'   model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
+#'   fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
+#'   fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+#'   fit_compared <- compare_model_fit(fit1, fit2)
+#'   save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
 #' @export
 
 save_table <- function(table_data, path, orientation = "landscape",

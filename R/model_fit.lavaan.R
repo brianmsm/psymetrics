@@ -19,17 +19,33 @@
 #' @return A data frame containing the specified fit indices of the model.
 #' @export
 #' @examples
-#' library(lavaan)
-#' model <- 'visual  =~ x1 + x2 + x3
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot_factor_loadings(fit)
+#' }
+#'
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   model <- 'visual  =~ x1 + x2 + x3
 #'           textual =~ x4 + x5 + x6
 #'           speed   =~ x7 + x8 + x9'
-#' fit <- cfa(model, data = HolzingerSwineford1939,
-#'            estimator = "MLR")
-#' model_fit(fit)
-#' model_fit(fit, type = "robust")
-#' model_fit(fit, metrics = c("cfi", "tli"))
-
+#'   fit <- cfa(model, data = HolzingerSwineford1939,
+#'              estimator = "MLR")
+#'   model_fit(fit)
+#'   model_fit(fit, type = "robust")
+#'   model_fit(fit, metrics = c("cfi", "tli"))
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
 

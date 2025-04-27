@@ -19,13 +19,18 @@
 #' - **Path Diagram**: Illustrates the structure of the model, showing latent variables, observed variables, and the estimated relationships between them.
 #'
 #' @examples
-#' library(lavaan)
-#' library(psymetrics)
-#' HS.model <- ' visual  =~ x1 + x2 + x3
-#'               textual =~ x4 + x5 + x6
-#'               speed   =~ x7 + x8 + x9 '
-#' fit <- cfa(HS.model, data = HolzingerSwineford1939)
-#' plot_factor_loadings(fit)
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot(fit)
+#' } else {
+#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
+#' }
 #'
 #' @seealso
 #'   [plot-methods] for an overview of plotting in the package.
@@ -33,6 +38,7 @@
 #'
 #' @exportS3Method graphics::plot lavaan
 plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   if (!inherits(x, "lavaan")) {
     cli::cli_abort("The object is not a valid lavaan model.")
   }
@@ -66,11 +72,26 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = T
 #' @return A ggplot object if `ggplot2` is installed, otherwise an error message.
 #' @importFrom rlang .data
 #'
+#' @examples
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot_factor_loadings(fit)
+#' } else {
+#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
+#' }
+#'
 #' #' @seealso
 #'   [plot-methods] for an overview of plotting in the package.
 #'   [plot.lavaan()] for more lavaan object plots
 #' @export
 plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized = TRUE, CI = TRUE, autofit = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
 
   # Extract standardized loadings and confidence intervals

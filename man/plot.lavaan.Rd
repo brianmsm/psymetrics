@@ -36,13 +36,18 @@ This is a plot method for objects of class \code{lavaan}. It allows users to cre
 }
 }
 \examples{
-library(lavaan)
-library(psymetrics)
-HS.model <- ' visual  =~ x1 + x2 + x3
-              textual =~ x4 + x5 + x6
-              speed   =~ x7 + x8 + x9 '
-fit <- cfa(HS.model, data = HolzingerSwineford1939)
-plot_factor_loadings(fit)
+if (requireNamespace("lavaan", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  HS.model <- ' visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9 '
+  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  plot(fit)
+} else {
+  message("Please install 'lavaan' and 'ggplot2' to run this example.")
+}
 
 }
 \seealso{

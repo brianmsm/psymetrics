@@ -27,11 +27,15 @@ models. It extracts the fit indices using \code{\link{model_fit}} and combines t
 a single data frame for easy comparison.
 }
 \examples{
-library(lavaan)
-library(psymetrics)
-model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
-compare_model_fit(fit1, fit2)
+if (requireNamespace("lavaan", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+  model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
+  fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
+  fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+  compare_model_fit(fit1, fit2)
+} else {
+  message("Please install 'lavaan' to run this example.")
+}
 }

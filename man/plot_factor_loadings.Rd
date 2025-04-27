@@ -35,3 +35,21 @@ A ggplot object if \code{ggplot2} is installed, otherwise an error message.
 \description{
 Creates a dot plot of standardized factor loadings for a \code{lavaan} model. The plot shows factor loadings along with optional confidence intervals for each item in the model.
 }
+\examples{
+if (requireNamespace("lavaan", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  HS.model <- ' visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9 '
+  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  plot_factor_loadings(fit)
+} else {
+  message("Please install 'lavaan' and 'ggplot2' to run this example.")
+}
+
+#' @seealso
+  [plot-methods] for an overview of plotting in the package.
+  [plot.lavaan()] for more lavaan object plots
+}
