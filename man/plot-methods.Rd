@@ -7,24 +7,28 @@
 A plot object, usually a ggplot, specific to the model type.
 }
 \description{
-\code{plot()} is a generic function designed for visualizing various aspects of
-statistical models. It provides a unified interface for generating plots that
-vary depending on the model type and the specific method implemented for that
+\code{plot()} is a generic function designed for visualizing
+various aspects of statistical models. It provides a unified
+interface for generating plots that vary depending on the
+model type and the specific method implemented for that
 model class.
 }
 \details{
 Current available method:
 \itemize{
-\item \strong{Confirmatory Factor Analysis}: \code{\link[=plot.lavaan]{plot.lavaan()}} for plotting factor loadings and other metrics for models from the \code{lavaan} package.
+\item \strong{Confirmatory Factor Analysis}: \code{\link[=plot.lavaan]{plot.lavaan()}} for
+plotting factor loadings and other metrics for models
+from the \code{lavaan} package.
 }
 
 Future methods may include support for:
 \itemize{
-\item \strong{Exploratory Factor Analysis}: Models from the \code{psych} package.
-\item \strong{Item Response Theory (IRT)}: Models from the \code{mirt} package.
+\item \strong{Exploratory Factor Analysis}: Models from the \code{psych}
+package.
+\item \strong{Item Response Theory (IRT)}: Models from the \code{mirt}
+package.
 }
 }
 \seealso{
 \code{\link[=plot.lavaan]{plot.lavaan()}} for lavaan objects
 }
-\keyword{internal}

@@ -1,26 +1,36 @@
 #' Extract Fit Indices from a lavaan Model
 #'
-#' @description `model_fit.lavaan` extracts fit indices from a `lavaan` model object.
-#' The function allows you to specify the type of indices to extract: `"standard"`,
-#' `"scaled"`, or `"robust"`. If the model uses a robust estimator and you specify
-#' `type = "scaled"` or `type = "robust"`, the corresponding indices will be returned.
-#' If no type is specified, the function automatically chooses `"scaled"` for robust estimators
-#' and `"standard"` otherwise.
+#' @description
+#' `model_fit.lavaan` extracts fit indices from a `lavaan`
+#' model object. The function allows you to specify the
+#' type of indices to extract: `"standard"`, `"scaled"`,
+#' or `"robust"`. If the model uses a robust estimator
+#' and you specify `type = "scaled"` or `type = "robust"`,
+#' the corresponding indices will be returned. If no
+#' type is specified, the function automatically chooses
+#' `"scaled"` for robust estimators and `"standard"` otherwise.
 #'
-#' @param fit A `lavaan` object estimated with `lavaan::cfa()`, `lavaan::sem()`, or similar functions.
-#' @param type A character string specifying the type of fit indices to extract.
-#'   Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
-#'   which will automatically choose `"scaled"` if a robust estimator is used; otherwise `"standard"`.
-#' @param metrics A character vector specifying the fit indices to return. The default is `"essential"`,
-#'   which includes common fit indices. You can also specify a custom set of metrics.
-#' @param verbose A logical value indicating whether to display informational messages about
-#'   metric adjustments. Defaults to `TRUE`.
+#' @param fit A `lavaan` object estimated with `lavaan::cfa()`,
+#'   `lavaan::sem()`, or similar functions.
+#' @param type A character string specifying the type of
+#'   fit indices to extract. Options are `"standard"`,
+#'   `"scaled"`, and `"robust"`. Defaults to `NULL`,
+#'   which will automatically choose `"scaled"` if a
+#'   robust estimator is used; otherwise `"standard"`.
+#' @param metrics A character vector specifying the fit
+#'   indices to return. The default is `"essential"`,
+#'   which includes common fit indices. You can also
+#'   specify a custom set of metrics.
+#' @param verbose A logical value indicating whether to
+#'   display informational messages about metric adjustments.
+#'   Defaults to `TRUE`.
 #' @param ... Additional arguments passed to methods.
-#' @return A data frame containing the specified fit indices of the model.
 #'
-#' @seealso
-#'   [model_fit] for an overview of model fit methods in the package.
-#'
+#' @return A data frame containing the specified fit
+#'   indices of the model.
+#' @seealso [model_fit] for an overview of model fit
+#'   methods in the package.
+#' @export
 #' @examples
 #' if (requireNamespace("lavaan", quietly = TRUE) &&
 #'     requireNamespace("ggplot2", quietly = TRUE)) {
@@ -47,8 +57,6 @@
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
-#'
-#' @export
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used
