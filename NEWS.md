@@ -1,3 +1,28 @@
+# psymetrics (development version)
+
+# psymetrics (development version)
+
+## Bug Fixes and Improvements
+
+-   **Dependency Management**:
+    -   Moved `ggplot2` and `lavaan` from `Imports` to `Suggests` to minimize mandatory installation dependencies and better reflect the package's goal of supporting multiple backends. Users now only need these packages if working specifically with `lavaan` objects or associated plotting features. Functions relying on them will now prompt for installation if missing (`rlang::check_installed`).
+    -   Added a minimum R version dependency (`R >= 4.1.0`) to DESCRIPTION for compatibility with current R features.
+
+-   **S3 Method Registration**:
+    -   Ensured correct and robust S3 method registration for `plot.lavaan`, `print.model_fit`, and `print.compare_model_fit` using `@exportS3Method` with explicit namespaces (`graphics::plot`, `base::print`). This guarantees proper method dispatch by R and avoids exporting the methods directly.
+
+-   **Documentation**:
+    -   Added a central conceptual help page (`plot-methods`) documenting the generic `plot` function's usage within the package, linking to available methods (`plot.lavaan`) and future plans.
+    -   Improved documentation formatting (line wrapping, clarity) for various functions, including `print.compare_model_fit`.
+    -   Added `@Seealso` links across relevant help files (e.g., linking `plot-methods` to `plot.lavaan`, `model_fit` to `model_fit.lavaan`, etc.) for easier navigation.
+    -   Updated the package `Title` in DESCRIPTION to better reflect its unifying purpose ("Unified Tools for Psychometric Model Analysis").
+
+-   **Examples**:
+    -   Updated all examples that require suggested packages (`lavaan`, `ggplot2`) to run conditionally using `if (requireNamespace(...))`. This prevents errors during `R CMD check` when dependencies are not installed and provides informative messages to users.
+
+-   **Robustness**:
+    -   Added internal checks using `rlang::check_installed` at the beginning of functions/methods that require packages now listed in `Suggests` (e.g., `lavaan` in `model_fit.lavaan`, `ggplot2` in `plot_factor_loadings`) to provide clearer error messages if dependencies are missing at runtime.
+
 # psymetrics 0.1.4
 
 ## New Features

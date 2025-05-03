@@ -1,7 +1,7 @@
 Package: psymetrics
 Type: Package
 Title: Unified Tools for Psychometric Model Analysis
-Version: 0.1.4
+Version: 0.1.4.9000
 Authors@R: 
     person(
         given = "Brian",
