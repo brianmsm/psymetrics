@@ -17,21 +17,51 @@ plot_factor_loadings(
 \arguments{
 \item{fit}{A \code{lavaan} model object.}
 
-\item{sort}{Logical; if \code{TRUE}, sorts items by loading size. Defaults to \code{TRUE}.}
+\item{sort}{Logical; if \code{TRUE}, sorts items by loading
+size. Defaults to \code{TRUE}.}
 
-\item{group_by}{Logical; if \code{TRUE} and the model has multiple factors, groups the items by factor. Defaults to \code{TRUE}.}
+\item{group_by}{Logical; if \code{TRUE} and the model has
+multiple factors, groups the items by factor. Defaults
+to \code{TRUE}.}
 
-\item{standardized}{Logical; if \code{TRUE}, uses standardized loadings. Defaults to \code{TRUE}.}
+\item{standardized}{Logical; if \code{TRUE}, uses standardized
+loadings. Defaults to \code{TRUE}.}
 
-\item{CI}{Logical; if \code{TRUE}, includes confidence intervals. Defaults to \code{TRUE}.}
+\item{CI}{Logical; if \code{TRUE}, includes confidence intervals.
+Defaults to \code{TRUE}.}
 
-\item{autofit}{Logical; if \code{TRUE}, adjusts the x-axis range based on the range of loadings. Defaults to \code{TRUE}.}
+\item{autofit}{Logical; if \code{TRUE}, adjusts the x-axis
+range based on the range of loadings. Defaults to \code{TRUE}.}
 
 \item{...}{Additional arguments passed to \code{ggplot2::ggplot}.}
 }
 \value{
-A ggplot object if \code{ggplot2} is installed, otherwise an error message.
+A ggplot object if \code{ggplot2} is installed, otherwise
+an error message.
 }
 \description{
-Creates a dot plot of standardized factor loadings for a \code{lavaan} model. The plot shows factor loadings along with optional confidence intervals for each item in the model.
+Creates a dot plot of standardized factor loadings
+for a \code{lavaan} model. The plot shows factor loadings
+along with optional confidence intervals for each item
+in the model.
+}
+\examples{
+if (requireNamespace("lavaan", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  HS.model <- ' visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9 '
+  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  plot_factor_loadings(fit)
+} else {
+  message("Please install 'lavaan' and 'ggplot2' to run this example.")
+}
+}
+\seealso{
+\itemize{
+\item \link{plot-methods} for an overview of plotting in the package.
+\item \code{\link[=plot.lavaan]{plot.lavaan()}} for more lavaan object plots.
+}
 }

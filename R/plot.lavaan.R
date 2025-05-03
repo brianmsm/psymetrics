@@ -1,34 +1,64 @@
 #' Plot Method for lavaan Objects
 #'
-#' @description This is a plot method for objects of class `lavaan`. It allows users to create different types of plots to visualize key aspects of `lavaan` models, including factor loadings, residuals, and path diagrams.
+#' @description
+#' This is a plot method for objects of class `lavaan`. It
+#' allows users to create different types of plots to visualize
+#' key aspects of `lavaan` models, including factor loadings,
+#' residuals, and path diagrams.
 #'
 #' @param x A `lavaan` model object.
-#' @param type A character string indicating the type of plot to generate. Options are:
-#'   - `"factor_loadings"`: Generates a dot plot of standardized factor loadings, optionally including confidence intervals.
-#'   - `"residuals"`: Generates a residual plot to visualize the differences between observed and model-implied covariances.
-#'   - `"path"`: Generates a path diagram representing the model structure, showing the relationships between latent and observed variables.
-#' @param standardized Logical; if `TRUE`, uses standardized estimates for factor loadings. Only applicable when `type = "factor_loadings"`. Defaults to `TRUE`.
-#' @param CI Logical; if `TRUE`, includes confidence intervals in the factor loading plot. Only applicable when `type = "factor_loadings"`. Defaults to `TRUE`.
-#' @param ... Additional arguments passed to the specific plotting functions.
+#' @param type A character string indicating the type of plot
+#'   to generate. Options are:
+#'   - `"factor_loadings"`: Generates a dot plot of standardized
+#'      factor loadings, optionally including confidence intervals.
+#'   - `"residuals"`: Generates a residual plot to visualize the
+#'      differences between observed and model-implied covariances.
+#'   - `"path"`: Generates a path diagram representing the model
+#'      structure, showing the relationships between latent and
+#'      observed variables.
+#' @param standardized Logical; if `TRUE`, uses standardized
+#'   estimates for factor loadings. Only applicable when
+#'   `type = "factor_loadings"`. Defaults to `TRUE`.
+#' @param CI Logical; if `TRUE`, includes confidence intervals
+#'   in the factor loading plot. Only applicable when
+#'   `type = "factor_loadings"`. Defaults to `TRUE`.
+#' @param ... Additional arguments passed to the specific
+#'   plotting functions.
 #'
-#' @return A ggplot object for `factor_loadings` and `residuals` plots if `ggplot2` is installed, or a `semPlot` diagram object for `path` plots. An error message will be returned if required packages are not available.
-#'
+#' @return A ggplot object for `factor_loadings` and `residuals`
+#'   plots if `ggplot2` is installed, or a `semPlot` diagram
+#'   object for `path` plots. An error message will be returned
+#'   if required packages are not available.
 #' @details
-#' - **Factor Loadings Plot**: Displays a dot plot of factor loadings, with items on the y-axis and loadings on the x-axis. Confidence intervals can be added if desired.
-#' - **Residuals Plot**: Shows the residuals (differences between observed and model-implied covariances), typically as a heatmap or scatterplot.
-#' - **Path Diagram**: Illustrates the structure of the model, showing latent variables, observed variables, and the estimated relationships between them.
-#'
+#'   - **Factor Loadings Plot**: Displays a dot plot of factor
+#'     loadings, with items on the y-axis and loadings on the
+#'     x-axis. Confidence intervals can be added if desired.
+#'   - **Residuals Plot**: Shows the residuals (differences
+#'     between observed and model-implied covariances), typically
+#'     as a heatmap or scatterplot.
+#'   - **Path Diagram**: Illustrates the structure of the model,
+#'     showing latent variables, observed variables, and the
+#'     estimated relationships between them.
+#' @seealso
+#'   - [plot-methods] for an overview of plotting in the package.
+#'   - [plot_factor_loadings()] which is called by this method
+#'     for type = "factor_loadings".
+#' @exportS3Method graphics::plot lavaan
 #' @examples
-#' library(lavaan)
-#' library(psymetrics)
-#' HS.model <- ' visual  =~ x1 + x2 + x3
-#'               textual =~ x4 + x5 + x6
-#'               speed   =~ x7 + x8 + x9 '
-#' fit <- cfa(HS.model, data = HolzingerSwineford1939)
-#' plot_factor_loadings(fit)
-#'
-#' @export
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot(fit)
+#' } else {
+#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
+#' }
 plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   if (!inherits(x, "lavaan")) {
     cli::cli_abort("The object is not a valid lavaan model.")
   }
@@ -49,20 +79,48 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, CI = T
 
 #' Plot Factor Loadings for lavaan Models
 #'
-#' @description Creates a dot plot of standardized factor loadings for a `lavaan` model. The plot shows factor loadings along with optional confidence intervals for each item in the model.
+#' @description
+#' Creates a dot plot of standardized factor loadings
+#' for a `lavaan` model. The plot shows factor loadings
+#' along with optional confidence intervals for each item
+#' in the model.
 #'
 #' @param fit A `lavaan` model object.
-#' @param sort Logical; if `TRUE`, sorts items by loading size. Defaults to `TRUE`.
-#' @param group_by Logical; if `TRUE` and the model has multiple factors, groups the items by factor. Defaults to `TRUE`.
-#' @param standardized Logical; if `TRUE`, uses standardized loadings. Defaults to `TRUE`.
-#' @param CI Logical; if `TRUE`, includes confidence intervals. Defaults to `TRUE`.
-#' @param autofit Logical; if `TRUE`, adjusts the x-axis range based on the range of loadings. Defaults to `TRUE`.
+#' @param sort Logical; if `TRUE`, sorts items by loading
+#'   size. Defaults to `TRUE`.
+#' @param group_by Logical; if `TRUE` and the model has
+#'   multiple factors, groups the items by factor. Defaults
+#'   to `TRUE`.
+#' @param standardized Logical; if `TRUE`, uses standardized
+#'   loadings. Defaults to `TRUE`.
+#' @param CI Logical; if `TRUE`, includes confidence intervals.
+#'   Defaults to `TRUE`.
+#' @param autofit Logical; if `TRUE`, adjusts the x-axis
+#'   range based on the range of loadings. Defaults to `TRUE`.
 #' @param ... Additional arguments passed to `ggplot2::ggplot`.
 #'
-#' @return A ggplot object if `ggplot2` is installed, otherwise an error message.
+#' @return A ggplot object if `ggplot2` is installed, otherwise
+#'   an error message.
+#' @seealso
+#'   - [plot-methods] for an overview of plotting in the package.
+#'   - [plot.lavaan()] for more lavaan object plots.
 #' @importFrom rlang .data
 #' @export
+#' @examples
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot_factor_loadings(fit)
+#' } else {
+#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
+#' }
 plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized = TRUE, CI = TRUE, autofit = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
 
   # Extract standardized loadings and confidence intervals

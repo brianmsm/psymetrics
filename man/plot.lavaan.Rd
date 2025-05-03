@@ -9,39 +9,72 @@
 \arguments{
 \item{x}{A \code{lavaan} model object.}
 
-\item{type}{A character string indicating the type of plot to generate. Options are:
+\item{type}{A character string indicating the type of plot
+to generate. Options are:
 \itemize{
-\item \code{"factor_loadings"}: Generates a dot plot of standardized factor loadings, optionally including confidence intervals.
-\item \code{"residuals"}: Generates a residual plot to visualize the differences between observed and model-implied covariances.
-\item \code{"path"}: Generates a path diagram representing the model structure, showing the relationships between latent and observed variables.
+\item \code{"factor_loadings"}: Generates a dot plot of standardized
+factor loadings, optionally including confidence intervals.
+\item \code{"residuals"}: Generates a residual plot to visualize the
+differences between observed and model-implied covariances.
+\item \code{"path"}: Generates a path diagram representing the model
+structure, showing the relationships between latent and
+observed variables.
 }}
 
-\item{standardized}{Logical; if \code{TRUE}, uses standardized estimates for factor loadings. Only applicable when \code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
+\item{standardized}{Logical; if \code{TRUE}, uses standardized
+estimates for factor loadings. Only applicable when
+\code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
 
-\item{CI}{Logical; if \code{TRUE}, includes confidence intervals in the factor loading plot. Only applicable when \code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
+\item{CI}{Logical; if \code{TRUE}, includes confidence intervals
+in the factor loading plot. Only applicable when
+\code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
 
-\item{...}{Additional arguments passed to the specific plotting functions.}
+\item{...}{Additional arguments passed to the specific
+plotting functions.}
 }
 \value{
-A ggplot object for \code{factor_loadings} and \code{residuals} plots if \code{ggplot2} is installed, or a \code{semPlot} diagram object for \code{path} plots. An error message will be returned if required packages are not available.
+A ggplot object for \code{factor_loadings} and \code{residuals}
+plots if \code{ggplot2} is installed, or a \code{semPlot} diagram
+object for \code{path} plots. An error message will be returned
+if required packages are not available.
 }
 \description{
-This is a plot method for objects of class \code{lavaan}. It allows users to create different types of plots to visualize key aspects of \code{lavaan} models, including factor loadings, residuals, and path diagrams.
+This is a plot method for objects of class \code{lavaan}. It
+allows users to create different types of plots to visualize
+key aspects of \code{lavaan} models, including factor loadings,
+residuals, and path diagrams.
 }
 \details{
 \itemize{
-\item \strong{Factor Loadings Plot}: Displays a dot plot of factor loadings, with items on the y-axis and loadings on the x-axis. Confidence intervals can be added if desired.
-\item \strong{Residuals Plot}: Shows the residuals (differences between observed and model-implied covariances), typically as a heatmap or scatterplot.
-\item \strong{Path Diagram}: Illustrates the structure of the model, showing latent variables, observed variables, and the estimated relationships between them.
+\item \strong{Factor Loadings Plot}: Displays a dot plot of factor
+loadings, with items on the y-axis and loadings on the
+x-axis. Confidence intervals can be added if desired.
+\item \strong{Residuals Plot}: Shows the residuals (differences
+between observed and model-implied covariances), typically
+as a heatmap or scatterplot.
+\item \strong{Path Diagram}: Illustrates the structure of the model,
+showing latent variables, observed variables, and the
+estimated relationships between them.
 }
 }
 \examples{
-library(lavaan)
-library(psymetrics)
-HS.model <- ' visual  =~ x1 + x2 + x3
-              textual =~ x4 + x5 + x6
-              speed   =~ x7 + x8 + x9 '
-fit <- cfa(HS.model, data = HolzingerSwineford1939)
-plot_factor_loadings(fit)
-
+if (requireNamespace("lavaan", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  HS.model <- ' visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9 '
+  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  plot(fit)
+} else {
+  message("Please install 'lavaan' and 'ggplot2' to run this example.")
+}
+}
+\seealso{
+\itemize{
+\item \link{plot-methods} for an overview of plotting in the package.
+\item \code{\link[=plot_factor_loadings]{plot_factor_loadings()}} which is called by this method
+for type = "factor_loadings".
+}
 }

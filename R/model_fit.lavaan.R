@@ -1,35 +1,64 @@
 #' Extract Fit Indices from a lavaan Model
 #'
-#' @description `model_fit.lavaan` extracts fit indices from a `lavaan` model object.
-#' The function allows you to specify the type of indices to extract: `"standard"`,
-#' `"scaled"`, or `"robust"`. If the model uses a robust estimator and you specify
-#' `type = "scaled"` or `type = "robust"`, the corresponding indices will be returned.
-#' If no type is specified, the function automatically chooses `"scaled"` for robust estimators
-#' and `"standard"` otherwise.
+#' @description
+#' `model_fit.lavaan` extracts fit indices from a `lavaan`
+#' model object. The function allows you to specify the
+#' type of indices to extract: `"standard"`, `"scaled"`,
+#' or `"robust"`. If the model uses a robust estimator
+#' and you specify `type = "scaled"` or `type = "robust"`,
+#' the corresponding indices will be returned. If no
+#' type is specified, the function automatically chooses
+#' `"scaled"` for robust estimators and `"standard"` otherwise.
 #'
-#' @param fit A `lavaan` object estimated with `lavaan::cfa()`, `lavaan::sem()`, or similar functions.
-#' @param type A character string specifying the type of fit indices to extract.
-#'   Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
-#'   which will automatically choose `"scaled"` if a robust estimator is used; otherwise `"standard"`.
-#' @param metrics A character vector specifying the fit indices to return. The default is `"essential"`,
-#'   which includes common fit indices. You can also specify a custom set of metrics.
-#' @param verbose A logical value indicating whether to display informational messages about
-#'   metric adjustments. Defaults to `TRUE`.
+#' @param fit A `lavaan` object estimated with `lavaan::cfa()`,
+#'   `lavaan::sem()`, or similar functions.
+#' @param type A character string specifying the type of
+#'   fit indices to extract. Options are `"standard"`,
+#'   `"scaled"`, and `"robust"`. Defaults to `NULL`,
+#'   which will automatically choose `"scaled"` if a
+#'   robust estimator is used; otherwise `"standard"`.
+#' @param metrics A character vector specifying the fit
+#'   indices to return. The default is `"essential"`,
+#'   which includes common fit indices. You can also
+#'   specify a custom set of metrics.
+#' @param verbose A logical value indicating whether to
+#'   display informational messages about metric adjustments.
+#'   Defaults to `TRUE`.
 #' @param ... Additional arguments passed to methods.
-#' @return A data frame containing the specified fit indices of the model.
+#'
+#' @return A data frame containing the specified fit
+#'   indices of the model.
+#' @seealso [model_fit] for an overview of model fit
+#'   methods in the package.
 #' @export
 #' @examples
-#' library(lavaan)
-#' model <- 'visual  =~ x1 + x2 + x3
+#' if (requireNamespace("lavaan", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   HS.model <- ' visual  =~ x1 + x2 + x3
+#'                textual =~ x4 + x5 + x6
+#'                speed   =~ x7 + x8 + x9 '
+#'   fit <- cfa(HS.model, data = HolzingerSwineford1939)
+#'   plot_factor_loadings(fit)
+#' }
+#'
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   model <- 'visual  =~ x1 + x2 + x3
 #'           textual =~ x4 + x5 + x6
 #'           speed   =~ x7 + x8 + x9'
-#' fit <- cfa(model, data = HolzingerSwineford1939,
-#'            estimator = "MLR")
-#' model_fit(fit)
-#' model_fit(fit, type = "robust")
-#' model_fit(fit, metrics = c("cfi", "tli"))
-
+#'   fit <- cfa(model, data = HolzingerSwineford1939,
+#'              estimator = "MLR")
+#'   model_fit(fit)
+#'   model_fit(fit, type = "robust")
+#'   model_fit(fit, metrics = c("cfi", "tli"))
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
+  rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
 

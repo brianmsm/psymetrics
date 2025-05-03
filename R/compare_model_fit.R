@@ -1,27 +1,39 @@
 #' Compare Model Fit Indices Across Multiple Models
 #'
-#' @description `compare_model_fit()` compares the fit indices of two or more
-#' models. It extracts the fit indices using [`model_fit`] and combines them into
-#' a single data frame for easy comparison.
+#' @description
+#' `compare_model_fit()` compares the fit indices of two or more
+#' models. It extracts the fit indices using [`model_fit()`]
+#' and combines them into a single data frame for easy comparison.
 #'
 #' @param ... Two or more model objects to be compared.
-#' @param type A character string specifying the type of fit indices to extract.
-#'   Options are `"standard"`, `"scaled"`, and `"robust"`. Defaults to `NULL`,
-#'   which automatically selects `"scaled"` if a robust estimator is used, otherwise `"standard"`.
-#' @param metrics A character vector specifying which fit indices to extract.
-#'   Defaults to `"essential"`, or a custom vector of indices.
-#' @param verbose Logical. If `TRUE`, prints messages about the indices being adjusted.
-#' @return A data frame containing the fit indices for each model, with an additional column identifying the models.
+#' @param type A character string specifying the type of fit
+#'   indices to extract. Options are `"standard"`, `"scaled"`,
+#'   and `"robust"`. Defaults to `NULL`, which automatically
+#'   selects `"scaled"` if a robust estimator is used,
+#'   otherwise `"standard"`.
+#' @param metrics A character vector specifying which fit
+#'   indices to extract. Defaults to `"essential"`, or a custom
+#'   vector of indices.
+#' @param verbose Logical. If `TRUE`, prints messages about
+#'   the indices being adjusted.
+#'
+#' @return A data frame containing the fit indices for each
+#'   model, with an additional column identifying the models.
+#' @seealso [model_fit] for an overview of model fit methods
+#'   in the package.
 #' @export
 #' @examples
-#' library(lavaan)
-#' library(psymetrics)
-#' model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-#' model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-#' fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-#' fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
-#' compare_model_fit(fit1, fit2)
-
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
+#'   library(lavaan)
+#'   library(psymetrics)
+#'   model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+#'   model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
+#'   fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
+#'   fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+#'   compare_model_fit(fit1, fit2)
+#' } else {
+#'   message("Please install 'lavaan' to run this example.")
+#' }
 compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose = TRUE) {
   # Capture all the fit objects as a list
   fits <- list(...)

@@ -7,39 +7,68 @@
 \method{model_fit}{lavaan}(fit, type = NULL, metrics = "essential", verbose = TRUE, ...)
 }
 \arguments{
-\item{fit}{A \code{lavaan} object estimated with \code{lavaan::cfa()}, \code{lavaan::sem()}, or similar functions.}
+\item{fit}{A \code{lavaan} object estimated with \code{lavaan::cfa()},
+\code{lavaan::sem()}, or similar functions.}
 
-\item{type}{A character string specifying the type of fit indices to extract.
-Options are \code{"standard"}, \code{"scaled"}, and \code{"robust"}. Defaults to \code{NULL},
-which will automatically choose \code{"scaled"} if a robust estimator is used; otherwise \code{"standard"}.}
+\item{type}{A character string specifying the type of
+fit indices to extract. Options are \code{"standard"},
+\code{"scaled"}, and \code{"robust"}. Defaults to \code{NULL},
+which will automatically choose \code{"scaled"} if a
+robust estimator is used; otherwise \code{"standard"}.}
 
-\item{metrics}{A character vector specifying the fit indices to return. The default is \code{"essential"},
-which includes common fit indices. You can also specify a custom set of metrics.}
+\item{metrics}{A character vector specifying the fit
+indices to return. The default is \code{"essential"},
+which includes common fit indices. You can also
+specify a custom set of metrics.}
 
-\item{verbose}{A logical value indicating whether to display informational messages about
-metric adjustments. Defaults to \code{TRUE}.}
+\item{verbose}{A logical value indicating whether to
+display informational messages about metric adjustments.
+Defaults to \code{TRUE}.}
 
 \item{...}{Additional arguments passed to methods.}
 }
 \value{
-A data frame containing the specified fit indices of the model.
+A data frame containing the specified fit
+indices of the model.
 }
 \description{
-\code{model_fit.lavaan} extracts fit indices from a \code{lavaan} model object.
-The function allows you to specify the type of indices to extract: \code{"standard"},
-\code{"scaled"}, or \code{"robust"}. If the model uses a robust estimator and you specify
-\code{type = "scaled"} or \code{type = "robust"}, the corresponding indices will be returned.
-If no type is specified, the function automatically chooses \code{"scaled"} for robust estimators
-and \code{"standard"} otherwise.
+\code{model_fit.lavaan} extracts fit indices from a \code{lavaan}
+model object. The function allows you to specify the
+type of indices to extract: \code{"standard"}, \code{"scaled"},
+or \code{"robust"}. If the model uses a robust estimator
+and you specify \code{type = "scaled"} or \code{type = "robust"},
+the corresponding indices will be returned. If no
+type is specified, the function automatically chooses
+\code{"scaled"} for robust estimators and \code{"standard"} otherwise.
 }
 \examples{
-library(lavaan)
-model <- 'visual  =~ x1 + x2 + x3
+if (requireNamespace("lavaan", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  HS.model <- ' visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9 '
+  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  plot_factor_loadings(fit)
+}
+
+if (requireNamespace("lavaan", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  model <- 'visual  =~ x1 + x2 + x3
           textual =~ x4 + x5 + x6
           speed   =~ x7 + x8 + x9'
-fit <- cfa(model, data = HolzingerSwineford1939,
-           estimator = "MLR")
-model_fit(fit)
-model_fit(fit, type = "robust")
-model_fit(fit, metrics = c("cfi", "tli"))
+  fit <- cfa(model, data = HolzingerSwineford1939,
+             estimator = "MLR")
+  model_fit(fit)
+  model_fit(fit, type = "robust")
+  model_fit(fit, metrics = c("cfi", "tli"))
+} else {
+  message("Please install 'lavaan' to run this example.")
+}
+}
+\seealso{
+\link{model_fit} for an overview of model fit
+methods in the package.
 }

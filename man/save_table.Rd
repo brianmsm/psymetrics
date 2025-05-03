@@ -14,43 +14,60 @@ save_table(
 )
 }
 \arguments{
-\item{table_data}{A data frame containing the table data to be exported.}
+\item{table_data}{A data frame containing the table data
+to be exported.}
 
-\item{path}{A string specifying the file path where the table should be saved. The file extension determines
+\item{path}{A string specifying the file path where the
+table should be saved. The file extension determines
 the format (currently only .docx is supported).}
 
-\item{orientation}{A character string indicating the table's orientation when using the default template.
-Options are \code{"landscape"} (default) or \code{"portrait"}. Ignored if a custom template is provided.}
+\item{orientation}{A character string indicating the
+table's orientation when using the default template.
+Options are \code{"landscape"} (default) or \code{"portrait"}.
+Ignored if a custom template is provided.}
 
-\item{template}{A string specifying the path to a custom Word template (.docx). If NULL, a default
-template provided by the package is used, with orientation set by the \code{orientation} argument.}
+\item{template}{A string specifying the path to a custom
+Word template (.docx). If NULL, a default template
+provided by the package is used, with orientation
+set by the \code{orientation} argument.}
 
-\item{digits}{An integer indicating the number of decimal places to use when formatting numeric columns.
+\item{digits}{An integer indicating the number of decimal
+places to use when formatting numeric columns.
 Defaults to 3.}
 }
 \description{
-\code{save_table()} exports a table to various formats, with current support for Word documents (.docx).
-The table is formatted using a specified or default template and can be customized with different font styles,
-sizes, and alignment options.
+\code{save_table()} exports a table to various formats, with
+current support for Word documents (.docx). The table is
+formatted using a specified or default template and can
+be customized with different font styles, sizes, and
+alignment options.
 }
 \details{
-This function checks the file extension to determine the export format. Currently, only Word documents
-(.docx) are supported. The function formats the table using the \code{flextable} package and exports it
-using the \code{officer} package. Users can provide a custom Word template or rely on the package's default
-template, in either "landscape" or "portrait" orientation as set by the \code{orientation} argument.
+This function checks the file extension to determine the
+export format. Currently, only Word documents (.docx) are
+supported. The function formats the table using the
+\code{flextable} package and exports it using the \code{officer}
+package. Users can provide a custom Word template or rely
+on the package's default template, in either "landscape"
+or "portrait" orientation as set by the \code{orientation} argument.
 
-If the \code{path} has a .docx extension, the table will be saved as a Word document. The default template
-aligns the table to APA style, with Arial font at size 12. If a custom template is provided via the
-\code{template} argument, it takes precedence over the \code{orientation} setting.
+If the \code{path} has a .docx extension, the table will be saved
+as a Word document. The default template aligns the table
+to APA style, with Arial font at size 12. If a custom
+template is provided via the \code{template} argument, it takes
+precedence over the \code{orientation} setting.
 }
 \examples{
-library(lavaan)
-library(psymetrics)
-model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
-fit_compared <- compare_model_fit(fit1, fit2)
-save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
-
+if (requireNamespace("lavaan", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  model1 <- 'visual  =~ x1 + x2 + x3 + x4'
+  model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
+  fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
+  fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+  fit_compared <- compare_model_fit(fit1, fit2)
+  save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
+} else {
+  message("Please install 'lavaan' to run this example.")
+}
 }

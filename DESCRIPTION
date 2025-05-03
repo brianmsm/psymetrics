@@ -1,7 +1,7 @@
 Package: psymetrics
 Type: Package
-Title: Tools for Psychometric Analysis
-Version: 0.1.4
+Title: Unified Tools for Psychometric Model Analysis
+Version: 0.1.4.9000
 Authors@R: 
     person(
         given = "Brian",
@@ -11,7 +11,8 @@ Authors@R:
         comment = c(ORCID = "0000-0002-1073-9306", Twitter = "@brianmsm")
     )
 Description: Provides tools for extracting and visualizing psychometric model fit indices, 
-    compatible with various models like those from 'lavaan', 'psych', and 'mirt'.
+    compatible with various models like those from 'lavaan', 'psych', and 'mirt'. 
+    Specific package dependencies are suggested and only required if using corresponding model objects.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -19,11 +20,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
 Imports: 
     cli,
-    ggplot2,
     insight,
-    lavaan,
     rlang,
     tinytable
 Suggests: 
+    lavaan,
+    ggplot2,
     flextable,
     officer
+Depends: 
+    R (>= 4.1.0)
