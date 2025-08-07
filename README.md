@@ -172,32 +172,39 @@ Confirmatory Factor Analysis (CFA) using the `lavaan` package, before
 extending features to other models and packages.
 
 The complete **Development Roadmap & Versioning Plan** is outlined in
-\#23. For technical details on a specific feature, please see the
-corresponding issue link below.
+**[Issue \#23](https://github.com/brianmsm/psymetrics/issues/23)**. For
+technical details on a specific feature, please see the corresponding
+issue link below.
 
 ### **Phase 1: Consolidate and Extend `lavaan` Features**
 
 - **Parameter Analysis:**
   - [ ] **New Function:** Create `model_estimates()` to extract model
     parameters (e.g., loadings, variances) from a `lavaan` CFA model
-    into a tidy table. \#17
+    into a tidy table. [(Issue
+    \#17)](https://github.com/brianmsm/psymetrics/issues/17)
   - [ ] **New Function:** Create `compare_model_estimates()` to compare
-    parameters between two or more `lavaan` CFA models. \#18
+    parameters between two or more `lavaan` CFA models. [(Issue
+    \#18)](https://github.com/brianmsm/psymetrics/issues/18)
 - **Visualization:**
   - [x] Plot factor loadings (`plot_factor_loadings`).
   - [ ] **New Function:** Create a new function `plot_model_fit()` to
-    visualize and compare fit indices across different models. \#19
+    visualize and compare fit indices across different models. [(Issue
+    \#19)](https://github.com/brianmsm/psymetrics/issues/19)
 - **Fit Analysis & Invariance:**
   - [x] Extract fit indices (`model_fit`) from `lavaan` models.
   - [x] Compare fit indices (`compare_model_fit`) between `lavaan`
     models.
   - [ ] Enhance `compare_model_fit` for measurement invariance (MG-CFA)
-    by automatically computing fit difference metrics (e.g., ΔCFI). \#20
+    by automatically computing fit difference metrics (e.g., ΔCFI).
+    [(Issue \#20)](https://github.com/brianmsm/psymetrics/issues/20)
   - [ ] Add a new helper function to simplify the process of specifying
-    nested invariance models (e.g., configural, metric, scalar). \#21
+    nested invariance models (e.g., configural, metric, scalar). [(Issue
+    \#21)](https://github.com/brianmsm/psymetrics/issues/21)
 - **Exporting:**
   - [x] Export tables to Word (`.docx`), HTML, and Markdown.
-  - [ ] Add option to export tables to Excel (`.xlsx`). \#22
+  - [ ] Add option to export tables to Excel (`.xlsx`). [(Issue
+    \#22)](https://github.com/brianmsm/psymetrics/issues/22)
 
 ### **Phase 2: Future Expansion to EFA & IRT**
 
