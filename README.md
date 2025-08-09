@@ -9,9 +9,7 @@
 
 <img src="man/figures/hexlogo.png" align="right" width="200" />
 
-The goal of psymetrics is to provide tools for extracting and
-visualizing psychometric model fit indices. It is compatible with models
-created using packages like lavaan, psych, and mirt.
+The goal of psymetrics is to provide a unified set of tools to extract, compare, format, and visualize psychometric model fit indices and parameter estimates, offering a consistent workflow across popular R packages such as `lavaan`, `psych`, and `mirt`. It is designed to streamline model evaluation, facilitate publication-ready reporting, and enhance the interpretability of results through clear, customizable tables and visualizations.
 
 ## Installation
 
