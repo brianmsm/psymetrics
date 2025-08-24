@@ -122,14 +122,18 @@ In this example, plot_factor_loadings() displays the factor loadings for each it
 
 ## Project Roadmap
 
-This is a summary of the development plan for `psymetrics`. The immediate focus is to build a comprehensive and robust workflow for Confirmatory Factor Analysis (CFA) using the `lavaan` package, before extending features to other models and packages.
+This is a summary of the development plan for `psymetrics`. The immediate focus is to build a comprehensive and robust workflow for models fitted with the `lavaan` package, including **Confirmatory Factor Analysis (CFA) and Structural Equation Models (SEM)**.
 
-The complete **Development Roadmap & Versioning Plan** is outlined in **[Issue #23](https://github.com/brianmsm/psymetrics/issues/23)**. For technical details on a specific feature, please see the corresponding issue link below.
+Our current work involves a stability and testing release (`v0.1.5`) to solidify the existing codebase. The complete **Development Roadmap & Versioning Plan**, which tracks our progress version by version, is available in the **[ROADMAP.md](ROADMAP.md)** file and **[Issue #23](https://github.com/brianmsm/psymetrics/issues/23)**.
 
-### **Phase 1: Consolidate and Extend `lavaan` Features**
+For technical details on a specific future feature, please see the corresponding issue link below.
+
+### **Phase 1: Consolidate and Extend `lavaan` Features (CFA & SEM)**
+
+The following features are planned to enhance the workflow for **CFA and SEM**.
 
 *   **Parameter Analysis:**
-    *   [ ] **New Function:** Create `model_estimates()` to extract model parameters (e.g., loadings, variances) from a `lavaan` CFA model into a tidy table. [(Issue #17)](https://github.com/brianmsm/psymetrics/issues/17)
+    *   [ ] **New Function:** Create `model_estimates()` to extract model parameters from `lavaan` models. [(Issue #17)](https://github.com/brianmsm/psymetrics/issues/17)
     *   [ ] **New Function:** Create `compare_model_estimates()` to compare parameters between two or more `lavaan` CFA models. [(Issue #18)](https://github.com/brianmsm/psymetrics/issues/18)
 
 *   **Visualization:**
