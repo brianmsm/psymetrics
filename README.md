@@ -9,7 +9,9 @@
 
 <img src="man/figures/hexlogo.png" align="right" width="200" />
 
-The goal of psymetrics is to provide a unified set of tools to extract, compare, format, and visualize psychometric model fit indices and parameter estimates, offering a consistent workflow across popular R packages such as `lavaan`, `psych`, and `mirt`. It is designed to streamline model evaluation, facilitate publication-ready reporting, and enhance the interpretability of results through clear, customizable tables and visualizations.
+The goal of psymetrics is to provide tools for extracting and
+visualizing psychometric model fit indices. It is compatible with models
+created using packages like lavaan, psych, and mirt.
 
 ## Installation
 
@@ -63,9 +65,8 @@ model_fit(fit, type = "robust")
 # Or specify which indices to extract
 model_fit(fit, metrics = c("cfi", "tli"))
 #> cfi and tli were adjusted to their scaled version.
-#> If you want to control the specific metric type used,
-#> specify it explicitly (e.g., `cfi.robust`) or modify the
-#> type argument.
+#> If you want to control the specific metric type used, specify it explicitly
+#> (e.g., `cfi.robust`) or modify the type argument.
 #> NOBS | ESTIMATOR | NPAR |  CFI  |  TLI 
 #> ---------------------------------------
 #> 301  |    MLR    |  21  | 0.925 | 0.888
@@ -166,20 +167,26 @@ factor.
 
 This is a summary of the development plan for `psymetrics`. The
 immediate focus is to build a comprehensive and robust workflow for
-Confirmatory Factor Analysis (CFA) using the `lavaan` package, before
-extending features to other models and packages.
+models fitted with the `lavaan` package, including **Confirmatory Factor
+Analysis (CFA) and Structural Equation Models (SEM)**.
 
-The complete **Development Roadmap & Versioning Plan** is outlined in
-**[Issue \#23](https://github.com/brianmsm/psymetrics/issues/23)**. For
-technical details on a specific feature, please see the corresponding
-issue link below.
+Our current work involves a stability and testing release (`v0.1.5`) to
+solidify the existing codebase. The complete **Development Roadmap &
+Versioning Plan**, which tracks our progress version by version, is
+available in the **[ROADMAP.md](ROADMAP.md)** file and **[Issue
+\#23](https://github.com/brianmsm/psymetrics/issues/23)**.
 
-### **Phase 1: Consolidate and Extend `lavaan` Features**
+For technical details on a specific future feature, please see the
+corresponding issue link below.
+
+### **Phase 1: Consolidate and Extend `lavaan` Features (CFA & SEM)**
+
+The following features are planned to enhance the workflow for **CFA and
+SEM**.
 
 - **Parameter Analysis:**
   - [ ] **New Function:** Create `model_estimates()` to extract model
-    parameters (e.g., loadings, variances) from a `lavaan` CFA model
-    into a tidy table. [(Issue
+    parameters from `lavaan` models. [(Issue
     \#17)](https://github.com/brianmsm/psymetrics/issues/17)
   - [ ] **New Function:** Create `compare_model_estimates()` to compare
     parameters between two or more `lavaan` CFA models. [(Issue
