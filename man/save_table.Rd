@@ -24,6 +24,7 @@ the format (currently only .docx is supported).}
 \item{orientation}{A character string indicating the
 table's orientation when using the default template.
 Options are \code{"landscape"} (default) or \code{"portrait"}.
+\code{"vertical"} is accepted as an alias for \code{"portrait"}.
 Ignored if a custom template is provided.}
 
 \item{template}{A string specifying the path to a custom
@@ -34,6 +35,10 @@ set by the \code{orientation} argument.}
 \item{digits}{An integer indicating the number of decimal
 places to use when formatting numeric columns.
 Defaults to 3.}
+
+\item{...}{Additional arguments forwarded to
+\code{prepare_table()} and \code{insight::format_table()} for
+custom formatting.}
 }
 \description{
 \code{save_table()} exports a table to various formats, with
@@ -66,7 +71,9 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
   fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
   fit_compared <- compare_model_fit(fit1, fit2)
-  save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
+  output_path <- tempfile(fileext = ".docx")
+  save_table(fit_compared, path = output_path, orientation = "landscape")
+  unlink(output_path)
 } else {
   message("Please install 'lavaan' to run this example.")
 }
