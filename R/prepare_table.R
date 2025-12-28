@@ -17,7 +17,7 @@ prepare_table <- function(x,
 
   # Apply format_table from insight
   formatted_table <- insight::format_table(
-    x, digits = digits, ci_digits = digits,
+    x, digits = digits, ci_digits = ci_digits,
     p_digits = p_digits, ...
   )
 

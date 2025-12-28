@@ -2,3 +2,13 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
+^ROADMAP\.md$
+^psymetrics\.Rproj$
+^AGENTS\.md$
+^\.Rhistory$
+^\.git$
+^\.gitignore$
+^\.gitattributes$
+^\.quarto$
+^\.Rcheck$
+^\.\.Rcheck$

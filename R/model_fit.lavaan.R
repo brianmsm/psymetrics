@@ -203,67 +203,70 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
 # Helper functions ------------------------------------------------------------
 
 lavaan_estimator <- function(fit) {
-  if (lavaan::lavInspect(fit, "options")$estimator == "DWLS") {
-    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
+  options <- lavaan::lavInspect(fit, "options")
+  info_type <- unique(options$information)
+
+  if (options$estimator == "DWLS") {
+    if (options$se == "robust.sem" &
+        options$test == "satorra.bentler") {
       estimator <- "WLSM"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "mean.var.adjusted") {
       estimator <- "WLSMVS"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "scaled.shifted") {
       estimator <- "WLSMV"
-    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
-               lavaan::lavInspect(fit, "options")$test == "standard") {
+    } else if (options$se == "standard" &
+               options$test == "standard") {
       estimator <- "DWLS"
     } else {
       estimator <- "DWLS_variant"
     }
-  } else if (lavaan::lavInspect(fit, "options")$estimator == "ULS") {
-    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
+  } else if (options$estimator == "ULS") {
+    if (options$se == "robust.sem" &
+        options$test == "satorra.bentler") {
       estimator <- "ULSM"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "mean.var.adjusted") {
       estimator <- "ULSMVS"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "scaled.shifted") {
       estimator <- "ULSMV"
-    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
-               lavaan::lavInspect(fit, "options")$test == "standard") {
+    } else if (options$se == "standard" &
+               options$test == "standard") {
       estimator <- "ULS"
     } else {
       estimator <- "ULS_variant"
     }
-  } else if (lavaan::lavInspect(fit, "options")$estimator == "ML") {
-    if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-        lavaan::lavInspect(fit, "options")$test == "satorra.bentler") {
+  } else if (options$estimator == "ML") {
+    if (options$se == "robust.sem" &
+        options$test == "satorra.bentler") {
       estimator <- "MLM"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.huber.white" &
-               lavaan::lavInspect(fit, "options")$test %in% c(
+    } else if (options$se == "robust.huber.white" &
+               options$test %in% c(
                  "yuan.bentler.mplus",
                  "yuan.bentler"
                )) {
       estimator <- "MLR"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "mean.var.adjusted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "mean.var.adjusted") {
       estimator <- "MLMVS"
-    } else if (lavaan::lavInspect(fit, "options")$se == "robust.sem" &
-               lavaan::lavInspect(fit, "options")$test == "scaled.shifted") {
+    } else if (options$se == "robust.sem" &
+               options$test == "scaled.shifted") {
       estimator <- "MLMV"
-    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
-               lavaan::lavInspect(fit, "options")$test == "standard" &
-               unique(lavaan::lavInspect(fit, "options")$information) == "expected") {
+    } else if (options$se == "standard" &
+               options$test == "standard" &
+               info_type == "expected") {
       estimator <- "ML"
-    } else if (lavaan::lavInspect(fit, "options")$se == "standard" &
-               lavaan::lavInspect(fit, "options")$test == "standard" &
-               unique(lavaan::lavInspect(fit, "options")$information) == "first.order") {
+    } else if (options$se == "standard" &
+               options$test == "standard" &
+               info_type == "first.order") {
       estimator <- "MLF"
     } else {
       estimator <- "ML_variant"
     }
   } else {
-    estimator <- lavaan::lavInspect(fit, "options")$estimator
+    estimator <- options$estimator
   }
 
   return(estimator)

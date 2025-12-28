@@ -173,9 +173,9 @@ plot_factor_loadings <- function(fit, sort = TRUE, group_by = TRUE, standardized
 
   # Add confidence intervals if CI is TRUE
   if (CI) {
-    plot <- plot + ggplot2::geom_errorbarh(
+    plot <- plot + ggplot2::geom_errorbar(
       ggplot2::aes(xmin = .data$ci.lower, xmax = .data$ci.upper),
-      height = 0.2, color = "grey50"
+      width = 0.2, color = "grey50", orientation = "y"
     )
   }
 

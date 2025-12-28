@@ -15,6 +15,7 @@
 #' @param orientation A character string indicating the
 #'   table's orientation when using the default template.
 #'   Options are `"landscape"` (default) or `"portrait"`.
+#'   `"vertical"` is accepted as an alias for `"portrait"`.
 #'   Ignored if a custom template is provided.
 #' @param template A string specifying the path to a custom
 #'   Word template (.docx). If NULL, a default template
@@ -23,6 +24,9 @@
 #' @param digits An integer indicating the number of decimal
 #'   places to use when formatting numeric columns.
 #'   Defaults to 3.
+#' @param ... Additional arguments forwarded to
+#'   `prepare_table()` and `insight::format_table()` for
+#'   custom formatting.
 #'
 #' @details
 #' This function checks the file extension to determine the
@@ -48,7 +52,9 @@
 #'   fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
 #'   fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
 #'   fit_compared <- compare_model_fit(fit1, fit2)
-#'   save_table(fit_compared, path = "model_fit.docx", orientation = "landscape")
+#'   output_path <- tempfile(fileext = ".docx")
+#'   save_table(fit_compared, path = output_path, orientation = "landscape")
+#'   unlink(output_path)
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
@@ -68,7 +74,8 @@ save_table <- function(table_data, path, orientation = "landscape",
 
   # Set the default template based on orientation if none is provided
   if (is.null(template)) {
-    orientation <- match.arg(orientation, choices = c("landscape", "vertical"))
+    orientation <- match.arg(orientation, choices = c("landscape", "portrait", "vertical"))
+    orientation <- if (orientation == "vertical") "portrait" else orientation
     template <- if (orientation == "landscape") {
       system.file("templates", "template_landscape.docx", package = "psymetrics")
     } else {
@@ -79,7 +86,7 @@ save_table <- function(table_data, path, orientation = "landscape",
     cli::cli_inform("Using the provided template: {.file {template}}. The table orientation will follow this template.")
   }
 
-  table_data <- prepare_table(table_data, digits = digits)
+  table_data <- prepare_table(table_data, digits = digits, ...)
 
   # Create the document and add the table only if the format is Word
   if (format == "word") {
