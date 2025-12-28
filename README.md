@@ -20,7 +20,7 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.4")
+pak::pak("brianmsm/psymetrics@v0.1.5")
 ```
 
 ## Getting Fit Indices
