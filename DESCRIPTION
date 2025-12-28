@@ -1,7 +1,7 @@
 Package: psymetrics
 Type: Package
 Title: Unified Tools for Psychometric Model Analysis
-Version: 0.1.4.9000
+Version: 0.1.5
 Authors@R: 
     person(
         given = "Brian",
@@ -10,6 +10,8 @@ Authors@R:
         email = "brianmsm@gmail.com",
         comment = c(ORCID = "0000-0002-1073-9306", Twitter = "@brianmsm")
     )
+Author: Brian Peña Calero [aut, cre] (ORCID: <https://orcid.org/0000-0002-1073-9306>, Twitter: @brianmsm)
+Maintainer: Brian Peña Calero <brianmsm@gmail.com>
 Description: Provides tools for extracting and visualizing psychometric model fit indices, 
     compatible with various models like those from 'lavaan', 'psych', and 'mirt'. 
     Specific package dependencies are suggested and only required if using corresponding model objects.
@@ -17,7 +19,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
+RoxygenNote: 7.3.3
 Imports: 
     cli,
     insight,
@@ -27,6 +29,8 @@ Suggests:
     lavaan,
     ggplot2,
     flextable,
-    officer
+    officer,
+    testthat (>= 3.0.0)
 Depends: 
     R (>= 4.1.0)
+Config/testthat/edition: 3
