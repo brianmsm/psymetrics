@@ -1,4 +1,4 @@
-# psymetrics (development version)
+# psymetrics 0.1.5
 
 ## Bug Fixes and Improvements
 
@@ -9,6 +9,12 @@
 -   **Examples**: Updated all examples to run conditionally, which prevents errors during `R CMD check` and provides a smoother user experience.
 
 -   **S3 Method Registration**: Ensured correct and robust S3 method registration for `plot` and `print` methods, guaranteeing proper method dispatch by R.
+
+-   **Testing**: Added an initial `testthat` suite covering `model_fit`, `compare_model_fit`, plotting, and `save_table`, with optional dependency checks.
+
+-   **Plotting**: Replaced deprecated `geom_errorbarh()` usage with `geom_errorbar()` + `orientation = "y"` to align with current `ggplot2` guidance.
+
+-   **Table Export & Formatting**: `save_table()` now accepts `"portrait"` (alias `"vertical"`) for template orientation and forwards formatting arguments. `prepare_table()` respects `ci_digits` inputs.
 
 -   **Documentation**:
 
