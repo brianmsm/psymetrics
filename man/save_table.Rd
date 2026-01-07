@@ -10,7 +10,10 @@ save_table(
   orientation = "landscape",
   template = NULL,
   digits = 3,
-  ...
+  ci_digits = digits,
+  p_digits = 3,
+  digits_by_col = NULL,
+  table_args = list()
 )
 }
 \arguments{
@@ -36,9 +39,19 @@ set by the \code{orientation} argument.}
 places to use when formatting numeric columns.
 Defaults to 3.}
 
-\item{...}{Additional arguments forwarded to
-\code{prepare_table()} and \code{insight::format_table()} for
-custom formatting.}
+\item{ci_digits}{Number of digits for rounding confidence
+intervals. Default is \code{digits}.}
+
+\item{p_digits}{Number of digits for rounding p-values.
+Default is 3.}
+
+\item{digits_by_col}{Named integer vector that forces digits for
+selected columns. Applied before export.
+For \code{model_fit} and \code{compare_model_fit}, defaults to
+\code{c(Chi2 = 2)} when not supplied.}
+
+\item{table_args}{A named list of arguments forwarded to
+\code{prepare_table()} and ultimately \code{insight::format_table()}.}
 }
 \description{
 \code{save_table()} exports a table to various formats, with
@@ -66,13 +79,20 @@ precedence over the \code{orientation} setting.
 if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
-  model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-  model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-  fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-  fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+  hs_model <- 'visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9'
+  fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
+  fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   fit_compared <- compare_model_fit(fit1, fit2)
   output_path <- tempfile(fileext = ".docx")
   save_table(fit_compared, path = output_path, orientation = "landscape")
+  save_table(
+    fit_compared,
+    path = output_path,
+    orientation = "landscape",
+    digits_by_col = c(Chi2 = 2, SRMR = 2)
+  )
   unlink(output_path)
 } else {
   message("Please install 'lavaan' to run this example.")

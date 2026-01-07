@@ -35,11 +35,13 @@ and combines them into a single data frame for easy comparison.
 if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
-  model1 <- 'visual  =~ x1 + x2 + x3 + x4'
-  model2 <- 'visual  =~ x1 + x2 + x3 + x4 + x5'
-  fit1 <- cfa(model1, data = HolzingerSwineford1939, estimator = "MLR")
-  fit2 <- cfa(model2, data = HolzingerSwineford1939, estimator = "MLR")
+  hs_model <- 'visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9'
+  fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
+  fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   compare_model_fit(fit1, fit2)
+  compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
 } else {
   message("Please install 'lavaan' to run this example.")
 }

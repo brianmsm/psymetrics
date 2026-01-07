@@ -2,9 +2,13 @@
 
 S3method(base::print,compare_model_fit)
 S3method(base::print,model_fit)
+S3method(format_results,compare_model_fit)
+S3method(format_results,data.frame)
+S3method(format_results,model_fit)
 S3method(graphics::plot,lavaan)
 S3method(model_fit,lavaan)
 export(compare_model_fit)
+export(format_results)
 export(model_fit)
 export(plot_factor_loadings)
 export(save_table)

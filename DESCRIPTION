@@ -1,7 +1,7 @@
 Package: psymetrics
 Type: Package
 Title: Unified Tools for Psychometric Model Analysis
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: 
     person(
         given = "Brian",
@@ -17,16 +17,17 @@ Description: Provides tools for extracting and visualizing psychometric model fi
     Specific package dependencies are suggested and only required if using corresponding model objects.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     cli,
     insight,
+    methods,
     rlang,
     tinytable
 Suggests: 
     lavaan,
+    knitr,
     ggplot2,
     flextable,
     officer,
