@@ -28,7 +28,7 @@ You can install the development version of psymetrics from [GitHub](https://gith
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.5")
+pak::pak("brianmsm/psymetrics@v0.1.6")
 ```
 
 ## Getting Fit Indices
@@ -71,26 +71,20 @@ fit_table
 
 In this example, compare_model_fit is used to compare the fit indices of two different models. This function allows you to easily see the differences in model fit across different estimation methods or model specifications.
 
-## Print the fit indices in HTML format
+## Format the fit indices in HTML format
 
 This is useful when you want to embed the output directly in HTML reports or web pages.
 
 ```{r}
-print(fit_table, format = "html")
+format_results(fit_table, output = "html")
 ```
 
-## Print the fit indices in Markdown format
+## Format the fit indices in Markdown format
 
 This is ideal for including the output in Markdown documents, such as GitHub READMEs or R Markdown reports.
 
 ```{r}
-#| eval: false
-print(fit_table, format = "markdown")
-```
-
-```{r}
-#| echo: false
-cat(print(fit_table, format = "markdown"), sep = "\n")
+format_results(fit_table, output = "markdown")
 ```
 
 ## Saving Fit Indices to Word
@@ -124,7 +118,7 @@ In this example, plot_factor_loadings() displays the factor loadings for each it
 
 This is a summary of the development plan for `psymetrics`. The immediate focus is to build a comprehensive and robust workflow for models fitted with the `lavaan` package, including **Confirmatory Factor Analysis (CFA) and Structural Equation Models (SEM)**.
 
-Our current work involves a stability and testing release (`v0.1.5`) to solidify the existing codebase. The complete **Development Roadmap & Versioning Plan**, which tracks our progress version by version, is available in the **[ROADMAP.md](ROADMAP.md)** file and **[Issue #23](https://github.com/brianmsm/psymetrics/issues/23)**.
+Our current work involves a stability and testing release (`v0.1.6`) to solidify the existing codebase. The complete **Development Roadmap & Versioning Plan**, which tracks our progress version by version, is available in the **[ROADMAP.md](ROADMAP.md)** file and **[Issue #23](https://github.com/brianmsm/psymetrics/issues/23)**.
 
 For technical details on a specific future feature, please see the corresponding issue link below.
 
