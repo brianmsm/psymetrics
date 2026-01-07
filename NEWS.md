@@ -12,6 +12,10 @@
 
 -   **Integer Handling**: Removed manual rounding and `columns_to_format` handling, relying on `insight::format_table()` for integer-safe formatting.
 
+## Internal
+
+-   **File Organization**: Refactored file layout to separate backend-specific `model_fit.*` methods from result-class methods, with no user-facing changes.
+
 # psymetrics 0.1.5
 
 ## Bug Fixes and Improvements
