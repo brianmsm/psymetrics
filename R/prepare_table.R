@@ -18,32 +18,6 @@ prepare_table <- function(x, ...) {
 
 #' @keywords internal
 #' @noRd
-prepare_table.model_fit <- function(x, digits = 3, ci_digits = digits,
-                                    p_digits = 3, ...) {
-  insight::format_table(
-    x,
-    digits = digits,
-    ci_digits = ci_digits,
-    p_digits = p_digits,
-    ...
-  )
-}
-
-#' @keywords internal
-#' @noRd
-prepare_table.compare_model_fit <- function(x, digits = 3, ci_digits = digits,
-                                            p_digits = 3, ...) {
-  insight::format_table(
-    x,
-    digits = digits,
-    ci_digits = ci_digits,
-    p_digits = p_digits,
-    ...
-  )
-}
-
-#' @keywords internal
-#' @noRd
 prepare_table.data.frame <- function(x, digits = 3, ci_digits = digits,
                                      p_digits = 3, ...) {
   insight::format_table(

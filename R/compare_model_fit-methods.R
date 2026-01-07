@@ -1,3 +1,45 @@
+#' @keywords internal
+#' @noRd
+prepare_table.compare_model_fit <- function(x, digits = 3, ci_digits = digits,
+                                            p_digits = 3, ...) {
+  insight::format_table(
+    x,
+    digits = digits,
+    ci_digits = ci_digits,
+    p_digits = p_digits,
+    ...
+  )
+}
+
+#' @export
+format_results.compare_model_fit <- function(x,
+                                             output = c("auto", "text", "markdown", "md", "html"),
+                                             digits = 3,
+                                             ci_digits = digits,
+                                             p_digits = 3,
+                                             align = "firstleft",
+                                             digits_by_col = NULL,
+                                             table_args = list(),
+                                             output_args = list()) {
+  if (missing(digits_by_col)) {
+    digits_by_col <- c(Chi2 = 2)
+  }
+  format_results_impl(
+    x = x,
+    output = output,
+    digits = digits,
+    ci_digits = ci_digits,
+    p_digits = p_digits,
+    align = align,
+    digits_by_col = digits_by_col,
+    table_args = table_args,
+    output_args = output_args,
+    missing_digits = missing(digits),
+    missing_ci_digits = missing(ci_digits),
+    missing_p_digits = missing(p_digits)
+  )
+}
+
 #' Print Method for compare_model_fit Objects
 #'
 #' @description
