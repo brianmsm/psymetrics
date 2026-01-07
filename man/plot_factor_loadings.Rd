@@ -50,10 +50,10 @@ if (requireNamespace("lavaan", quietly = TRUE) &&
     requireNamespace("ggplot2", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
-  HS.model <- ' visual  =~ x1 + x2 + x3
-               textual =~ x4 + x5 + x6
-               speed   =~ x7 + x8 + x9 '
-  fit <- cfa(HS.model, data = HolzingerSwineford1939)
+  hs_model <- 'visual  =~ x1 + x2 + x3
+              textual =~ x4 + x5 + x6
+              speed   =~ x7 + x8 + x9'
+  fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   plot_factor_loadings(fit)
 } else {
   message("Please install 'lavaan' and 'ggplot2' to run this example.")
