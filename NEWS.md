@@ -1,3 +1,17 @@
+# psymetrics 0.1.6
+
+## API Changes
+
+-   **Table Formatting Pipeline**: `prepare_table()` is now an internal S3 generic focused on producing a base formatted data frame via `insight::format_table()`.
+-   **New `format_results()`**: Added an S3 formatting helper that returns text, markdown, or HTML outputs with `table_args`, `output_args`, `digits_by_col`, and `output = "auto"` support.
+-   **Print Methods**: `print.model_fit()` and `print.compare_model_fit()` are now console-only text outputs and always return the original object invisibly.
+-   **save_table() Signature**: `save_table()` now uses `prepare_table()` and supports `digits_by_col` as a post-processing step, while `table_args` forwards to `insight::format_table()`.
+-   **Removed**: `print_format()`, `emit`, `return_object`, and `knitr.in.progress` behavior from the print pipeline.
+
+## Formatting Updates
+
+-   **Integer Handling**: Removed manual rounding and `columns_to_format` handling, relying on `insight::format_table()` for integer-safe formatting.
+
 # psymetrics 0.1.5
 
 ## Bug Fixes and Improvements
