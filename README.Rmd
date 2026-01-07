@@ -71,17 +71,9 @@ fit_table
 
 In this example, compare_model_fit is used to compare the fit indices of two different models. This function allows you to easily see the differences in model fit across different estimation methods or model specifications.
 
-## Format the fit indices in HTML format
-
-This is useful when you want to embed the output directly in HTML reports or web pages.
-
-```{r}
-format_results(fit_table, output = "html")
-```
-
 ## Format the fit indices in Markdown format
 
-This is ideal for including the output in Markdown documents, such as GitHub READMEs or R Markdown reports.
+This is ideal for including the output in Markdown documents, such as GitHub READMEs or R Markdown reports. You can also request HTML output in environments that support it (`output = "html`).
 
 ```{r}
 format_results(fit_table, output = "markdown")
