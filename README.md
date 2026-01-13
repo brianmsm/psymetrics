@@ -20,7 +20,7 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.6")
+pak::pak("brianmsm/psymetrics@v0.1.7")
 ```
 
 ## Getting Fit Indices
@@ -31,7 +31,7 @@ created using lavaan.
 ``` r
 library(psymetrics)
 library(lavaan)
-#> This is lavaan 0.6-20
+#> This is lavaan 0.6-21
 #> lavaan is FREE software! Please report any bugs.
 
 # Define a simple CFA model
@@ -65,9 +65,8 @@ model_fit(fit, type = "robust")
 # Or specify which indices to extract
 model_fit(fit, metrics = c("cfi", "tli"))
 #> cfi and tli were adjusted to their scaled version.
-#> If you want to control the specific metric type used,
-#> specify it explicitly (e.g., `cfi.robust`) or modify
-#> the type argument.
+#> If you want to control the specific metric type used, specify it
+#> explicitly (e.g., `cfi.robust`) or modify the type argument.
 #> NOBS | ESTIMATOR | NPAR |  CFI  |  TLI 
 #> ---------------------------------------
 #> 301  |    MLR    |  21  | 0.925 | 0.888
@@ -142,7 +141,7 @@ intervals for each loading.
 plot_factor_loadings(fit)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" alt="" width="100%" />
 
 In this example, plot_factor_loadings() displays the factor loadings for
 each item on the respective factors, with confidence intervals. The plot
