@@ -13,3 +13,4 @@
 ^\.Rcheck$
 ^\.\.Rcheck$
 .vscode
+^CITATION\.cff$
