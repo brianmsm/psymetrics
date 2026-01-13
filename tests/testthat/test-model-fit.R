@@ -43,3 +43,122 @@ test_that("model_fit returns empty data for scaled indices without robust estima
   expect_equal(ncol(result), 0)
   expect_equal(nrow(result), 0)
 })
+
+test_that("model_fit handles Browne residual tests for ULS", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ULS")
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "scaled")
+  )
+
+  expect_equal(result$ESTIMATOR, "ULS")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit handles Browne residual tests for DWLS", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "DWLS")
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "scaled")
+  )
+
+  expect_equal(result$ESTIMATOR, "DWLS")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit treats Bollen-Stine tests as standard-only", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "ML",
+      test = "bollen.stine",
+      bootstrap = 20
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "scaled")
+  )
+
+  expect_equal(result$ESTIMATOR, "ML")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit returns NA metrics when test is none", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, test = "none")
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "scaled")
+  )
+
+  expect_equal(result$ESTIMATOR, "ML")
+  expect_true(all(is.na(result$Chi2)))
+  expect_true(all(is.na(result$CFI)))
+})
+
+test_that("model_fit reports robust MLR estimators", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "robust")
+  )
+
+  expect_equal(result$ESTIMATOR, "MLR")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit reports robust WLSMV estimators", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+  data <- lavaan::HolzingerSwineford1939
+  ordered_vars <- paste0("x", 1:9)
+  data[ordered_vars] <- lapply(data[ordered_vars], function(x) {
+    cut(x, breaks = 3, include.lowest = TRUE, ordered_result = TRUE)
+  })
+
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = data, estimator = "WLSMV", ordered = ordered_vars)
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, type = "robust")
+  )
+
+  expect_equal(result$ESTIMATOR, "WLSMV")
+  expect_false(is.na(result$Chi2))
+})
