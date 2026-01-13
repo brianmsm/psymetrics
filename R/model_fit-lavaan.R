@@ -50,6 +50,15 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
+  lav_options <- lavaan::lavInspect(fit, "options")
+  test_groups <- lavaan_test_groups()
+  test_vec <- lav_options$test
+  has_browne <- lavaan_has_test(test_vec, test_groups$browne_tests)
+  has_robust <- lavaan_has_test(test_vec, test_groups$robust_tests)
+  has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)
+  has_standard_only <- lavaan_has_test(test_vec, test_groups$standard_only_tests)
+  browne_only <- has_browne && !has_robust
+  standard_only <- browne_only || has_bootstrap || has_standard_only
 
   # Determine the type of index to use
   if (is.null(type)) {
@@ -58,6 +67,25 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     } else {
       type <- "standard"
     }
+  }
+
+  if (standard_only && type %in% c("scaled", "robust")) {
+    if (verbose) {
+      if (browne_only) {
+        cli::cli_inform(
+          "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
+        )
+      } else if (has_bootstrap) {
+        cli::cli_inform(
+          "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
+        )
+      } else {
+        cli::cli_inform(
+          "The model does not report a chi-square test; using standard indices instead."
+        )
+      }
+    }
+    type <- "standard"
   }
 
   # Validate 'type'
@@ -102,6 +130,19 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 extract_fit_lavaan <- function(fit, type, metrics, verbose) {
 
   original_metrics <- metrics
+  lav_options <- lavaan::lavInspect(fit, "options")
+  test_groups <- lavaan_test_groups()
+  has_robust <- lavaan_has_test(lav_options$test, test_groups$robust_tests)
+  has_browne <- lavaan_has_test(lav_options$test, test_groups$browne_tests)
+  has_bootstrap <- lavaan_has_test(lav_options$test, test_groups$bootstrap_tests)
+  has_standard_only <- lavaan_has_test(lav_options$test, test_groups$standard_only_tests)
+  has_none <- lavaan_has_test(lav_options$test, "none")
+  browne_only <- has_browne && !has_robust
+  standard_only <- browne_only || has_bootstrap || has_standard_only
+  standard_test <- lav_options$standard.test
+  if (is.null(standard_test)) {
+    standard_test <- "standard"
+  }
 
   # Define essential (classical) metrics if metrics is "essential"
   if (length(metrics) == 1 && metrics == "essential") {
@@ -117,6 +158,60 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
 
   robust_metrics <- c("cfi", "tli", "nnfi", "rni", "rmsea",
                       "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "rmsea.notclose.pvalue")
+
+  if (standard_only && type %in% c("scaled", "robust")) {
+    if (verbose) {
+      if (browne_only) {
+        cli::cli_inform(
+          "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
+        )
+      } else if (has_bootstrap) {
+        cli::cli_inform(
+          "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
+        )
+      } else {
+        cli::cli_inform(
+          "The model does not report a chi-square test; using standard indices instead."
+        )
+      }
+    }
+    type <- "standard"
+  }
+
+  if (has_none) {
+    if (verbose) {
+      cli::cli_alert_warning(
+        "Fit measures are not available when test = 'none'; returning NA for requested metrics."
+      )
+    }
+    fit_measure_df <- data.frame(
+      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+      ESTIMATOR = lavaan_estimator(fit),
+      NPAR = lavaan::lavInspect(fit, "npar"),
+      matrix(NA_real_, nrow = 1, ncol = length(metrics)),
+      row.names = NULL
+    )
+    colnames(fit_measure_df) <- c("NOBS", "ESTIMATOR", "NPAR", toupper(metrics))
+
+    colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- gsub("^CHISQ$", "Chi2", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
+
+    class(fit_measure_df) <- c("model_fit", class(fit_measure_df))
+    return(fit_measure_df)
+  }
+
+  if (verbose &&
+      lav_options$estimator %in% c("ULS", "DWLS") &&
+      lav_options$se == "robust.sem.nt" &&
+      standard_test == "browne.residual.nt") {
+    cli::cli_inform(cli::cli_text(
+      "Since lavaan 0.6.21, {lav_options$estimator} with continuous data uses Browne's residual-based (NT) test by default; fit indices reflect that test."
+    ))
+  }
 
   # Initialize a vector to track which metrics have been automatically adjusted
   adjusted_metrics <- c()
@@ -191,84 +286,140 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
 
 # Helper functions ------------------------------------------------------------
 
-lavaan_estimator <- function(fit) {
-  options <- lavaan::lavInspect(fit, "options")
-  info_type <- unique(options$information)
+lavaan_test_groups <- function() {
+  list(
+    robust_tests = c(
+      "satorra.bentler",
+      "yuan.bentler",
+      "yuan.bentler.mplus",
+      "mean.var.adjusted",
+      "scaled.shifted"
+    ),
+    browne_tests = c(
+      "browne.residual.nt",
+      "browne.residual.adf",
+      "browne.residual.nt.model",
+      "browne.residual.adf.model"
+    ),
+    bootstrap_tests = c("bollen.stine"),
+    standard_only_tests = c("none", "default")
+  )
+}
 
-  if (options$estimator == "DWLS") {
-    if (options$se == "robust.sem" &
-        options$test == "satorra.bentler") {
+lavaan_has_test <- function(test_vec, candidates) {
+  if (is.null(test_vec)) {
+    return(FALSE)
+  }
+  any(test_vec %in% candidates)
+}
+
+lavaan_test_primary <- function(test_vec) {
+  if (is.null(test_vec) || length(test_vec) == 0L) {
+    return("standard")
+  }
+
+  test <- test_vec
+  if (length(test) > 1L) {
+    standard_idx <- which(test == "standard")
+    if (length(standard_idx) > 0L) {
+      test <- test[-standard_idx]
+    }
+    if (length(test) > 1L) {
+      test <- test[1]
+    }
+  }
+
+  if (length(test) == 0L) {
+    "standard"
+  } else {
+    test[1]
+  }
+}
+
+lavaan_estimator <- function(fit) {
+  lav_options <- lavaan::lavInspect(fit, "options")
+  info_type <- unique(lav_options$information)
+  if (length(info_type) > 1L) {
+    info_type <- info_type[1]
+  }
+  test_groups <- lavaan_test_groups()
+  test_vec <- lav_options$test
+  primary_test <- lavaan_test_primary(test_vec)
+  has_browne <- lavaan_has_test(test_vec, test_groups$browne_tests)
+  has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)
+  has_standard_only <- lavaan_has_test(test_vec, test_groups$standard_only_tests)
+  standard_like <- primary_test == "standard" || has_browne || has_bootstrap || has_standard_only
+
+  if (lav_options$estimator == "DWLS") {
+    if (lav_options$se == "robust.sem" &&
+        primary_test == "satorra.bentler") {
       estimator <- "WLSM"
-    } else if (options$se == "robust.sem" &
-               options$test == "mean.var.adjusted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "mean.var.adjusted") {
       estimator <- "WLSMVS"
-    } else if (options$se == "robust.sem" &
-               options$test == "scaled.shifted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "scaled.shifted") {
       estimator <- "WLSMV"
-    } else if (options$se == "standard" &
-               options$test == "standard") {
+    } else if (lav_options$se == "robust.sem.nt" && has_browne) {
+      estimator <- "DWLS"
+    } else if (lav_options$se == "standard" && standard_like) {
       estimator <- "DWLS"
     } else {
       estimator <- "DWLS_variant"
     }
-  } else if (options$estimator == "ULS") {
-    if (options$se == "robust.sem" &
-        options$test == "satorra.bentler") {
+  } else if (lav_options$estimator == "ULS") {
+    if (lav_options$se == "robust.sem" &&
+        primary_test == "satorra.bentler") {
       estimator <- "ULSM"
-    } else if (options$se == "robust.sem" &
-               options$test == "mean.var.adjusted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "mean.var.adjusted") {
       estimator <- "ULSMVS"
-    } else if (options$se == "robust.sem" &
-               options$test == "scaled.shifted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "scaled.shifted") {
       estimator <- "ULSMV"
-    } else if (options$se == "standard" &
-               options$test == "standard") {
+    } else if (lav_options$se == "robust.sem.nt" && has_browne) {
+      estimator <- "ULS"
+    } else if (lav_options$se == "standard" && standard_like) {
       estimator <- "ULS"
     } else {
       estimator <- "ULS_variant"
     }
-  } else if (options$estimator == "ML") {
-    if (options$se == "robust.sem" &
-        options$test == "satorra.bentler") {
+  } else if (lav_options$estimator == "ML") {
+    if (lav_options$se == "robust.sem" &&
+        primary_test == "satorra.bentler") {
       estimator <- "MLM"
-    } else if (options$se == "robust.huber.white" &
-               options$test %in% c(
-                 "yuan.bentler.mplus",
-                 "yuan.bentler"
-               )) {
+    } else if (lav_options$se == "robust.huber.white" &&
+               (lavaan_has_test(test_vec, c("yuan.bentler.mplus", "yuan.bentler")) ||
+                has_bootstrap || has_standard_only)) {
       estimator <- "MLR"
-    } else if (options$se == "robust.sem" &
-               options$test == "mean.var.adjusted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "mean.var.adjusted") {
       estimator <- "MLMVS"
-    } else if (options$se == "robust.sem" &
-               options$test == "scaled.shifted") {
+    } else if (lav_options$se == "robust.sem" &&
+               primary_test == "scaled.shifted") {
       estimator <- "MLMV"
-    } else if (options$se == "standard" &
-               options$test == "standard" &
+    } else if (lav_options$se == "standard" &&
+               standard_like &&
                info_type == "expected") {
       estimator <- "ML"
-    } else if (options$se == "standard" &
-               options$test == "standard" &
+    } else if (lav_options$se == "standard" &&
+               standard_like &&
                info_type == "first.order") {
       estimator <- "MLF"
     } else {
       estimator <- "ML_variant"
     }
   } else {
-    estimator <- options$estimator
+    estimator <- lav_options$estimator
   }
 
   return(estimator)
 }
 
 is_robust_estimator_lavaan <- function(fit) {
-  if (lavaan::lavInspect(fit, "options")$test %in% c(
-    "satorra.bentler",
-    "yuan.bentler",
-    "yuan.bentler.mplus",
-    "mean.var.adjusted",
-    "scaled.shifted"
-  )) {
+  lav_options <- lavaan::lavInspect(fit, "options")
+  test_groups <- lavaan_test_groups()
+  if (lavaan_has_test(lav_options$test, test_groups$robust_tests)) {
     type <- "robust"
   } else {
     type <- "non-robust"
