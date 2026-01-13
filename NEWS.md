@@ -1,3 +1,10 @@
+# psymetrics 0.1.7
+
+## Bug Fixes and Improvements
+
+-   **lavaan 0.6.21 Compatibility**: Updated `model_fit.lavaan()` to handle multi-element `options$test`, align estimator detection with current test/se defaults, and correctly surface Browne residual defaults for continuous ULS/DWLS fits (including clearer messaging when scaled/robust indices are unavailable).
+-   **Estimator Identification**: Expanded detection logic for lavaan estimators when `options$test` is multi-element, covering robust ML variants and WLS/ULS/DWLS cases with Browne residual defaults.
+
 # psymetrics 0.1.6
 
 ## API Changes
