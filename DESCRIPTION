@@ -2,19 +2,19 @@ Package: psymetrics
 Type: Package
 Title: Unified Tools for Psychometric Model Analysis
 Version: 0.1.7
+Description: Provides tools for extracting and visualizing psychometric model fit indices, 
+    compatible with various models like those from 'lavaan', 'psych', and 'mirt'. 
+    Specific package dependencies are suggested and only required if using corresponding model objects.
 Authors@R: 
     person(
         given = "Brian",
         family = "Peña Calero",
         role = c("aut", "cre"),
         email = "brianmsm@gmail.com",
-        comment = c(ORCID = "0000-0002-1073-9306", Twitter = "@brianmsm")
+        comment = c(ORCID = "0000-0002-1073-9306")
     )
-Author: Brian Peña Calero [aut, cre] (ORCID: <https://orcid.org/0000-0002-1073-9306>, Twitter: @brianmsm)
-Maintainer: Brian Peña Calero <brianmsm@gmail.com>
-Description: Provides tools for extracting and visualizing psychometric model fit indices, 
-    compatible with various models like those from 'lavaan', 'psych', and 'mirt'. 
-    Specific package dependencies are suggested and only required if using corresponding model objects.
+URL: https://github.com/brianmsm/psymetrics
+BugReports: https://github.com/brianmsm/psymetrics/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
