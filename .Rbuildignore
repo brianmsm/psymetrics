@@ -12,3 +12,4 @@
 ^\.quarto$
 ^\.Rcheck$
 ^\.\.Rcheck$
+.vscode
