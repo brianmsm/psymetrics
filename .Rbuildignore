@@ -12,3 +12,5 @@
 ^\.quarto$
 ^\.Rcheck$
 ^\.\.Rcheck$
+.vscode
+^CITATION\.cff$

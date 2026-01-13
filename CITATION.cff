@@ -1,0 +1,260 @@
+# --------------------------------------------
+# CITATION file created with {cffr} R package
+# See also: https://docs.ropensci.org/cffr/
+# --------------------------------------------
+ 
+cff-version: 1.2.0
+message: 'To cite package "psymetrics" in publications use:'
+type: software
+license: MIT
+title: 'psymetrics: Unified Tools for Psychometric Model Analysis'
+version: 0.1.7
+abstract: Provides tools for extracting and visualizing psychometric model fit indices,
+  compatible with various models like those from 'lavaan', 'psych', and 'mirt'. Specific
+  package dependencies are suggested and only required if using corresponding model
+  objects.
+authors:
+- family-names: Peña Calero
+  given-names: Brian
+  email: brianmsm@gmail.com
+  orcid: https://orcid.org/0000-0002-1073-9306
+repository-code: https://github.com/brianmsm/psymetrics
+url: https://github.com/brianmsm/psymetrics
+contact:
+- family-names: Peña Calero
+  given-names: Brian
+  email: brianmsm@gmail.com
+  orcid: https://orcid.org/0000-0002-1073-9306
+keywords:
+- irt
+- lavaan
+- mirt
+- package
+- psych
+- psychometrics
+- r
+references:
+- type: software
+  title: cli
+  abstract: 'cli: Helpers for Developing Command Line Interfaces'
+  notes: Imports
+  url: https://cli.r-lib.org
+  repository: https://CRAN.R-project.org/package=cli
+  authors:
+  - family-names: Csárdi
+    given-names: Gábor
+    email: gabor@posit.co
+  year: '2026'
+  doi: 10.32614/CRAN.package.cli
+- type: software
+  title: insight
+  abstract: 'insight: Easy Access to Model Information for Various Model Objects'
+  notes: Imports
+  url: https://easystats.github.io/insight/
+  repository: https://CRAN.R-project.org/package=insight
+  authors:
+  - family-names: Lüdecke
+    given-names: Daniel
+    email: officialeasystats@gmail.com
+    orcid: https://orcid.org/0000-0002-8895-3206
+  - family-names: Makowski
+    given-names: Dominique
+    email: dom.makowski@gmail.com
+    orcid: https://orcid.org/0000-0001-5375-9967
+  - family-names: Patil
+    given-names: Indrajeet
+    email: patilindrajeet.science@gmail.com
+    orcid: https://orcid.org/0000-0003-1995-6531
+  - family-names: Waggoner
+    given-names: Philip
+    email: philip.waggoner@gmail.com
+    orcid: https://orcid.org/0000-0002-7825-7573
+  - family-names: Ben-Shachar
+    given-names: Mattan S.
+    email: matanshm@post.bgu.ac.il
+    orcid: https://orcid.org/0000-0002-4287-4801
+  - family-names: Wiernik
+    given-names: Brenton M.
+    email: brenton@wiernik.org
+    orcid: https://orcid.org/0000-0001-9560-6336
+  - family-names: Arel-Bundock
+    given-names: Vincent
+    email: vincent.arel-bundock@umontreal.ca
+    orcid: https://orcid.org/0000-0003-2042-7063
+  - family-names: Bacher
+    given-names: Etienne
+    email: etienne.bacher@protonmail.com
+    orcid: https://orcid.org/0000-0002-9271-5075
+  year: '2026'
+  doi: 10.32614/CRAN.package.insight
+- type: software
+  title: methods
+  abstract: 'R: A Language and Environment for Statistical Computing'
+  notes: Imports
+  authors:
+  - name: R Core Team
+  institution:
+    name: R Foundation for Statistical Computing
+    address: Vienna, Austria
+  year: '2026'
+- type: software
+  title: rlang
+  abstract: 'rlang: Functions for Base Types and Core R and ''Tidyverse'' Features'
+  notes: Imports
+  url: https://rlang.r-lib.org
+  repository: https://CRAN.R-project.org/package=rlang
+  authors:
+  - family-names: Henry
+    given-names: Lionel
+    email: lionel@posit.co
+  - family-names: Wickham
+    given-names: Hadley
+    email: hadley@posit.co
+  year: '2026'
+  doi: 10.32614/CRAN.package.rlang
+- type: software
+  title: tinytable
+  abstract: 'tinytable: Simple and Configurable Tables in ''HTML'', ''LaTeX'', ''Markdown'',
+    ''Word'', ''PNG'', ''PDF'', and ''Typst'' Formats'
+  notes: Imports
+  url: https://vincentarelbundock.github.io/tinytable/
+  repository: https://CRAN.R-project.org/package=tinytable
+  authors:
+  - family-names: Arel-Bundock
+    given-names: Vincent
+    email: vincent.arel-bundock@umontreal.ca
+    orcid: https://orcid.org/0000-0003-2042-7063
+  year: '2026'
+  doi: 10.32614/CRAN.package.tinytable
+- type: software
+  title: lavaan
+  abstract: 'lavaan: Latent Variable Analysis'
+  notes: Suggests
+  url: https://lavaan.ugent.be
+  repository: https://CRAN.R-project.org/package=lavaan
+  authors:
+  - family-names: Rosseel
+    given-names: Yves
+    email: Yves.Rosseel@UGent.be
+    orcid: https://orcid.org/0000-0002-4129-4477
+  - family-names: Jorgensen
+    given-names: Terrence D.
+    email: TJorgensen314@gmail.com
+    orcid: https://orcid.org/0000-0001-5111-6773
+  - family-names: De Wilde
+    given-names: Luc
+    email: Luc.DeWilde@UGent.be
+  year: '2026'
+  doi: 10.32614/CRAN.package.lavaan
+- type: software
+  title: knitr
+  abstract: 'knitr: A General-Purpose Package for Dynamic Report Generation in R'
+  notes: Suggests
+  url: https://yihui.org/knitr/
+  repository: https://CRAN.R-project.org/package=knitr
+  authors:
+  - family-names: Xie
+    given-names: Yihui
+    email: xie@yihui.name
+    orcid: https://orcid.org/0000-0003-0645-5666
+  year: '2026'
+  doi: 10.32614/CRAN.package.knitr
+- type: software
+  title: ggplot2
+  abstract: 'ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics'
+  notes: Suggests
+  url: https://ggplot2.tidyverse.org
+  repository: https://CRAN.R-project.org/package=ggplot2
+  authors:
+  - family-names: Wickham
+    given-names: Hadley
+    email: hadley@posit.co
+    orcid: https://orcid.org/0000-0003-4757-117X
+  - family-names: Chang
+    given-names: Winston
+    orcid: https://orcid.org/0000-0002-1576-2126
+  - family-names: Henry
+    given-names: Lionel
+  - family-names: Pedersen
+    given-names: Thomas Lin
+    email: thomas.pedersen@posit.co
+    orcid: https://orcid.org/0000-0002-5147-4711
+  - family-names: Takahashi
+    given-names: Kohske
+  - family-names: Wilke
+    given-names: Claus
+    orcid: https://orcid.org/0000-0002-7470-9261
+  - family-names: Woo
+    given-names: Kara
+    orcid: https://orcid.org/0000-0002-5125-4188
+  - family-names: Yutani
+    given-names: Hiroaki
+    orcid: https://orcid.org/0000-0002-3385-7233
+  - family-names: Dunnington
+    given-names: Dewey
+    orcid: https://orcid.org/0000-0002-9415-4582
+  - family-names: Brand
+    given-names: Teun
+    name-particle: van den
+    orcid: https://orcid.org/0000-0002-9335-7468
+  year: '2026'
+  doi: 10.32614/CRAN.package.ggplot2
+- type: software
+  title: flextable
+  abstract: 'flextable: Functions for Tabular Reporting'
+  notes: Suggests
+  url: https://ardata-fr.github.io/flextable-book/
+  repository: https://CRAN.R-project.org/package=flextable
+  authors:
+  - family-names: Gohel
+    given-names: David
+    email: david.gohel@ardata.fr
+  - family-names: Skintzos
+    given-names: Panagiotis
+    email: panagiotis.skintzos@ardata.fr
+  year: '2026'
+  doi: 10.32614/CRAN.package.flextable
+- type: software
+  title: officer
+  abstract: 'officer: Manipulation of Microsoft Word and PowerPoint Documents'
+  notes: Suggests
+  url: https://ardata-fr.github.io/officeverse/
+  repository: https://CRAN.R-project.org/package=officer
+  authors:
+  - family-names: Gohel
+    given-names: David
+    email: david.gohel@ardata.fr
+  - family-names: Moog
+    given-names: Stefan
+    email: moogs@gmx.de
+  - family-names: Heckmann
+    given-names: Mark
+    email: heckmann.mark@gmail.com
+    orcid: https://orcid.org/0000-0002-0736-7417
+  year: '2026'
+  doi: 10.32614/CRAN.package.officer
+- type: software
+  title: testthat
+  abstract: 'testthat: Unit Testing for R'
+  notes: Suggests
+  url: https://testthat.r-lib.org
+  repository: https://CRAN.R-project.org/package=testthat
+  authors:
+  - family-names: Wickham
+    given-names: Hadley
+    email: hadley@posit.co
+  year: '2026'
+  doi: 10.32614/CRAN.package.testthat
+  version: '>= 3.0.0'
+- type: software
+  title: 'R: A Language and Environment for Statistical Computing'
+  notes: Depends
+  url: https://www.R-project.org/
+  authors:
+  - name: R Core Team
+  institution:
+    name: R Foundation for Statistical Computing
+    address: Vienna, Austria
+  year: '2026'
+  version: '>= 4.1.0'
+

@@ -1,0 +1,15 @@
+citHeader("To cite psymetrics in publications use:")
+
+citEntry(
+  entry = "Manual",
+  key   = "psymetrics",
+  title = "psymetrics: Unified Tools for Psychometric Model Analysis",
+  author = person("Brian", "Peña Calero", comment = c(ORCID = "0000-0002-1073-9306")),
+  year = "2026",
+  note = "R package version 0.1.7",
+  url = "https://github.com/brianmsm/psymetrics",
+  textVersion = paste0(
+    "Peña Calero, B. (2026). psymetrics: Unified Tools for Psychometric Model Analysis ",
+    "(R package version 0.1.7). https://github.com/brianmsm/psymetrics"
+  )
+)
