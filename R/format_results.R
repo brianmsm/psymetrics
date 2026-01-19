@@ -24,7 +24,9 @@
 #' @param digits_by_col Named integer vector that forces digits for
 #'   selected columns. Applied before export.
 #'   For `model_fit` and `compare_model_fit`, defaults to
-#'   `c(Chi2 = 2)` when not supplied.
+#'   `c(Chi2 = 2, Chi2_df = 2)` when not supplied. When `Chi2_df`
+#'   is fractional, it is rounded to two decimals before forming
+#'   the `Chi2(df)` header.
 #' @param table_args A named list of arguments forwarded to
 #'   `insight::format_table()`.
 #' @param output_args A named list of arguments forwarded to

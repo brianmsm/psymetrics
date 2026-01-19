@@ -41,7 +41,9 @@ for details.}
 \item{digits_by_col}{Named integer vector that forces digits for
 selected columns. Applied before export.
 For \code{model_fit} and \code{compare_model_fit}, defaults to
-\code{c(Chi2 = 2)} when not supplied.}
+\code{c(Chi2 = 2, Chi2_df = 2)} when not supplied. When \code{Chi2_df}
+is fractional, it is rounded to two decimals before forming
+the \code{Chi2(df)} header.}
 
 \item{table_args}{A named list of arguments forwarded to
 \code{insight::format_table()}.}
