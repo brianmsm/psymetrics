@@ -170,6 +170,27 @@ textual =~ x4 + x5 + x6"
   expect_equal(result$ESTIMATOR[1], lavaan::lavInspect(fit, "options")$estimator)
 })
 
+test_that("model_fit uses NA SE for standard-test row when test_details is TRUE", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, standard_test = TRUE, test_details = TRUE)
+  )
+
+  expect_true(is.na(result$SE[1]))
+  expect_equal(result$SE[-1], rep(lavaan::lavInspect(fit, "options")$se, 2))
+})
+
 test_that("model_fit handles Browne residual tests for ULS", {
   skip_if_not_installed("lavaan")
 

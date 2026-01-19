@@ -209,6 +209,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       metrics = metrics,
       verbose = verbose,
       estimator_override = standard_estimator,
+      se_override = NA_character_,
       test_details = test_details
     )
   }
@@ -232,6 +233,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 # Internal function to extract fit indices based on type and metrics
 extract_fit_lavaan <- function(fit, type, metrics, verbose,
                                scaled_test = NULL, estimator_override = NULL,
+                               se_override = NULL,
                                test_details = FALSE) {
 
   original_metrics <- metrics
@@ -266,6 +268,9 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     se_label <- "standard"
   } else {
     se_label <- se_label[1]
+  }
+  if (!is.null(se_override)) {
+    se_label <- se_override
   }
 
   estimator_label <- estimator_override
