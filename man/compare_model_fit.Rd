@@ -10,7 +10,8 @@ compare_model_fit(
   metrics = "essential",
   verbose = TRUE,
   test = "default",
-  standard_test = FALSE
+  standard_test = FALSE,
+  test_details = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,10 @@ tests. When \code{TRUE}, the standard row is shown first and
 always uses standard indices. When supplying a list, it
 must be named and each name must match the model labels
 shown in the \code{MODEL} column.}
+
+\item{test_details}{Logical. If \code{TRUE}, include \code{TEST} and
+\code{SE} columns (for lavaan fits) that describe the test and
+standard error settings used to compute each row.}
 }
 \value{
 A data frame containing the fit indices for each

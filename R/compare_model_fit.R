@@ -31,6 +31,9 @@
 #'   always uses standard indices. When supplying a list, it
 #'   must be named and each name must match the model labels
 #'   shown in the `MODEL` column.
+#' @param test_details Logical. If `TRUE`, include `TEST` and
+#'   `SE` columns (for lavaan fits) that describe the test and
+#'   standard error settings used to compute each row.
 #'
 #' @return A data frame containing the fit indices for each
 #'   model, with an additional column identifying the models.
@@ -52,7 +55,7 @@
 #'   message("Please install 'lavaan' to run this example.")
 #' }
 compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose = TRUE,
-                              test = "default", standard_test = FALSE) {
+                              test = "default", standard_test = FALSE, test_details = FALSE) {
   # Capture all the fit objects as a list
   fits <- list(...)
 
@@ -66,6 +69,9 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   model_names <- sapply(substitute(list(...))[-1L], deparse)
   default_test <- "default"
   default_standard_test <- FALSE
+  if (!is.logical(test_details) || length(test_details) != 1L) {
+    rlang::abort("`test_details` must be TRUE or FALSE.")
+  }
 
   resolve_test_by_model <- function(test_value, model_names, default_value) {
     if (is.list(test_value)) {
@@ -228,6 +234,7 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
           verbose = verbose,
           test = test_value,
           standard_test = standard_value,
+          test_details = test_details,
           standard_test_message = FALSE
         )
       } else {
@@ -237,7 +244,8 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
           metrics = metrics,
           verbose = verbose,
           test = test_value,
-          standard_test = standard_value
+          standard_test = standard_value,
+          test_details = test_details
         )
       }
     },

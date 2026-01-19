@@ -11,6 +11,7 @@
   verbose = TRUE,
   test = "default",
   standard_test = FALSE,
+  test_details = FALSE,
   ...
 )
 }
@@ -45,6 +46,12 @@ with an informational message when \code{verbose = TRUE}.}
 include a standard-test row in addition to non-standard
 tests. When \code{TRUE}, the standard row is shown first and
 always uses standard indices.}
+
+\item{test_details}{A logical value indicating whether to
+add \code{TEST} and \code{SE} columns describing the test and standard
+error settings used to compute the fit measures. When \code{FALSE}
+(default), \code{ESTIMATOR} substitutes the test name for unknown
+estimator variants.}
 
 \item{...}{Additional arguments passed to methods.}
 }

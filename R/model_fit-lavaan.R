@@ -37,6 +37,11 @@
 #'   include a standard-test row in addition to non-standard
 #'   tests. When `TRUE`, the standard row is shown first and
 #'   always uses standard indices.
+#' @param test_details A logical value indicating whether to
+#'   add `TEST` and `SE` columns describing the test and standard
+#'   error settings used to compute the fit measures. When `FALSE`
+#'   (default), `ESTIMATOR` substitutes the test name for unknown
+#'   estimator variants.
 #' @param ... Additional arguments passed to methods.
 #'
 #' @return A data frame containing the specified fit
@@ -61,7 +66,7 @@
 #'   message("Please install 'lavaan' to run this example.")
 #' }
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE,
-                             test = "default", standard_test = FALSE, ...) {
+                             test = "default", standard_test = FALSE, test_details = FALSE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   dots <- list(...)
   standard_test_message <- TRUE
@@ -90,6 +95,9 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   }
   if (!is.logical(standard_test) || length(standard_test) != 1L) {
     rlang::abort("`standard_test` must be a single logical value.")
+  }
+  if (!is.logical(test_details) || length(test_details) != 1L) {
+    rlang::abort("`test_details` must be a single logical value.")
   }
 
   # Determine the type of index to use
@@ -177,7 +185,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       type,
       metrics = metrics,
       verbose = verbose,
-      estimator_override = standard_estimator
+      estimator_override = standard_estimator,
+      test_details = test_details
     )
     return(fit_measure)
   }
@@ -199,7 +208,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       type = "standard",
       metrics = metrics,
       verbose = verbose,
-      estimator_override = standard_estimator
+      estimator_override = standard_estimator,
+      test_details = test_details
     )
   }
 
@@ -209,7 +219,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       type = type,
       metrics = metrics,
       verbose = verbose,
-      scaled_test = selected_test
+      scaled_test = selected_test,
+      test_details = test_details
     )
   }
 
@@ -220,7 +231,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
 # Internal function to extract fit indices based on type and metrics
 extract_fit_lavaan <- function(fit, type, metrics, verbose,
-                               scaled_test = NULL, estimator_override = NULL) {
+                               scaled_test = NULL, estimator_override = NULL,
+                               test_details = FALSE) {
 
   original_metrics <- metrics
   lav_options <- lavaan::lavInspect(fit, "options")
@@ -241,9 +253,33 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     standard_test <- "standard"
   }
 
+  test_label <- if (!is.null(scaled_test)) {
+    scaled_test
+  } else if (has_none) {
+    "none"
+  } else {
+    standard_test
+  }
+  test_label <- test_label[1]
+  se_label <- lav_options$se
+  if (is.null(se_label) || length(se_label) == 0L) {
+    se_label <- "standard"
+  } else {
+    se_label <- se_label[1]
+  }
+
   estimator_label <- estimator_override
+  estimator_warning <- estimator_override
   if (is.null(estimator_label)) {
     estimator_label <- lavaan_estimator(fit, test_vec = test_vec)
+    estimator_warning <- estimator_label
+  }
+  if (is.null(estimator_warning)) {
+    estimator_warning <- estimator_label
+  }
+  if (is.null(estimator_override) && !isTRUE(test_details) &&
+      grepl("_variant$", estimator_label)) {
+    estimator_label <- test_label
   }
 
   # Define essential (classical) metrics if metrics is "essential"
@@ -286,14 +322,33 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
         "Fit measures are not available when test = 'none'; returning NA for requested metrics."
       )
     }
-    fit_measure_df <- data.frame(
-      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
-      ESTIMATOR = estimator_label,
-      NPAR = lavaan::lavInspect(fit, "npar"),
-      matrix(NA_real_, nrow = 1, ncol = length(metrics)),
-      row.names = NULL
-    )
-    colnames(fit_measure_df) <- c("NOBS", "ESTIMATOR", "NPAR", toupper(metrics))
+    if (isTRUE(test_details)) {
+      fit_measure_df <- data.frame(
+        NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+        ESTIMATOR = estimator_label,
+        TEST = test_label,
+        SE = se_label,
+        NPAR = lavaan::lavInspect(fit, "npar"),
+        matrix(NA_real_, nrow = 1, ncol = length(metrics)),
+        row.names = NULL,
+        check.names = FALSE
+      )
+    } else {
+      fit_measure_df <- data.frame(
+        NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+        ESTIMATOR = estimator_label,
+        NPAR = lavaan::lavInspect(fit, "npar"),
+        matrix(NA_real_, nrow = 1, ncol = length(metrics)),
+        row.names = NULL,
+        check.names = FALSE
+      )
+    }
+    base_cols <- c("NOBS", "ESTIMATOR")
+    if (isTRUE(test_details)) {
+      base_cols <- c(base_cols, "TEST", "SE")
+    }
+    base_cols <- c(base_cols, "NPAR")
+    colnames(fit_measure_df) <- c(base_cols, toupper(metrics))
 
     colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
     colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames(fit_measure_df))
@@ -366,7 +421,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     if (length(missing_robust) > 0L && verbose) {
       cli::cli_alert_warning(
         cli::cli_text(
-          "Robust fit measures are not available for estimator {estimator_label}; returning NA for requested robust metrics."
+          "Robust fit measures are not available for estimator {estimator_warning}; returning NA for requested robust metrics."
         )
       )
     }
@@ -384,12 +439,25 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   colnames(fit_measure_df) <- c("NPAR", toupper(metrics))
 
   # Add additional columns
-  fit_measure_df <- data.frame(
-    NOBS = sum(lavaan::lavInspect(fit, "nobs")),
-    ESTIMATOR = estimator_label,
-    fit_measure_df,
-    row.names = NULL  # Remove row names
-  )
+  if (isTRUE(test_details)) {
+    fit_measure_df <- data.frame(
+      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+      ESTIMATOR = estimator_label,
+      TEST = test_label,
+      SE = se_label,
+      fit_measure_df,
+      row.names = NULL,  # Remove row names
+      check.names = FALSE
+    )
+  } else {
+    fit_measure_df <- data.frame(
+      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+      ESTIMATOR = estimator_label,
+      fit_measure_df,
+      row.names = NULL,  # Remove row names
+      check.names = FALSE
+    )
+  }
 
   # Clean up the column names to remove ".scaled" and ".robust"
   colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
