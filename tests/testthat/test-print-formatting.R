@@ -6,6 +6,20 @@ test_that("format_results returns text output", {
   expect_true(is.character(text_out))
 })
 
+test_that("format_results rounds Chi2 df labels to 2 decimals", {
+  table_data <- data.frame(
+    Chi2 = 20.68,
+    Chi2_df = 7.33652992775491,
+    p_Chi2 = 0.005,
+    check.names = FALSE
+  )
+  class(table_data) <- c("model_fit", class(table_data))
+
+  text_out <- format_results(table_data, output = "text")
+
+  expect_match(text_out, "Chi2\\(7\\.34\\)")
+})
+
 test_that("format_results returns markdown output", {
   skip_if_not_installed("knitr")
 
