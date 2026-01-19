@@ -5,6 +5,7 @@
 -   **Messaging**: Suppressed the standard-index fallback message when `test = "none"` to avoid redundant output before returning NA metrics.
 -   **Model Fit**: `model_fit.lavaan()` now reports one row per non-standard test when multiple tests are present, with optional inclusion of the standard-test row.
 -   **Model Fit**: Missing robust fit measures now return `NA` with a warning instead of erroring when `type = "robust"` is requested.
+-   **Compare Model Fit**: `compare_model_fit()` now accepts `test` and `standard_test`, including named lists for per-model control, and forwards them to `model_fit()`.
 -   **Formatting**: Chi-square df values in `model_fit` and `compare_model_fit` headers now round to 2 decimals when fractional.
 
 # psymetrics 0.1.7

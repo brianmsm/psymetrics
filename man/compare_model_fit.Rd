@@ -4,7 +4,14 @@
 \alias{compare_model_fit}
 \title{Compare Model Fit Indices Across Multiple Models}
 \usage{
-compare_model_fit(..., type = NULL, metrics = "essential", verbose = TRUE)
+compare_model_fit(
+  ...,
+  type = NULL,
+  metrics = "essential",
+  verbose = TRUE,
+  test = "default",
+  standard_test = FALSE
+)
 }
 \arguments{
 \item{...}{Two or more model objects to be compared.}
@@ -21,6 +28,23 @@ vector of indices.}
 
 \item{verbose}{Logical. If \code{TRUE}, prints messages about
 the indices being adjusted.}
+
+\item{test}{A character string or vector specifying which
+lavaan tests to report. Use \code{"default"} (the default) to
+return all non-standard tests from
+\code{lavInspect(fit, "options")$test}, excluding \code{"standard"},
+\code{"default"}, and \code{"none"}. Provide a character vector to
+request specific tests; unavailable entries are dropped
+with an informational message when \code{verbose = TRUE}. When
+supplying a list, it must be named and each name must match
+the model labels shown in the \code{MODEL} column.}
+
+\item{standard_test}{A logical value indicating whether to
+include a standard-test row in addition to non-standard
+tests. When \code{TRUE}, the standard row is shown first and
+always uses standard indices. When supplying a list, it
+must be named and each name must match the model labels
+shown in the \code{MODEL} column.}
 }
 \value{
 A data frame containing the fit indices for each

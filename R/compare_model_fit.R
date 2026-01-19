@@ -16,6 +16,21 @@
 #'   vector of indices.
 #' @param verbose Logical. If `TRUE`, prints messages about
 #'   the indices being adjusted.
+#' @param test A character string or vector specifying which
+#'   lavaan tests to report. Use `"default"` (the default) to
+#'   return all non-standard tests from
+#'   `lavInspect(fit, "options")$test`, excluding `"standard"`,
+#'   `"default"`, and `"none"`. Provide a character vector to
+#'   request specific tests; unavailable entries are dropped
+#'   with an informational message when `verbose = TRUE`. When
+#'   supplying a list, it must be named and each name must match
+#'   the model labels shown in the `MODEL` column.
+#' @param standard_test A logical value indicating whether to
+#'   include a standard-test row in addition to non-standard
+#'   tests. When `TRUE`, the standard row is shown first and
+#'   always uses standard indices. When supplying a list, it
+#'   must be named and each name must match the model labels
+#'   shown in the `MODEL` column.
 #'
 #' @return A data frame containing the fit indices for each
 #'   model, with an additional column identifying the models.
@@ -36,7 +51,8 @@
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
-compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose = TRUE) {
+compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose = TRUE,
+                              test = "default", standard_test = FALSE) {
   # Capture all the fit objects as a list
   fits <- list(...)
 
@@ -47,15 +63,122 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     )
   }
 
+  model_names <- sapply(substitute(list(...))[-1L], deparse)
+  default_test <- "default"
+  default_standard_test <- FALSE
+
+  resolve_test_by_model <- function(test_value, model_names, default_value) {
+    if (is.list(test_value)) {
+      value_names <- names(test_value)
+      if (is.null(value_names) || any(value_names == "")) {
+        rlang::abort(c(
+          "`test` must be a named list when supplying per-model values.",
+          sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
+        ))
+      }
+      unknown_names <- setdiff(value_names, model_names)
+      if (length(unknown_names) > 0L) {
+        rlang::abort(c(
+          sprintf(
+            "`test` list includes unknown model names: %s.",
+            paste(unknown_names, collapse = ", ")
+          ),
+          sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
+        ))
+      }
+      for (value_name in value_names) {
+        value <- test_value[[value_name]]
+        if (is.null(value) || !is.character(value) || length(value) == 0L) {
+          rlang::abort(
+            sprintf("`test` for model '%s' must be a non-empty character vector.", value_name)
+          )
+        }
+      }
+      lapply(model_names, function(model_name) {
+        if (model_name %in% value_names) {
+          test_value[[model_name]]
+        } else {
+          default_value
+        }
+      })
+    } else {
+      if (!is.null(test_value) && (!is.character(test_value) || length(test_value) == 0L)) {
+        rlang::abort("`test` must be a non-empty character vector or \"default\".")
+      }
+      rep(list(test_value), length(model_names))
+    }
+  }
+
+  resolve_standard_test_by_model <- function(standard_value, model_names, default_value) {
+    if (is.list(standard_value)) {
+      value_names <- names(standard_value)
+      if (is.null(value_names) || any(value_names == "")) {
+        rlang::abort(c(
+          "`standard_test` must be a named list when supplying per-model values.",
+          sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
+        ))
+      }
+      unknown_names <- setdiff(value_names, model_names)
+      if (length(unknown_names) > 0L) {
+        rlang::abort(c(
+          sprintf(
+            "`standard_test` list includes unknown model names: %s.",
+            paste(unknown_names, collapse = ", ")
+          ),
+          sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
+        ))
+      }
+      for (value_name in value_names) {
+        value <- standard_value[[value_name]]
+        if (!is.logical(value) || length(value) != 1L) {
+          rlang::abort(
+            sprintf("`standard_test` for model '%s' must be TRUE or FALSE.", value_name)
+          )
+        }
+      }
+      lapply(model_names, function(model_name) {
+        if (model_name %in% value_names) {
+          standard_value[[model_name]]
+        } else {
+          default_value
+        }
+      })
+    } else {
+      if (!is.logical(standard_value) || length(standard_value) != 1L) {
+        rlang::abort("`standard_test` must be TRUE or FALSE.")
+      }
+      rep(list(standard_value), length(model_names))
+    }
+  }
+
+  test_by_model <- resolve_test_by_model(test, model_names, default_test)
+  standard_test_by_model <- resolve_standard_test_by_model(
+    standard_test,
+    model_names,
+    default_standard_test
+  )
+
   # Apply model_fit to each model in the list
-  fit_measures <- lapply(fits, model_fit, type = type,
-                         metrics = metrics, verbose = verbose)
+  fit_measures <- Map(
+    function(fit, test_value, standard_value) {
+      model_fit(
+        fit,
+        type = type,
+        metrics = metrics,
+        verbose = verbose,
+        test = test_value,
+        standard_test = standard_value
+      )
+    },
+    fits,
+    test_by_model,
+    standard_test_by_model
+  )
 
   # Combine the dataframes vertically
   combined_measures <- do.call(rbind, fit_measures)
 
   # Add a column to identify each model
-  model_names <- sapply(substitute(list(...))[-1L], deparse)
   combined_measures$model <- rep(model_names, times = sapply(fit_measures, nrow))
 
   # Reorder columns so that "model" is the first column
