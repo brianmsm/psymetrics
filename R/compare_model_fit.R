@@ -158,17 +158,88 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     default_standard_test
   )
 
+  standard_estimators <- character(0)
+  if (type %in% c("scaled", "robust") || is.null(type)) {
+    for (fit_idx in seq_along(fits)) {
+      fit <- fits[[fit_idx]]
+      if (!inherits(fit, "lavaan")) {
+        next
+      }
+      if (!isTRUE(standard_test_by_model[[fit_idx]])) {
+        next
+      }
+      resolved_type <- type
+      if (is.null(resolved_type)) {
+        resolved_type <- if (is_robust_estimator_lavaan(fit) == "robust") {
+          "scaled"
+        } else {
+          "standard"
+        }
+      }
+      if (resolved_type %in% c("scaled", "robust")) {
+        test_value <- test_by_model[[fit_idx]]
+        if (is.null(test_value)) {
+          test_value <- "default"
+        }
+        test_vec <- lavaan::lavInspect(fit, "options")$test
+        if (is.null(test_vec)) {
+          test_vec <- character(0)
+        }
+        exclude_tests <- c("standard", "default", "none")
+        if (length(test_value) == 1L && test_value == "default") {
+          selected_tests <- test_vec[!test_vec %in% exclude_tests]
+        } else {
+          requested_tests <- test_value
+          requested_tests <- requested_tests[!requested_tests %in% exclude_tests]
+          selected_tests <- requested_tests[requested_tests %in% test_vec]
+        }
+        if (length(selected_tests) == 0L) {
+          resolved_type <- "standard"
+        }
+      }
+      if (resolved_type %in% c("scaled", "robust")) {
+        standard_estimators <- c(standard_estimators, lavaan_standard_estimator(fit))
+      }
+    }
+  }
+  standard_estimators <- unique(standard_estimators)
+  if (length(standard_estimators) == 1L) {
+    cli::cli_inform(
+      cli::cli_text(
+        "Standard-test row uses standard indices for estimator {standard_estimators}."
+      )
+    )
+  } else if (length(standard_estimators) > 1L) {
+    cli::cli_inform(
+      cli::cli_text(
+        "Standard-test rows use standard indices for estimators: {standard_estimators}."
+      )
+    )
+  }
+
   # Apply model_fit to each model in the list
   fit_measures <- Map(
     function(fit, test_value, standard_value) {
-      model_fit(
-        fit,
-        type = type,
-        metrics = metrics,
-        verbose = verbose,
-        test = test_value,
-        standard_test = standard_value
-      )
+      if (inherits(fit, "lavaan")) {
+        model_fit(
+          fit,
+          type = type,
+          metrics = metrics,
+          verbose = verbose,
+          test = test_value,
+          standard_test = standard_value,
+          standard_test_message = FALSE
+        )
+      } else {
+        model_fit(
+          fit,
+          type = type,
+          metrics = metrics,
+          verbose = verbose,
+          test = test_value,
+          standard_test = standard_value
+        )
+      }
     },
     fits,
     test_by_model,

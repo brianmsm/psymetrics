@@ -63,6 +63,14 @@
 model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE,
                              test = "default", standard_test = FALSE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
+  dots <- list(...)
+  standard_test_message <- TRUE
+  if ("standard_test_message" %in% names(dots)) {
+    standard_test_message <- dots$standard_test_message
+    if (!is.logical(standard_test_message) || length(standard_test_message) != 1L) {
+      rlang::abort("`standard_test_message` must be TRUE or FALSE.")
+    }
+  }
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
   lav_options <- lavaan::lavInspect(fit, "options")
@@ -162,16 +170,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     return(data.frame())
   }
 
-  standard_estimator <- lav_options$estimator
-  if (standard_estimator == "ML") {
-    info_type <- unique(lav_options$information)
-    if (length(info_type) > 1L) {
-      info_type <- info_type[1]
-    }
-    if (lav_options$se == "standard" && info_type == "first.order") {
-      standard_estimator <- "MLF"
-    }
-  }
+  standard_estimator <- lavaan_standard_estimator(fit)
   if (length(selected_tests) == 0L) {
     fit_measure <- extract_fit_lavaan(
       fit,
@@ -181,6 +180,16 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       estimator_override = standard_estimator
     )
     return(fit_measure)
+  }
+
+  if (isTRUE(standard_test) &&
+      type %in% c("scaled", "robust") &&
+      isTRUE(standard_test_message)) {
+    cli::cli_inform(
+      cli::cli_text(
+        "Standard-test row uses standard indices for estimator {standard_estimator}."
+      )
+    )
   }
 
   fit_measure_list <- list()
@@ -423,6 +432,21 @@ lavaan_test_groups <- function() {
     bootstrap_tests = c("bollen.stine"),
     standard_only_tests = c("none", "default")
   )
+}
+
+lavaan_standard_estimator <- function(fit) {
+  lav_options <- lavaan::lavInspect(fit, "options")
+  estimator <- lav_options$estimator
+  if (estimator == "ML") {
+    info_type <- unique(lav_options$information)
+    if (length(info_type) > 1L) {
+      info_type <- info_type[1]
+    }
+    if (lav_options$se == "standard" && info_type == "first.order") {
+      estimator <- "MLF"
+    }
+  }
+  estimator
 }
 
 lavaan_has_test <- function(test_vec, candidates) {
