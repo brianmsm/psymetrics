@@ -27,9 +27,10 @@ Returns \code{x} invisibly.
 \description{
 \code{print.compare_model_fit()} prints a text summary of
 compare-model-fit tables to the console. By default, \code{Chi2}
-is shown with 2 decimals while other indices use \code{digits}.
-For markdown or HTML output (or to override column-specific
-digits), use \code{\link[=format_results]{format_results()}}.
+is shown with 2 decimals while other indices use \code{digits},
+and fractional chi-square df values are rounded to 2 decimals
+in the \code{Chi2(df)} header. For markdown or HTML output (or to
+override column-specific digits), use \code{\link[=format_results]{format_results()}}.
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE)) {
