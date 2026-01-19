@@ -1,3 +1,9 @@
+# psymetrics 0.1.8
+
+## Bug Fixes and Improvements
+
+-   **Messaging**: Suppressed the standard-index fallback message when `test = "none"` to avoid redundant output before returning NA metrics.
+
 # psymetrics 0.1.7
 
 ## Bug Fixes and Improvements

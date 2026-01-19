@@ -57,6 +57,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   has_robust <- lavaan_has_test(test_vec, test_groups$robust_tests)
   has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)
   has_standard_only <- lavaan_has_test(test_vec, test_groups$standard_only_tests)
+  has_none <- lavaan_has_test(test_vec, "none")
   browne_only <- has_browne && !has_robust
   standard_only <- browne_only || has_bootstrap || has_standard_only
 
@@ -70,7 +71,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   }
 
   if (standard_only && type %in% c("scaled", "robust")) {
-    if (verbose) {
+    if (verbose && !has_none) {
       if (browne_only) {
         cli::cli_inform(
           "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
