@@ -28,7 +28,7 @@ test_that("model_fit handles standard indices with robust estimator", {
   expect_gt(ncol(result), 0)
 })
 
-test_that("model_fit returns empty data for scaled indices without robust estimator", {
+test_that("model_fit falls back to standard indices without robust estimator", {
   skip_if_not_installed("lavaan")
 
   model <- "visual =~ x1 + x2 + x3"
@@ -40,8 +40,70 @@ test_that("model_fit returns empty data for scaled indices without robust estima
     suppressWarnings(psymetrics::model_fit(fit, type = "scaled"))
   )
 
-  expect_equal(ncol(result), 0)
-  expect_equal(nrow(result), 0)
+  expect_equal(nrow(result), 1)
+  expect_equal(result$ESTIMATOR, "ML")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit preserves MLF estimator labeling for ML first-order information", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "ML",
+      information = "first.order"
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(result$ESTIMATOR, "MLF")
+})
+
+test_that("model_fit returns one row per non-standard test", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(nrow(result), 2)
+})
+
+test_that("model_fit can include the standard test row first", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, standard_test = TRUE)
+  )
+
+  expect_equal(nrow(result), 3)
+  expect_equal(result$ESTIMATOR[1], lavaan::lavInspect(fit, "options")$estimator)
 })
 
 test_that("model_fit handles Browne residual tests for ULS", {
