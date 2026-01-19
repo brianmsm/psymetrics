@@ -85,6 +85,27 @@ textual =~ x4 + x5 + x6"
   expect_equal(nrow(result), 2)
 })
 
+test_that("model_fit handles missing robust measures for multi-test fits", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressWarnings(
+    suppressMessages(psymetrics::model_fit(fit, type = "robust"))
+  )
+
+  expect_s3_class(result, "model_fit")
+  expect_equal(nrow(result), 2)
+})
+
 test_that("model_fit can include the standard test row first", {
   skip_if_not_installed("lavaan")
 
