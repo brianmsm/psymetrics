@@ -350,6 +350,24 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     )
   }
 
+  expected_names <- c("npar", metrics_to_use)
+  robust_targets <- metrics_to_use[grepl("\\.robust$", metrics_to_use)]
+  if (type == "robust" && length(robust_targets) > 0L) {
+    missing_robust <- setdiff(robust_targets, names(fit_measures))
+    if (length(missing_robust) > 0L && verbose) {
+      cli::cli_alert_warning(
+        cli::cli_text(
+          "Robust fit measures are not available for estimator {estimator_label}; returning NA for requested robust metrics."
+        )
+      )
+    }
+  }
+
+  fit_measures_full <- setNames(rep(NA_real_, length(expected_names)), expected_names)
+  available_measures <- intersect(names(fit_measures), expected_names)
+  fit_measures_full[available_measures] <- fit_measures[available_measures]
+  fit_measures <- fit_measures_full
+
   # Transpose and convert to a data frame, removing the special class
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
 
