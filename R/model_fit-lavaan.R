@@ -9,6 +9,8 @@
 #' the corresponding indices will be returned. If no
 #' type is specified, the function automatically chooses
 #' `"scaled"` for robust estimators and `"standard"` otherwise.
+#' When the model was fitted with multiple tests, the function
+#' can return multiple rows (one per non-standard test).
 #'
 #' @param fit A `lavaan` object estimated with `lavaan::cfa()`,
 #'   `lavaan::sem()`, or similar functions.
@@ -24,10 +26,22 @@
 #' @param verbose A logical value indicating whether to
 #'   display informational messages about metric adjustments.
 #'   Defaults to `TRUE`.
+#' @param test A character string or vector specifying which
+#'   lavaan tests to report. Use `"default"` (the default) to
+#'   return all non-standard tests from
+#'   `lavInspect(fit, "options")$test`, excluding `"standard"`,
+#'   `"default"`, and `"none"`. Provide a character vector to
+#'   request specific tests; unavailable entries are dropped
+#'   with an informational message when `verbose = TRUE`.
+#' @param standard_test A logical value indicating whether to
+#'   include a standard-test row in addition to non-standard
+#'   tests. When `TRUE`, the standard row is shown first and
+#'   always uses standard indices.
 #' @param ... Additional arguments passed to methods.
 #'
 #' @return A data frame containing the specified fit
-#'   indices of the model.
+#'   indices of the model. When multiple tests are reported,
+#'   the data frame can include multiple rows.
 #' @seealso [model_fit] for an overview of model fit
 #'   methods in the package.
 #' @export
@@ -46,7 +60,8 @@
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
-model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE, ...) {
+model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = TRUE,
+                             test = "default", standard_test = FALSE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
@@ -56,10 +71,18 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   has_browne <- lavaan_has_test(test_vec, test_groups$browne_tests)
   has_robust <- lavaan_has_test(test_vec, test_groups$robust_tests)
   has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)
-  has_standard_only <- lavaan_has_test(test_vec, test_groups$standard_only_tests)
   has_none <- lavaan_has_test(test_vec, "none")
   browne_only <- has_browne && !has_robust
-  standard_only <- browne_only || has_bootstrap || has_standard_only
+
+  if (is.null(test)) {
+    test <- "default"
+  }
+  if (!is.character(test) || length(test) == 0L) {
+    rlang::abort("`test` must be a non-empty character vector or \"default\".")
+  }
+  if (!is.logical(standard_test) || length(standard_test) != 1L) {
+    rlang::abort("`standard_test` must be a single logical value.")
+  }
 
   # Determine the type of index to use
   if (is.null(type)) {
@@ -70,7 +93,32 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     }
   }
 
-  if (standard_only && type %in% c("scaled", "robust")) {
+  exclude_tests <- c("standard", "default", "none")
+  available_tests <- if (is.null(test_vec)) {
+    character(0)
+  } else {
+    test_vec
+  }
+
+  if (length(test) == 1L && test == "default") {
+    selected_tests <- available_tests[!available_tests %in% exclude_tests]
+  } else {
+    requested_tests <- test
+    requested_tests <- requested_tests[!requested_tests %in% exclude_tests]
+    missing_tests <- setdiff(requested_tests, available_tests)
+    if (length(missing_tests) > 0L && verbose) {
+      cli::cli_inform(
+        cli::cli_text(
+          "Requested tests not found in the fitted model and were dropped: {missing_tests}."
+        )
+      )
+    }
+    selected_tests <- requested_tests[requested_tests %in% available_tests]
+  }
+  selected_tests <- unique(selected_tests)
+  available_nonstandard <- available_tests[!available_tests %in% exclude_tests]
+
+  if (length(selected_tests) == 0L && type %in% c("scaled", "robust")) {
     if (verbose && !has_none) {
       if (browne_only) {
         cli::cli_inform(
@@ -80,24 +128,17 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         cli::cli_inform(
           "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
         )
+      } else if (length(available_nonstandard) == 0L) {
+        cli::cli_inform(
+          "The model reports only standard tests; using standard indices instead."
+        )
       } else {
         cli::cli_inform(
-          "The model does not report a chi-square test; using standard indices instead."
+          "No requested non-standard tests are available; using standard indices instead."
         )
       }
     }
     type <- "standard"
-  }
-
-  # Validate 'type'
-  if (type %in% c("scaled", "robust") && robust_type != "robust") {
-    cli::cli_alert_danger(
-      paste0(
-        "The model was not estimated with a robust estimator. ",
-        "'scaled' and 'robust' indices are not available."
-      )
-    )
-    return(data.frame())
   }
 
   if (type == "standard" && robust_type == "robust") {
@@ -121,28 +162,79 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     return(data.frame())
   }
 
-  # Extract fit indices based on the type and metrics
-  fit_measure <- extract_fit_lavaan(fit, type, metrics = metrics, verbose = verbose)
+  standard_estimator <- lav_options$estimator
+  if (standard_estimator == "ML") {
+    info_type <- unique(lav_options$information)
+    if (length(info_type) > 1L) {
+      info_type <- info_type[1]
+    }
+    if (lav_options$se == "standard" && info_type == "first.order") {
+      standard_estimator <- "MLF"
+    }
+  }
+  if (length(selected_tests) == 0L) {
+    fit_measure <- extract_fit_lavaan(
+      fit,
+      type,
+      metrics = metrics,
+      verbose = verbose,
+      estimator_override = standard_estimator
+    )
+    return(fit_measure)
+  }
 
+  fit_measure_list <- list()
+  if (isTRUE(standard_test)) {
+    fit_measure_list[[length(fit_measure_list) + 1L]] <- extract_fit_lavaan(
+      fit,
+      type = "standard",
+      metrics = metrics,
+      verbose = verbose,
+      estimator_override = standard_estimator
+    )
+  }
+
+  for (selected_test in selected_tests) {
+    fit_measure_list[[length(fit_measure_list) + 1L]] <- extract_fit_lavaan(
+      fit,
+      type = type,
+      metrics = metrics,
+      verbose = verbose,
+      scaled_test = selected_test
+    )
+  }
+
+  fit_measure <- do.call(rbind, fit_measure_list)
+  class(fit_measure) <- unique(c("model_fit", class(fit_measure)))
   return(fit_measure)
 }
 
 # Internal function to extract fit indices based on type and metrics
-extract_fit_lavaan <- function(fit, type, metrics, verbose) {
+extract_fit_lavaan <- function(fit, type, metrics, verbose,
+                               scaled_test = NULL, estimator_override = NULL) {
 
   original_metrics <- metrics
   lav_options <- lavaan::lavInspect(fit, "options")
   test_groups <- lavaan_test_groups()
-  has_robust <- lavaan_has_test(lav_options$test, test_groups$robust_tests)
-  has_browne <- lavaan_has_test(lav_options$test, test_groups$browne_tests)
-  has_bootstrap <- lavaan_has_test(lav_options$test, test_groups$bootstrap_tests)
-  has_standard_only <- lavaan_has_test(lav_options$test, test_groups$standard_only_tests)
-  has_none <- lavaan_has_test(lav_options$test, "none")
+  test_vec <- lav_options$test
+  if (!is.null(scaled_test)) {
+    test_vec <- c("standard", scaled_test)
+  }
+  has_robust <- lavaan_has_test(test_vec, test_groups$robust_tests)
+  has_browne <- lavaan_has_test(test_vec, test_groups$browne_tests)
+  has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)
+  has_standard_only <- lavaan_has_test(test_vec, test_groups$standard_only_tests)
+  has_none <- lavaan_has_test(test_vec, "none")
   browne_only <- has_browne && !has_robust
   standard_only <- browne_only || has_bootstrap || has_standard_only
   standard_test <- lav_options$standard.test
   if (is.null(standard_test)) {
     standard_test <- "standard"
+  }
+
+  estimator_label <- estimator_override
+  if (is.null(estimator_label)) {
+    estimator_label <- lavaan_estimator(fit, test_vec = test_vec)
   }
 
   # Define essential (classical) metrics if metrics is "essential"
@@ -161,7 +253,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
                       "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "rmsea.notclose.pvalue")
 
   if (standard_only && type %in% c("scaled", "robust")) {
-    if (verbose) {
+    if (verbose && !has_none) {
       if (browne_only) {
         cli::cli_inform(
           "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
@@ -187,7 +279,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
     }
     fit_measure_df <- data.frame(
       NOBS = sum(lavaan::lavInspect(fit, "nobs")),
-      ESTIMATOR = lavaan_estimator(fit),
+      ESTIMATOR = estimator_label,
       NPAR = lavaan::lavInspect(fit, "npar"),
       matrix(NA_real_, nrow = 1, ncol = length(metrics)),
       row.names = NULL
@@ -248,7 +340,15 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
   }
 
   # Extract the metrics based on metrics_to_use
-  fit_measures <- lavaan::fitmeasures(fit, fit.measures = c("npar", metrics_to_use))
+  if (is.null(scaled_test)) {
+    fit_measures <- lavaan::fitmeasures(fit, fit.measures = c("npar", metrics_to_use))
+  } else {
+    fit_measures <- lavaan::fitmeasures(
+      fit,
+      fit.measures = c("npar", metrics_to_use),
+      fm.args = list(scaled.test = scaled_test)
+    )
+  }
 
   # Transpose and convert to a data frame, removing the special class
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
@@ -259,7 +359,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose) {
   # Add additional columns
   fit_measure_df <- data.frame(
     NOBS = sum(lavaan::lavInspect(fit, "nobs")),
-    ESTIMATOR = lavaan_estimator(fit),
+    ESTIMATOR = estimator_label,
     fit_measure_df,
     row.names = NULL  # Remove row names
   )
@@ -337,14 +437,16 @@ lavaan_test_primary <- function(test_vec) {
   }
 }
 
-lavaan_estimator <- function(fit) {
+lavaan_estimator <- function(fit, test_vec = NULL) {
   lav_options <- lavaan::lavInspect(fit, "options")
   info_type <- unique(lav_options$information)
   if (length(info_type) > 1L) {
     info_type <- info_type[1]
   }
   test_groups <- lavaan_test_groups()
-  test_vec <- lav_options$test
+  if (is.null(test_vec)) {
+    test_vec <- lav_options$test
+  }
   primary_test <- lavaan_test_primary(test_vec)
   has_browne <- lavaan_has_test(test_vec, test_groups$browne_tests)
   has_bootstrap <- lavaan_has_test(test_vec, test_groups$bootstrap_tests)

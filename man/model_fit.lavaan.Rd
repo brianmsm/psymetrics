@@ -4,7 +4,15 @@
 \alias{model_fit.lavaan}
 \title{Extract Fit Indices from a lavaan Model}
 \usage{
-\method{model_fit}{lavaan}(fit, type = NULL, metrics = "essential", verbose = TRUE, ...)
+\method{model_fit}{lavaan}(
+  fit,
+  type = NULL,
+  metrics = "essential",
+  verbose = TRUE,
+  test = "default",
+  standard_test = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fit}{A \code{lavaan} object estimated with \code{lavaan::cfa()},
@@ -25,11 +33,25 @@ specify a custom set of metrics.}
 display informational messages about metric adjustments.
 Defaults to \code{TRUE}.}
 
+\item{test}{A character string or vector specifying which
+lavaan tests to report. Use \code{"default"} (the default) to
+return all non-standard tests from
+\code{lavInspect(fit, "options")$test}, excluding \code{"standard"},
+\code{"default"}, and \code{"none"}. Provide a character vector to
+request specific tests; unavailable entries are dropped
+with an informational message when \code{verbose = TRUE}.}
+
+\item{standard_test}{A logical value indicating whether to
+include a standard-test row in addition to non-standard
+tests. When \code{TRUE}, the standard row is shown first and
+always uses standard indices.}
+
 \item{...}{Additional arguments passed to methods.}
 }
 \value{
 A data frame containing the specified fit
-indices of the model.
+indices of the model. When multiple tests are reported,
+the data frame can include multiple rows.
 }
 \description{
 \code{model_fit.lavaan} extracts fit indices from a \code{lavaan}
@@ -40,6 +62,8 @@ and you specify \code{type = "scaled"} or \code{type = "robust"},
 the corresponding indices will be returned. If no
 type is specified, the function automatically chooses
 \code{"scaled"} for robust estimators and \code{"standard"} otherwise.
+When the model was fitted with multiple tests, the function
+can return multiple rows (one per non-standard test).
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE)) {
