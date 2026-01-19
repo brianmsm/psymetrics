@@ -85,6 +85,49 @@ textual =~ x4 + x5 + x6"
   expect_equal(nrow(result), 2)
 })
 
+test_that("model_fit uses test names for unknown estimator variants", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(result$ESTIMATOR, c("satorra.bentler", "mean.var.adjusted"))
+})
+
+test_that("model_fit can include test and se details for lavaan", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, test_details = TRUE)
+  )
+
+  expect_true(all(c("TEST", "SE") %in% names(result)))
+  expect_equal(result$TEST, c("satorra.bentler", "mean.var.adjusted"))
+  expect_true(all(result$ESTIMATOR == "ML_variant"))
+  expect_true(all(result$SE == lavaan::lavInspect(fit, "options")$se))
+})
+
 test_that("model_fit handles missing robust measures for multi-test fits", {
   skip_if_not_installed("lavaan")
 

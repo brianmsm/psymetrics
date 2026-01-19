@@ -18,6 +18,24 @@ test_that("compare_model_fit combines models with labels", {
   expect_equal(combined$MODEL, c("fit1", "fit2"))
 })
 
+test_that("compare_model_fit can include test details columns", {
+  skip_if_not_installed("lavaan")
+
+  model1 <- "visual =~ x1 + x2 + x3 + x4"
+  model2 <- "visual =~ x1 + x2 + x3 + x4 + x5"
+
+  fit1 <- suppressWarnings(
+    lavaan::cfa(model1, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+  fit2 <- suppressWarnings(
+    lavaan::cfa(model2, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  combined <- psymetrics::compare_model_fit(fit1, fit2, test_details = TRUE)
+
+  expect_true(all(c("TEST", "SE") %in% names(combined)))
+})
+
 test_that("compare_model_fit supports per-model test lists", {
   skip_if_not_installed("lavaan")
   skip_if(packageVersion("lavaan") < "0.6.21", "lavaan < 0.6.21 does not support multi-test options")
