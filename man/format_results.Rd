@@ -62,6 +62,12 @@ to text, markdown, or HTML. Use \code{output = "auto"} to choose
 markdown or HTML based on the rendering context; this is a
 best-effort heuristic, so set \code{output} explicitly to override.
 }
+\note{
+HTML output returns a \code{tinytable} object. Printing HTML
+tables inside RStudio requires the \code{rstudioapi} package; you
+can still create the object without it, but printing will
+error unless \code{rstudioapi} is installed.
+}
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
@@ -93,7 +99,10 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
       output_args = list(caption = "Fit indices")
     )
   }
-  format_results(results, output = "html")
+  html_table <- format_results(results, output = "html")
+  if (interactive()) {
+    html_table
+  }
 } else {
   message("Please install 'lavaan' to run this example.")
 }

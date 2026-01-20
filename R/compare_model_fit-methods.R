@@ -83,7 +83,10 @@ format_results.compare_model_fit <- function(x,
 #'   comparison <- compare_model_fit(fit1, fit2)
 #'   comparison
 #'   print(comparison, digits = 4)
-#'   format_results(comparison, output = "html")
+#'   html_table <- format_results(comparison, output = "html")
+#'   if (interactive()) {
+#'     html_table
+#'   }
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }

@@ -32,6 +32,10 @@
 #' @param output_args A named list of arguments forwarded to
 #'   `insight::export_table()` or `tinytable::tt()` depending on
 #'   `output`.
+#' @note HTML output returns a `tinytable` object. Printing HTML
+#'   tables inside RStudio requires the `rstudioapi` package; you
+#'   can still create the object without it, but printing will
+#'   error unless `rstudioapi` is installed.
 #'
 #' @return A character string (text), a `knitr_kable` (markdown), or a
 #'   `tinytable` (HTML).
@@ -67,7 +71,10 @@
 #'       output_args = list(caption = "Fit indices")
 #'     )
 #'   }
-#'   format_results(results, output = "html")
+#'   html_table <- format_results(results, output = "html")
+#'   if (interactive()) {
+#'     html_table
+#'   }
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
