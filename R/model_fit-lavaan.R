@@ -196,7 +196,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   if (isTRUE(standard_test) &&
       type %in% c("scaled", "robust") &&
-      isTRUE(standard_test_message)) {
+      isTRUE(standard_test_message) &&
+      isTRUE(verbose)) {
     cli::cli_inform(
       cli::cli_text(
         "Standard-test row uses standard indices for estimator {standard_estimator}."
