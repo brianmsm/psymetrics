@@ -49,7 +49,10 @@ shown in the \code{MODEL} column.}
 
 \item{test_details}{Logical. If \code{TRUE}, include \code{TEST} and
 \code{SE} columns (for lavaan fits) that describe the test and
-standard error settings used to compute each row.}
+standard error settings used to compute each row. When
+\code{standard_test = TRUE} adds the standard row, \code{SE} is set to
+\code{NA} for that row because fit indices do not depend on standard
+errors.}
 }
 \value{
 A data frame containing the fit indices for each
@@ -70,6 +73,7 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
   fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   compare_model_fit(fit1, fit2)
+  compare_model_fit(fit1, fit2, standard_test = TRUE, test_details = TRUE)
   compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
 } else {
   message("Please install 'lavaan' to run this example.")

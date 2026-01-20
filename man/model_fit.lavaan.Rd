@@ -49,9 +49,11 @@ always uses standard indices.}
 
 \item{test_details}{A logical value indicating whether to
 add \code{TEST} and \code{SE} columns describing the test and standard
-error settings used to compute the fit measures. When \code{FALSE}
-(default), \code{ESTIMATOR} substitutes the test name for unknown
-estimator variants.}
+error settings used to compute the fit measures. When
+\code{standard_test = TRUE} adds the standard row, \code{SE} is set to
+\code{NA} for that row because fit indices do not depend on standard
+errors. When \code{FALSE} (default), \code{ESTIMATOR} substitutes the test
+name for unknown estimator variants.}
 
 \item{...}{Additional arguments passed to methods.}
 }
@@ -82,6 +84,7 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit <- cfa(hs_model, data = HolzingerSwineford1939,
              estimator = "MLR")
   model_fit(fit)
+  model_fit(fit, standard_test = TRUE, test_details = TRUE)
   model_fit(fit, type = "robust")
   model_fit(fit, metrics = c("cfi", "tli"))
 } else {

@@ -39,9 +39,11 @@
 #'   always uses standard indices.
 #' @param test_details A logical value indicating whether to
 #'   add `TEST` and `SE` columns describing the test and standard
-#'   error settings used to compute the fit measures. When `FALSE`
-#'   (default), `ESTIMATOR` substitutes the test name for unknown
-#'   estimator variants.
+#'   error settings used to compute the fit measures. When
+#'   `standard_test = TRUE` adds the standard row, `SE` is set to
+#'   `NA` for that row because fit indices do not depend on standard
+#'   errors. When `FALSE` (default), `ESTIMATOR` substitutes the test
+#'   name for unknown estimator variants.
 #' @param ... Additional arguments passed to methods.
 #'
 #' @return A data frame containing the specified fit
@@ -60,6 +62,7 @@
 #'   fit <- cfa(hs_model, data = HolzingerSwineford1939,
 #'              estimator = "MLR")
 #'   model_fit(fit)
+#'   model_fit(fit, standard_test = TRUE, test_details = TRUE)
 #'   model_fit(fit, type = "robust")
 #'   model_fit(fit, metrics = c("cfi", "tli"))
 #' } else {
