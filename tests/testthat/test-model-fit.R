@@ -1,7 +1,7 @@
 test_that("model_fit returns expected columns for lavaan", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
   )
@@ -15,7 +15,7 @@ test_that("model_fit returns expected columns for lavaan", {
 test_that("model_fit handles standard indices with robust estimator", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
   )
@@ -31,7 +31,7 @@ test_that("model_fit handles standard indices with robust estimator", {
 test_that("model_fit falls back to standard indices without robust estimator", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
   )
@@ -48,7 +48,7 @@ test_that("model_fit falls back to standard indices without robust estimator", {
 test_that("model_fit preserves MLF estimator labeling for ML first-order information", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(
       model,
@@ -137,16 +137,30 @@ textual =~ x4 + x5 + x6"
     lavaan::cfa(
       model,
       data = lavaan::HolzingerSwineford1939,
-      test = c("satorra.bentler", "mean.var.adjusted")
+      estimator = "MLMVS"
     )
   )
 
-  result <- suppressWarnings(
-    suppressMessages(psymetrics::model_fit(fit, type = "robust"))
+  robust_targets <- c("cfi.robust", "tli.robust", "rmsea.robust")
+  fit_measures <- lavaan::fitmeasures(
+    fit,
+    fm.args = list(scaled.test = "mean.var.adjusted")
+  )
+  robust_values <- fit_measures[robust_targets]
+  if (length(robust_values) > 0L && all(!is.na(robust_values))) {
+    skip("Robust fit measures are available for MLMVS in this lavaan version.")
+  }
+
+  messages <- capture.output(
+    result <- psymetrics::model_fit(fit, type = "robust"),
+    type = "message"
   )
 
+  expect_true(any(grepl("Robust fit measures are not available", messages)))
+
   expect_s3_class(result, "model_fit")
-  expect_equal(nrow(result), 2)
+  expect_equal(nrow(result), 1)
+  expect_true(any(is.na(result$CFI)))
 })
 
 test_that("model_fit can include the standard test row first", {
@@ -273,7 +287,7 @@ speed =~ x7 + x8 + x9"
 test_that("model_fit reports robust MLR estimators", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
   )
