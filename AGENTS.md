@@ -21,6 +21,7 @@
 - There is no `tests/` suite yet; rely on `R CMD check` and runnable examples.
 - The `v0.1.5` roadmap targets a `testthat` suite and fixes for `R CMD check` warnings/notes; see `ROADMAP.md` for scope.
 - If adding tests, follow `testthat` conventions (`tests/testthat/test-*.R`) and add `testthat` to `Suggests`.
+- For tests/examples involving fit indices, avoid a 1-factor/3-item model (df = 0 gives identical indices). Use at least 1 factor with 4 items or 2 factors with 3 items each.
 
 ## Dependencies & Optional Features
 - Keep mandatory dependencies minimal; most integrations live in `Suggests` (`lavaan`, `ggplot2`, `flextable`, `officer`).
@@ -40,3 +41,7 @@
 - Commit history uses short, imperative messages and common prefixes like `feat:`, `fix:`, `docs:`, `chore:`.
 - PRs should include a brief summary, tests run (or note if not run), and updates to `NEWS.md` for user-visible changes.
 - This agent does not create commits or PRs (GitButler workflow). When requested or during release prep, assist with entries in `NEWS.md`.
+
+# ExecPlans
+ 
+When writing complex features or significant refactors, use an ExecPlan (as described in .agent/PLANS.md) from design to implementation.
