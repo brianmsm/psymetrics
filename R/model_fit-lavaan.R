@@ -425,7 +425,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   expected_names <- c("npar", metrics_to_use)
   robust_targets <- metrics_to_use[grepl("\\.robust$", metrics_to_use)]
 
-  fit_measures_full <- setNames(rep(NA_real_, length(expected_names)), expected_names)
+  fit_measures_full <- stats::setNames(rep(NA_real_, length(expected_names)), expected_names)
   available_measures <- intersect(names(fit_measures), expected_names)
   fit_measures_full[available_measures] <- fit_measures[available_measures]
 
