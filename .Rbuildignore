@@ -14,3 +14,5 @@
 ^\.\.Rcheck$
 .vscode
 ^CITATION\.cff$
+.agent
+ExecPlan*

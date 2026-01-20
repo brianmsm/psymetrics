@@ -22,7 +22,12 @@ format_results.model_fit <- function(x,
                                      table_args = list(),
                                      output_args = list()) {
   if (missing(digits_by_col)) {
-    digits_by_col <- c(Chi2 = 2)
+    digits_by_col <- c(Chi2 = 2, Chi2_df = 2)
+  }
+  if (!is.null(digits_by_col) && "Chi2_df" %in% names(digits_by_col) &&
+      "Chi2_df" %in% names(x)) {
+    df_digits <- digits_by_col[["Chi2_df"]]
+    x$Chi2_df <- round_df_decimals(x$Chi2_df, digits = df_digits)
   }
   format_results_impl(
     x = x,
@@ -45,8 +50,10 @@ format_results.model_fit <- function(x,
 #' @description
 #' `print.model_fit()` prints a text summary of model fit tables
 #' to the console. By default, `Chi2` is shown with 2 decimals while
-#' other indices use `digits`. For markdown or HTML output (or to
-#' override column-specific digits), use [`format_results()`].
+#' other indices use `digits`, and fractional chi-square df values
+#' are rounded to 2 decimals in the `Chi2(df)` header. For markdown
+#' or HTML output (or to override column-specific digits), use
+#' [`format_results()`].
 #'
 #' @param x An object of class `model_fit`, typically created
 #'   by the [`model_fit`] function.

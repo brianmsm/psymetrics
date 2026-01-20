@@ -41,7 +41,9 @@ for details.}
 \item{digits_by_col}{Named integer vector that forces digits for
 selected columns. Applied before export.
 For \code{model_fit} and \code{compare_model_fit}, defaults to
-\code{c(Chi2 = 2)} when not supplied.}
+\code{c(Chi2 = 2, Chi2_df = 2)} when not supplied. When \code{Chi2_df}
+is fractional, it is rounded to two decimals before forming
+the \code{Chi2(df)} header.}
 
 \item{table_args}{A named list of arguments forwarded to
 \code{insight::format_table()}.}
@@ -59,6 +61,12 @@ A character string (text), a \code{knitr_kable} (markdown), or a
 to text, markdown, or HTML. Use \code{output = "auto"} to choose
 markdown or HTML based on the rendering context; this is a
 best-effort heuristic, so set \code{output} explicitly to override.
+}
+\note{
+HTML output returns a \code{tinytable} object. Printing HTML
+tables inside RStudio requires the \code{rstudioapi} package; you
+can still create the object without it, but printing will
+error unless \code{rstudioapi} is installed.
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE)) {
@@ -91,7 +99,10 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
       output_args = list(caption = "Fit indices")
     )
   }
-  format_results(results, output = "html")
+  html_table <- format_results(results, output = "html")
+  if (interactive()) {
+    html_table
+  }
 } else {
   message("Please install 'lavaan' to run this example.")
 }

@@ -69,3 +69,24 @@ format_numeric_cells <- function(values, digits) {
 
   values
 }
+
+#' Round non-integer degrees of freedom values for Chi2 headers.
+#'
+#' @param values Numeric vector with df values.
+#' @param digits Integer number of decimals to keep for non-integers.
+#'
+#' @return Numeric vector with rounded non-integer values.
+#' @keywords internal
+#' @noRd
+round_df_decimals <- function(values, digits = 2) {
+  if (!is.numeric(values)) {
+    return(values)
+  }
+
+  decimal_mask <- !is.na(values) & values %% 1 != 0
+  if (any(decimal_mask)) {
+    values[decimal_mask] <- round(values[decimal_mask], digits = digits)
+  }
+
+  values
+}

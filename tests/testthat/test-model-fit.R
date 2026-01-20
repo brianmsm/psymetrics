@@ -1,7 +1,7 @@
 test_that("model_fit returns expected columns for lavaan", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
   )
@@ -15,7 +15,7 @@ test_that("model_fit returns expected columns for lavaan", {
 test_that("model_fit handles standard indices with robust estimator", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
   )
@@ -28,10 +28,10 @@ test_that("model_fit handles standard indices with robust estimator", {
   expect_gt(ncol(result), 0)
 })
 
-test_that("model_fit returns empty data for scaled indices without robust estimator", {
+test_that("model_fit falls back to standard indices without robust estimator", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
   )
@@ -40,8 +40,169 @@ test_that("model_fit returns empty data for scaled indices without robust estima
     suppressWarnings(psymetrics::model_fit(fit, type = "scaled"))
   )
 
-  expect_equal(ncol(result), 0)
-  expect_equal(nrow(result), 0)
+  expect_equal(nrow(result), 1)
+  expect_equal(result$ESTIMATOR, "ML")
+  expect_false(is.na(result$Chi2))
+})
+
+test_that("model_fit preserves MLF estimator labeling for ML first-order information", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "ML",
+      information = "first.order"
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(result$ESTIMATOR, "MLF")
+})
+
+test_that("model_fit returns one row per non-standard test", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(nrow(result), 2)
+})
+
+test_that("model_fit uses test names for unknown estimator variants", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit)
+  )
+
+  expect_equal(result$ESTIMATOR, c("satorra.bentler", "mean.var.adjusted"))
+})
+
+test_that("model_fit can include test and se details for lavaan", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, test_details = TRUE)
+  )
+
+  expect_true(all(c("TEST", "SE") %in% names(result)))
+  expect_equal(result$TEST, c("satorra.bentler", "mean.var.adjusted"))
+  expect_true(all(result$ESTIMATOR == "ML_variant"))
+  expect_true(all(result$SE == lavaan::lavInspect(fit, "options")$se))
+})
+
+test_that("model_fit handles missing robust measures for multi-test fits", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "MLMVS"
+    )
+  )
+
+  robust_targets <- c("cfi.robust", "tli.robust", "rmsea.robust")
+  fit_measures <- lavaan::fitmeasures(
+    fit,
+    fm.args = list(scaled.test = "mean.var.adjusted")
+  )
+  robust_values <- fit_measures[robust_targets]
+  if (length(robust_values) > 0L && all(!is.na(robust_values))) {
+    skip("Robust fit measures are available for MLMVS in this lavaan version.")
+  }
+
+  messages <- capture.output(
+    result <- psymetrics::model_fit(fit, type = "robust"),
+    type = "message"
+  )
+
+  expect_true(any(grepl("Robust fit measures are not available", messages)))
+
+  expect_s3_class(result, "model_fit")
+  expect_equal(nrow(result), 1)
+  expect_true(any(is.na(result$CFI)))
+})
+
+test_that("model_fit can include the standard test row first", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, standard_test = TRUE)
+  )
+
+  expect_equal(nrow(result), 3)
+  expect_equal(result$ESTIMATOR[1], lavaan::lavInspect(fit, "options")$estimator)
+})
+
+test_that("model_fit uses NA SE for standard-test row when test_details is TRUE", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, standard_test = TRUE, test_details = TRUE)
+  )
+
+  expect_true(is.na(result$SE[1]))
+  expect_equal(result$SE[-1], rep(lavaan::lavInspect(fit, "options")$se, 2))
 })
 
 test_that("model_fit handles Browne residual tests for ULS", {
@@ -126,7 +287,7 @@ speed =~ x7 + x8 + x9"
 test_that("model_fit reports robust MLR estimators", {
   skip_if_not_installed("lavaan")
 
-  model <- "visual =~ x1 + x2 + x3"
+  model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
     lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
   )

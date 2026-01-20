@@ -24,12 +24,18 @@
 #' @param digits_by_col Named integer vector that forces digits for
 #'   selected columns. Applied before export.
 #'   For `model_fit` and `compare_model_fit`, defaults to
-#'   `c(Chi2 = 2)` when not supplied.
+#'   `c(Chi2 = 2, Chi2_df = 2)` when not supplied. When `Chi2_df`
+#'   is fractional, it is rounded to two decimals before forming
+#'   the `Chi2(df)` header.
 #' @param table_args A named list of arguments forwarded to
 #'   `insight::format_table()`.
 #' @param output_args A named list of arguments forwarded to
 #'   `insight::export_table()` or `tinytable::tt()` depending on
 #'   `output`.
+#' @note HTML output returns a `tinytable` object. Printing HTML
+#'   tables inside RStudio requires the `rstudioapi` package; you
+#'   can still create the object without it, but printing will
+#'   error unless `rstudioapi` is installed.
 #'
 #' @return A character string (text), a `knitr_kable` (markdown), or a
 #'   `tinytable` (HTML).
@@ -65,7 +71,10 @@
 #'       output_args = list(caption = "Fit indices")
 #'     )
 #'   }
-#'   format_results(results, output = "html")
+#'   html_table <- format_results(results, output = "html")
+#'   if (interactive()) {
+#'     html_table
+#'   }
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
