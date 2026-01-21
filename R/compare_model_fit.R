@@ -145,9 +145,11 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     }
   }
 
+  robust_warning_collector <- lavaan_init_robust_warning_collector(NULL)
+
   # Apply model_fit to each model in the list
   fit_measures <- Map(
-    function(fit, test_value, standard_value) {
+    function(fit, test_value, standard_value, model_label) {
       if (inherits(fit, "lavaan")) {
         model_fit(
           fit,
@@ -157,7 +159,10 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
           test = test_value,
           standard_test = standard_value,
           test_details = test_details,
-          standard_test_message = FALSE
+          standard_test_message = FALSE,
+          robust_warning_collector = robust_warning_collector,
+          robust_warning_message = FALSE,
+          model_label = model_label
         )
       } else {
         model_fit(
@@ -173,8 +178,11 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     },
     fits,
     test_by_model,
-    standard_test_by_model
+    standard_test_by_model,
+    model_names
   )
+
+  lavaan_emit_robust_warning(robust_warning_collector, verbose = verbose, message = TRUE)
 
   # Combine the dataframes vertically
   combined_measures <- do.call(rbind, fit_measures)
