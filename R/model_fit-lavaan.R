@@ -124,6 +124,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   if (!is.logical(test_details) || length(test_details) != 1L) {
     rlang::abort("`test_details` must be a single logical value.")
   }
+  is_default_test <- length(test) == 1L && test == "default"
 
   # Determine the type of index to use
   if (is.null(type)) {
@@ -172,6 +173,10 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   if (length(selected_tests) == 0L && type %in% c("scaled", "robust")) {
     if (verbose && !has_none && !missing_tests_reported) {
+      model_prefix <- "The model"
+      if (!is.null(model_label)) {
+        model_prefix <- sprintf("The %s model", model_label)
+      }
       if (browne_only) {
         cli::cli_inform(
           "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
@@ -182,12 +187,22 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         )
       } else if (length(available_nonstandard) == 0L) {
         cli::cli_inform(
-          "The model reports only standard tests; using standard indices instead."
+          cli::cli_text(
+            "{model_prefix} reports only standard tests; using standard indices instead."
+          )
         )
       } else {
-        cli::cli_inform(
-          "No requested non-standard tests are available; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "No requested non-standard tests are available; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "No requested non-standard tests are available for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       }
     }
     type <- "standard"
@@ -220,6 +235,16 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   standard_estimator <- lavaan_standard_estimator(fit)
   if (length(selected_tests) == 0L) {
+    if (type_forced_standard && !is_default_test && !isTRUE(standard_test)) {
+      fit_measure <- lavaan_empty_fit_measures(metrics, test_details = test_details)
+      class(fit_measure) <- c("model_fit", class(fit_measure))
+      lavaan_emit_robust_warning(
+        robust_warning_collector,
+        verbose = verbose,
+        message = robust_warning_message
+      )
+      return(fit_measure)
+    }
     fit_measure <- extract_fit_lavaan(
       fit,
       type,
@@ -588,6 +613,55 @@ lavaan_emit_robust_warning <- function(collector, verbose = TRUE, message = TRUE
     )
   )
   invisible(NULL)
+}
+
+lavaan_metric_colnames <- function(metrics) {
+  if (length(metrics) == 1 && metrics == "essential") {
+    metrics <- c(
+      "chisq",
+      "df",
+      "pvalue",
+      "cfi",
+      "tli",
+      "rmsea",
+      "rmsea.ci.lower",
+      "rmsea.ci.upper",
+      "srmr"
+    )
+  } else {
+    metrics <- tolower(metrics)
+  }
+  colnames <- toupper(metrics)
+  colnames <- gsub("\\.(SCALED|ROBUST)$", "", colnames)
+  colnames <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames)
+  colnames <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames)
+  colnames <- gsub("^CHISQ$", "Chi2", colnames)
+  colnames <- gsub("^DF$", "Chi2_df", colnames)
+  colnames <- gsub("^PVALUE$", "p_Chi2", colnames)
+  colnames
+}
+
+lavaan_empty_fit_measures <- function(metrics, test_details = FALSE) {
+  metric_cols <- lavaan_metric_colnames(metrics)
+  fit_measure_df <- data.frame(
+    NOBS = numeric(0),
+    ESTIMATOR = character(0),
+    stringsAsFactors = FALSE
+  )
+  if (isTRUE(test_details)) {
+    fit_measure_df$TEST <- character(0)
+    fit_measure_df$SE <- character(0)
+  }
+  fit_measure_df$NPAR <- numeric(0)
+  if (length(metric_cols) > 0L) {
+    metrics_df <- as.data.frame(
+      matrix(numeric(0), nrow = 0, ncol = length(metric_cols)),
+      stringsAsFactors = FALSE
+    )
+    colnames(metrics_df) <- metric_cols
+    fit_measure_df <- cbind(fit_measure_df, metrics_df)
+  }
+  fit_measure_df
 }
 
 lavaan_test_groups <- function() {
