@@ -75,7 +75,11 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   }
 
   arg_names <- names(fits)
-  deparsed_names <- sapply(substitute(list(...))[-1L], deparse)
+  deparsed_names <- vapply(
+    substitute(list(...))[-1L],
+    function(x) paste(deparse(x), collapse = " "),
+    character(1)
+  )
   if (!is.null(arg_names)) {
     model_names <- ifelse(arg_names != "", arg_names, deparsed_names)
   } else {
