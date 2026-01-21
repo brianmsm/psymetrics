@@ -24,13 +24,17 @@
 #'   request specific tests; unavailable entries are dropped
 #'   with an informational message when `verbose = TRUE`. When
 #'   supplying a list, it must be named and each name must match
-#'   the model labels shown in the `MODEL` column.
+#'   the model labels shown in the `MODEL` column. If you supply
+#'   named arguments, you may also reference the original object
+#'   names when they are unambiguous.
 #' @param standard_test A logical value indicating whether to
 #'   include a standard-test row in addition to non-standard
 #'   tests. When `TRUE`, the standard row is shown first and
 #'   always uses standard indices. When supplying a list, it
 #'   must be named and each name must match the model labels
-#'   shown in the `MODEL` column.
+#'   shown in the `MODEL` column. If you supply named arguments,
+#'   you may also reference the original object names when they
+#'   are unambiguous.
 #' @param test_details Logical. If `TRUE`, include `TEST` and
 #'   `SE` columns (for lavaan fits) that describe the test and
 #'   standard error settings used to compute each row. When
@@ -70,17 +74,34 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     )
   }
 
-  model_names <- sapply(substitute(list(...))[-1L], deparse)
+  arg_names <- names(fits)
+  deparsed_names <- vapply(
+    substitute(list(...))[-1L],
+    function(x) paste(deparse(x), collapse = " "),
+    character(1)
+  )
+  if (!is.null(arg_names)) {
+    model_names <- ifelse(arg_names != "", arg_names, deparsed_names)
+  } else {
+    model_names <- deparsed_names
+  }
+  alias_names <- rep(NA_character_, length(model_names))
+  if (!is.null(arg_names)) {
+    alias_names[arg_names != ""] <- deparsed_names[arg_names != ""]
+  }
+  alias_names[alias_names == model_names] <- NA_character_
+  alias_names[!is_simple_model_name(alias_names)] <- NA_character_
   default_test <- "default"
   default_standard_test <- FALSE
   if (!is.logical(test_details) || length(test_details) != 1L) {
     rlang::abort("`test_details` must be TRUE or FALSE.")
   }
 
-  test_by_model <- resolve_test_by_model(test, model_names, default_test)
+  test_by_model <- resolve_test_by_model(test, model_names, alias_names, default_test)
   standard_test_by_model <- resolve_standard_test_by_model(
     standard_test,
     model_names,
+    alias_names,
     default_standard_test
   )
 
@@ -202,22 +223,94 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   return(combined_measures)
 }
 
-resolve_test_by_model <- function(test_value, model_names, default_value) {
+is_simple_model_name <- function(name_value) {
+  if (length(name_value) == 0L) {
+    return(logical(0))
+  }
+  name_value <- as.character(name_value)
+  name_value[is.na(name_value)] <- ""
+  grepl("^[A-Za-z.][A-Za-z0-9._]*$", name_value)
+}
+
+resolve_model_name_indices <- function(value_names, model_names, alias_names, value_label) {
+  if (length(value_names) == 0L) {
+    return(integer(0))
+  }
+
+  match_indices <- lapply(value_names, function(value_name) {
+    which(model_names == value_name |
+      (!is.na(alias_names) & alias_names == value_name))
+  })
+
+  unknown_names <- value_names[lengths(match_indices) == 0L]
+  if (length(unknown_names) > 0L) {
+    alias_candidates <- alias_names[!is.na(alias_names)]
+    alias_candidates <- alias_candidates[!alias_candidates %in% model_names]
+    if (length(alias_candidates) > 0L) {
+      alias_counts <- table(alias_candidates)
+      alias_candidates <- names(alias_counts[alias_counts == 1L])
+    }
+
+    message <- c(
+      sprintf(
+        "Unknown model name%s in `%s`: %s.",
+        if (length(unknown_names) > 1L) "s" else "",
+        value_label,
+        paste(unknown_names, collapse = ", ")
+      ),
+      sprintf(
+        "Models passed to compare_model_fit(): %s.",
+        paste(model_names, collapse = ", ")
+      )
+    )
+    if (length(alias_candidates) > 0L) {
+      message <- c(
+        message,
+        sprintf(
+          "You can also use original object names when unambiguous: %s.",
+          paste(alias_candidates, collapse = ", ")
+        )
+      )
+    }
+    cli::cli_abort(message)
+  }
+
+  ambiguous_names <- value_names[lengths(match_indices) > 1L]
+  if (length(ambiguous_names) > 0L) {
+    ambiguous_name <- ambiguous_names[1]
+    ambiguous_models <- model_names[unique(match_indices[[which(value_names == ambiguous_name)[1]]])]
+    cli::cli_abort(c(
+      sprintf("Model name '%s' in `%s` is ambiguous.", ambiguous_name, value_label),
+      sprintf(
+        "It matches multiple models: %s.",
+        paste(ambiguous_models, collapse = ", ")
+      ),
+      "Use the argument names shown in the MODEL column to disambiguate."
+    ))
+  }
+
+  indices <- vapply(match_indices, function(idx) idx[1], integer(1))
+  duplicates <- split(value_names, indices)
+  duplicates <- duplicates[vapply(duplicates, length, integer(1)) > 1L]
+  if (length(duplicates) > 0L) {
+    duplicate_index <- as.integer(names(duplicates)[1])
+    duplicate_model <- model_names[duplicate_index]
+    duplicate_names <- unique(duplicates[[1]])
+    cli::cli_abort(c(
+      sprintf("`%s` supplies multiple entries for model '%s'.", value_label, duplicate_model),
+      sprintf("Use a single name: %s.", paste(duplicate_names, collapse = ", "))
+    ))
+  }
+
+  indices
+}
+
+resolve_test_by_model <- function(test_value, model_names, alias_names, default_value) {
   if (is.list(test_value)) {
     value_names <- names(test_value)
     if (is.null(value_names) || any(value_names == "")) {
       rlang::abort(c(
         "`test` must be a named list when supplying per-model values.",
-        sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
-      ))
-    }
-    unknown_names <- setdiff(value_names, model_names)
-    if (length(unknown_names) > 0L) {
-      rlang::abort(c(
-        sprintf(
-          "`test` list includes unknown model names: %s.",
-          paste(unknown_names, collapse = ", ")
-        ),
         sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
       ))
     }
@@ -229,13 +322,12 @@ resolve_test_by_model <- function(test_value, model_names, default_value) {
         )
       }
     }
-    lapply(model_names, function(model_name) {
-      if (model_name %in% value_names) {
-        test_value[[model_name]]
-      } else {
-        default_value
-      }
-    })
+    value_indices <- resolve_model_name_indices(value_names, model_names, alias_names, "test")
+    resolved <- rep(list(default_value), length(model_names))
+    for (value_idx in seq_along(value_names)) {
+      resolved[[value_indices[[value_idx]]]] <- test_value[[value_names[[value_idx]]]]
+    }
+    resolved
   } else {
     if (!is.null(test_value) && (!is.character(test_value) || length(test_value) == 0L)) {
       rlang::abort("`test` must be a non-empty character vector or \"default\".")
@@ -244,22 +336,12 @@ resolve_test_by_model <- function(test_value, model_names, default_value) {
   }
 }
 
-resolve_standard_test_by_model <- function(standard_value, model_names, default_value) {
+resolve_standard_test_by_model <- function(standard_value, model_names, alias_names, default_value) {
   if (is.list(standard_value)) {
     value_names <- names(standard_value)
     if (is.null(value_names) || any(value_names == "")) {
       rlang::abort(c(
         "`standard_test` must be a named list when supplying per-model values.",
-        sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
-      ))
-    }
-    unknown_names <- setdiff(value_names, model_names)
-    if (length(unknown_names) > 0L) {
-      rlang::abort(c(
-        sprintf(
-          "`standard_test` list includes unknown model names: %s.",
-          paste(unknown_names, collapse = ", ")
-        ),
         sprintf("Valid model names: %s.", paste(model_names, collapse = ", "))
       ))
     }
@@ -271,13 +353,17 @@ resolve_standard_test_by_model <- function(standard_value, model_names, default_
         )
       }
     }
-    lapply(model_names, function(model_name) {
-      if (model_name %in% value_names) {
-        standard_value[[model_name]]
-      } else {
-        default_value
-      }
-    })
+    value_indices <- resolve_model_name_indices(
+      value_names,
+      model_names,
+      alias_names,
+      "standard_test"
+    )
+    resolved <- rep(list(default_value), length(model_names))
+    for (value_idx in seq_along(value_names)) {
+      resolved[[value_indices[[value_idx]]]] <- standard_value[[value_names[[value_idx]]]]
+    }
+    resolved
   } else {
     if (!is.logical(standard_value) || length(standard_value) != 1L) {
       rlang::abort("`standard_test` must be TRUE or FALSE.")

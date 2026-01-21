@@ -20,7 +20,7 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.8")
+pak::pak("brianmsm/psymetrics@v0.1.9")
 ```
 
 ## Getting Fit Indices
@@ -65,8 +65,7 @@ model_fit(fit, type = "robust")
 # Or specify which indices to extract
 model_fit(fit, metrics = c("cfi", "tli"))
 #> cfi and tli were adjusted to their scaled version.
-#> If you want to control the specific metric type used, specify it explicitly (e.g., `cfi.robust`) or
-#> modify the type argument.
+#> If you want to control the specific metric type used, specify it explicitly (e.g., `cfi.robust`) or modify the type argument.
 #> NOBS | ESTIMATOR | NPAR |  CFI  |  TLI 
 #> ---------------------------------------
 #> 301  |    MLR    |  21  | 0.925 | 0.888

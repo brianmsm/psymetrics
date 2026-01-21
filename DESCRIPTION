@@ -13,6 +13,8 @@ Authors@R:
         email = "brianmsm@gmail.com",
         comment = c(ORCID = "0000-0002-1073-9306")
     )
+Author: Brian Peña Calero [aut, cre]
+Maintainer: Brian Peña Calero <brianmsm@gmail.com>
 URL: https://github.com/brianmsm/psymetrics
 BugReports: https://github.com/brianmsm/psymetrics/issues
 License: MIT + file LICENSE

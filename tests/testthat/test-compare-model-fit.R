@@ -73,6 +73,45 @@ test_that("compare_model_fit supports per-model test lists", {
   expect_equal(combined$MODEL, c(rep("fit1", fit1_rows), rep("fit2", fit2_rows)))
 })
 
+test_that("compare_model_fit accepts object-name aliases for named arguments", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+
+  fit1 <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = "mean.var.adjusted"
+    )
+  )
+  fit2 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  capture.output(
+    combined <- psymetrics::compare_model_fit(
+      M1 = fit1,
+      fit2,
+      test = list(fit1 = "mean.var.adjusted"),
+      standard_test = list(fit1 = TRUE),
+      test_details = TRUE
+    ),
+    type = "message"
+  )
+
+  fit1_rows <- nrow(psymetrics::model_fit(
+    fit1,
+    test = "mean.var.adjusted",
+    standard_test = TRUE,
+    test_details = TRUE
+  ))
+  fit2_rows <- nrow(psymetrics::model_fit(fit2))
+
+  expect_equal(nrow(combined), fit1_rows + fit2_rows)
+  expect_equal(combined$MODEL, c(rep("M1", fit1_rows), rep("fit2", fit2_rows)))
+})
+
 test_that("compare_model_fit drops models when requested tests are missing and standard_test is FALSE", {
   skip_if_not_installed("lavaan")
 
@@ -300,7 +339,28 @@ test_that("compare_model_fit validates named test lists", {
 
   expect_error(
     psymetrics::compare_model_fit(fit1, fit2, test = list(fit3 = "satorra.bentler")),
-    "unknown model names"
+    "Unknown model name"
+  )
+})
+
+test_that("compare_model_fit errors when multiple list names target one model", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit2 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+  fit3 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  expect_error(
+    psymetrics::compare_model_fit(
+      fit1 = fit2,
+      fit3,
+      test = list(fit1 = "satorra.bentler", fit2 = "mean.var.adjusted")
+    ),
+    "multiple entries for model"
   )
 })
 
