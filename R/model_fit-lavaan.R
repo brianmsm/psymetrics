@@ -170,6 +170,9 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   selected_tests <- unique(selected_tests)
   available_nonstandard <- available_tests[!available_tests %in% exclude_tests]
   missing_tests_reported <- length(missing_tests) > 0L
+  use_model_se <- is_default_test &&
+    length(available_nonstandard) == 0L &&
+    !missing_tests_reported
 
   if (length(selected_tests) == 0L && type %in% c("scaled", "robust")) {
     if (verbose && !has_none && !missing_tests_reported) {
@@ -251,7 +254,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       metrics = metrics,
       verbose = verbose,
       estimator_override = standard_estimator,
-      se_override = if (isTRUE(standard_test)) NA_character_ else NULL,
+      se_override = if (isTRUE(standard_test) && !use_model_se) NA_character_ else NULL,
       test_details = test_details,
       robust_warning_collector = robust_warning_collector
     )
