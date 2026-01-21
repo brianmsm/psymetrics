@@ -40,6 +40,7 @@
 ## Commit & Pull Request Guidelines
 - Commit history uses short, imperative messages and common prefixes like `feat:`, `fix:`, `docs:`, `chore:`.
 - PRs should include a brief summary, tests run (or note if not run), and updates to `NEWS.md` for user-visible changes.
+- When asked to verify recent changes, use `git log --oneline --left-right --graph --decorate origin/master...gitbutler/workspace` and other non-destructive history/diff commands as needed.
 - This agent does not create commits or PRs (GitButler workflow). When requested or during release prep, assist with entries in `NEWS.md`.
 
 # ExecPlans
