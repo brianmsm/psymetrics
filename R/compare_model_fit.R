@@ -70,7 +70,13 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     )
   }
 
-  model_names <- sapply(substitute(list(...))[-1L], deparse)
+  arg_names <- names(fits)
+  deparsed_names <- sapply(substitute(list(...))[-1L], deparse)
+  if (!is.null(arg_names)) {
+    model_names <- ifelse(arg_names != "", arg_names, deparsed_names)
+  } else {
+    model_names <- deparsed_names
+  }
   default_test <- "default"
   default_standard_test <- FALSE
   if (!is.logical(test_details) || length(test_details) != 1L) {
