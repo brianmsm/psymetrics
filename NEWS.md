@@ -1,3 +1,12 @@
+# psymetrics 0.1.9
+
+## Bug Fixes and Improvements
+
+-   **Messaging**: Robust-fit warnings now aggregate per test/estimator, and missing-test messages include the model label.
+-   **Model Fit**: Missing requested tests drop rows when `standard_test = FALSE`, and standard-only models preserve their standard `SE` when no extra standard row is added.
+-   **Compare Fit**: Per-model test overrides omit models with only missing tests when `standard_test = FALSE`.
+-   **Testing**: Expanded `model_fit`/`compare_model_fit` coverage for per-model test lists, missing tests, standard-only fallback, and robust warning aggregation.
+
 # psymetrics 0.1.8
 
 ## Bug Fixes and Improvements

@@ -79,6 +79,28 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       rlang::abort("`standard_test_message` must be TRUE or FALSE.")
     }
   }
+  model_label <- NULL
+  if ("model_label" %in% names(dots)) {
+    model_label <- dots$model_label
+    if (!is.null(model_label) && (!is.character(model_label) || length(model_label) != 1L)) {
+      rlang::abort("`model_label` must be a single string or NULL.")
+    }
+  }
+  robust_warning_collector <- NULL
+  robust_warning_message <- TRUE
+  if ("robust_warning_collector" %in% names(dots)) {
+    robust_warning_collector <- dots$robust_warning_collector
+    if (!is.null(robust_warning_collector) && !is.environment(robust_warning_collector)) {
+      rlang::abort("`robust_warning_collector` must be an environment or NULL.")
+    }
+  }
+  if ("robust_warning_message" %in% names(dots)) {
+    robust_warning_message <- dots$robust_warning_message
+    if (!is.logical(robust_warning_message) || length(robust_warning_message) != 1L) {
+      rlang::abort("`robust_warning_message` must be TRUE or FALSE.")
+    }
+  }
+  robust_warning_collector <- lavaan_init_robust_warning_collector(robust_warning_collector)
   # Determine if a robust estimator is being used
   robust_type <- is_robust_estimator_lavaan(fit)
   lav_options <- lavaan::lavInspect(fit, "options")
@@ -102,6 +124,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   if (!is.logical(test_details) || length(test_details) != 1L) {
     rlang::abort("`test_details` must be a single logical value.")
   }
+  is_default_test <- length(test) == 1L && test == "default"
 
   # Determine the type of index to use
   if (is.null(type)) {
@@ -112,7 +135,9 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     }
   }
 
+  type_forced_standard <- FALSE
   exclude_tests <- c("standard", "default", "none")
+  missing_tests <- character(0)
   available_tests <- if (is.null(test_vec)) {
     character(0)
   } else {
@@ -126,19 +151,35 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     requested_tests <- requested_tests[!requested_tests %in% exclude_tests]
     missing_tests <- setdiff(requested_tests, available_tests)
     if (length(missing_tests) > 0L && verbose) {
-      cli::cli_inform(
-        cli::cli_text(
-          "Requested tests not found in the fitted model and were dropped: {missing_tests}."
+      if (is.null(model_label)) {
+        cli::cli_inform(
+          cli::cli_text(
+            "Requested tests not found in the fitted model and were dropped: {missing_tests}."
+          )
         )
-      )
+      } else {
+        cli::cli_inform(
+          cli::cli_text(
+            "Requested tests not found in the {model_label} model and were dropped: {missing_tests}."
+          )
+        )
+      }
     }
     selected_tests <- requested_tests[requested_tests %in% available_tests]
   }
   selected_tests <- unique(selected_tests)
   available_nonstandard <- available_tests[!available_tests %in% exclude_tests]
+  missing_tests_reported <- length(missing_tests) > 0L
+  use_model_se <- is_default_test &&
+    length(available_nonstandard) == 0L &&
+    !missing_tests_reported
 
   if (length(selected_tests) == 0L && type %in% c("scaled", "robust")) {
-    if (verbose && !has_none) {
+    if (verbose && !has_none && !missing_tests_reported) {
+      model_prefix <- "The model"
+      if (!is.null(model_label)) {
+        model_prefix <- sprintf("The %s model", model_label)
+      }
       if (browne_only) {
         cli::cli_inform(
           "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
@@ -149,18 +190,32 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         )
       } else if (length(available_nonstandard) == 0L) {
         cli::cli_inform(
-          "The model reports only standard tests; using standard indices instead."
+          cli::cli_text(
+            "{model_prefix} reports only standard tests; using standard indices instead."
+          )
         )
       } else {
-        cli::cli_inform(
-          "No requested non-standard tests are available; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "No requested non-standard tests are available; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "No requested non-standard tests are available for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       }
     }
     type <- "standard"
+    type_forced_standard <- TRUE
   }
 
-  if (type == "standard" && robust_type == "robust") {
+  if (isTRUE(verbose) &&
+      type == "standard" &&
+      robust_type == "robust" &&
+      !type_forced_standard) {
     cli::cli_alert_warning(
       paste0(
         "You are using a robust estimator but requesting 'standard' indices. ",
@@ -183,20 +238,38 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   standard_estimator <- lavaan_standard_estimator(fit)
   if (length(selected_tests) == 0L) {
+    if (type_forced_standard && !is_default_test && !isTRUE(standard_test)) {
+      fit_measure <- lavaan_empty_fit_measures(metrics, test_details = test_details)
+      class(fit_measure) <- c("model_fit", class(fit_measure))
+      lavaan_emit_robust_warning(
+        robust_warning_collector,
+        verbose = verbose,
+        message = robust_warning_message
+      )
+      return(fit_measure)
+    }
     fit_measure <- extract_fit_lavaan(
       fit,
       type,
       metrics = metrics,
       verbose = verbose,
       estimator_override = standard_estimator,
-      test_details = test_details
+      se_override = if (isTRUE(standard_test) && !use_model_se) NA_character_ else NULL,
+      test_details = test_details,
+      robust_warning_collector = robust_warning_collector
+    )
+    lavaan_emit_robust_warning(
+      robust_warning_collector,
+      verbose = verbose,
+      message = robust_warning_message
     )
     return(fit_measure)
   }
 
   if (isTRUE(standard_test) &&
       type %in% c("scaled", "robust") &&
-      isTRUE(standard_test_message)) {
+      isTRUE(standard_test_message) &&
+      isTRUE(verbose)) {
     cli::cli_inform(
       cli::cli_text(
         "Standard-test row uses standard indices for estimator {standard_estimator}."
@@ -213,7 +286,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       verbose = verbose,
       estimator_override = standard_estimator,
       se_override = NA_character_,
-      test_details = test_details
+      test_details = test_details,
+      robust_warning_collector = robust_warning_collector
     )
   }
 
@@ -224,12 +298,18 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       metrics = metrics,
       verbose = verbose,
       scaled_test = selected_test,
-      test_details = test_details
+      test_details = test_details,
+      robust_warning_collector = robust_warning_collector
     )
   }
 
   fit_measure <- do.call(rbind, fit_measure_list)
   class(fit_measure) <- unique(c("model_fit", class(fit_measure)))
+  lavaan_emit_robust_warning(
+    robust_warning_collector,
+    verbose = verbose,
+    message = robust_warning_message
+  )
   return(fit_measure)
 }
 
@@ -237,7 +317,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 extract_fit_lavaan <- function(fit, type, metrics, verbose,
                                scaled_test = NULL, estimator_override = NULL,
                                se_override = NULL,
-                               test_details = FALSE) {
+                               test_details = FALSE,
+                               robust_warning_collector = NULL) {
 
   original_metrics <- metrics
   lav_options <- lavaan::lavInspect(fit, "options")
@@ -432,11 +513,19 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   if (type == "robust" && length(robust_targets) > 0L) {
     robust_values <- fit_measures_full[robust_targets]
     if (any(is.na(robust_values)) && verbose) {
-      cli::cli_alert_warning(
-        cli::cli_text(
-          "Robust fit measures are not available for estimator {estimator_warning}; returning NA for requested robust metrics."
+      if (is.null(robust_warning_collector)) {
+        cli::cli_alert_warning(
+          cli::cli_text(
+            "Robust fit measures are not available for test {test_label} ({estimator_warning}); returning NA for requested robust metrics."
+          )
         )
-      )
+      } else {
+        lavaan_record_robust_warning(
+          robust_warning_collector,
+          test_label = test_label,
+          estimator_label = estimator_warning
+        )
+      }
     }
   }
 
@@ -491,6 +580,92 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
 
 
 # Helper functions ------------------------------------------------------------
+
+lavaan_init_robust_warning_collector <- function(collector = NULL) {
+  if (is.null(collector)) {
+    collector <- new.env(parent = emptyenv())
+  }
+  if (!exists("entries", envir = collector, inherits = FALSE)) {
+    collector$entries <- character(0)
+  }
+  collector
+}
+
+lavaan_record_robust_warning <- function(collector, test_label, estimator_label) {
+  if (is.null(collector)) {
+    return(invisible(NULL))
+  }
+  entry <- sprintf("%s (%s)", test_label, estimator_label)
+  collector$entries <- unique(c(collector$entries, entry))
+  invisible(NULL)
+}
+
+lavaan_emit_robust_warning <- function(collector, verbose = TRUE, message = TRUE) {
+  if (!isTRUE(verbose) || !isTRUE(message) || is.null(collector)) {
+    return(invisible(NULL))
+  }
+  entries <- collector$entries
+  if (length(entries) == 0L) {
+    return(invisible(NULL))
+  }
+  entries_text <- paste(entries, collapse = ", ")
+  test_label <- if (length(entries) == 1L) "test" else "tests"
+  cli::cli_alert_warning(
+    cli::cli_text(
+      "Robust fit measures are not available for {test_label} {entries_text}; returning NA for requested robust metrics."
+    )
+  )
+  invisible(NULL)
+}
+
+lavaan_metric_colnames <- function(metrics) {
+  if (length(metrics) == 1 && metrics == "essential") {
+    metrics <- c(
+      "chisq",
+      "df",
+      "pvalue",
+      "cfi",
+      "tli",
+      "rmsea",
+      "rmsea.ci.lower",
+      "rmsea.ci.upper",
+      "srmr"
+    )
+  } else {
+    metrics <- tolower(metrics)
+  }
+  colnames <- toupper(metrics)
+  colnames <- gsub("\\.(SCALED|ROBUST)$", "", colnames)
+  colnames <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames)
+  colnames <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames)
+  colnames <- gsub("^CHISQ$", "Chi2", colnames)
+  colnames <- gsub("^DF$", "Chi2_df", colnames)
+  colnames <- gsub("^PVALUE$", "p_Chi2", colnames)
+  colnames
+}
+
+lavaan_empty_fit_measures <- function(metrics, test_details = FALSE) {
+  metric_cols <- lavaan_metric_colnames(metrics)
+  fit_measure_df <- data.frame(
+    NOBS = numeric(0),
+    ESTIMATOR = character(0),
+    stringsAsFactors = FALSE
+  )
+  if (isTRUE(test_details)) {
+    fit_measure_df$TEST <- character(0)
+    fit_measure_df$SE <- character(0)
+  }
+  fit_measure_df$NPAR <- numeric(0)
+  if (length(metric_cols) > 0L) {
+    metrics_df <- as.data.frame(
+      matrix(numeric(0), nrow = 0, ncol = length(metric_cols)),
+      stringsAsFactors = FALSE
+    )
+    colnames(metrics_df) <- metric_cols
+    fit_measure_df <- cbind(fit_measure_df, metrics_df)
+  }
+  fit_measure_df
+}
 
 lavaan_test_groups <- function() {
   list(

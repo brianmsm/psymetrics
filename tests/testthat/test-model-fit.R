@@ -205,6 +205,56 @@ textual =~ x4 + x5 + x6"
   expect_equal(result$SE[-1], rep(lavaan::lavInspect(fit, "options")$se, 2))
 })
 
+test_that("model_fit keeps SE when only standard tests are available", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  result <- suppressMessages(
+    psymetrics::model_fit(fit, standard_test = TRUE, test_details = TRUE)
+  )
+
+  expect_equal(nrow(result), 1)
+  expect_equal(result$TEST, "standard")
+  expect_equal(result$SE, lavaan::lavInspect(fit, "options")$se)
+})
+
+test_that("model_fit drops rows when requested tests are missing and standard_test is FALSE", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      test = "mean.var.adjusted"
+    )
+  )
+
+  messages <- capture.output(
+    result <- psymetrics::model_fit(
+      fit,
+      test = "satorra.bentler",
+      standard_test = FALSE,
+      test_details = TRUE
+    ),
+    type = "message"
+  )
+
+  expect_true(any(grepl(
+    "Requested tests not found in the fitted model and were dropped: satorra.bentler\\.",
+    messages
+  )))
+  expect_false(any(grepl("No requested non-standard tests are available", messages)))
+  expect_s3_class(result, "model_fit")
+  expect_equal(nrow(result), 0)
+  expect_true(all(c("TEST", "SE") %in% names(result)))
+})
+
 test_that("model_fit handles Browne residual tests for ULS", {
   skip_if_not_installed("lavaan")
 
