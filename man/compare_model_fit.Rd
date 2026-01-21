@@ -38,14 +38,18 @@ return all non-standard tests from
 request specific tests; unavailable entries are dropped
 with an informational message when \code{verbose = TRUE}. When
 supplying a list, it must be named and each name must match
-the model labels shown in the \code{MODEL} column.}
+the model labels shown in the \code{MODEL} column. If you supply
+named arguments, you may also reference the original object
+names when they are unambiguous.}
 
 \item{standard_test}{A logical value indicating whether to
 include a standard-test row in addition to non-standard
 tests. When \code{TRUE}, the standard row is shown first and
 always uses standard indices. When supplying a list, it
 must be named and each name must match the model labels
-shown in the \code{MODEL} column.}
+shown in the \code{MODEL} column. If you supply named arguments,
+you may also reference the original object names when they
+are unambiguous.}
 
 \item{test_details}{Logical. If \code{TRUE}, include \code{TEST} and
 \code{SE} columns (for lavaan fits) that describe the test and
