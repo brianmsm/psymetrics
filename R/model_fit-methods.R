@@ -2,6 +2,7 @@
 #' @noRd
 prepare_table.model_fit <- function(x, digits = 3, ci_digits = digits,
                                     p_digits = 3, ...) {
+  x <- drop_converged_column(x)
   insight::format_table(
     x,
     digits = digits,
