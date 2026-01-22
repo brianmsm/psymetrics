@@ -233,7 +233,15 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         "Fit indices are not available."
       )
     )
-    return(data.frame())
+    fit_measure <- lavaan_nonconverged_fit_measures(
+      fit,
+      metrics = metrics,
+      test_details = test_details,
+      selected_tests = selected_tests,
+      standard_test = standard_test
+    )
+    class(fit_measure) <- c("model_fit", class(fit_measure))
+    return(fit_measure)
   }
 
   standard_estimator <- lavaan_standard_estimator(fit)
@@ -446,6 +454,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
     colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
 
+    fit_measure_df$converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
     class(fit_measure_df) <- c("model_fit", class(fit_measure_df))
     return(fit_measure_df)
   }
@@ -568,10 +577,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
   colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
 
-  # Add a "converged" column only if the model did not converge
-  if (!lavaan::lavInspect(fit, "converged")) {
-    fit_measure_df$converged <- FALSE
-  }
+  fit_measure_df$converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
 
   class(fit_measure_df) <- c("model_fit", class(fit_measure_df))
 
@@ -664,6 +670,78 @@ lavaan_empty_fit_measures <- function(metrics, test_details = FALSE) {
     colnames(metrics_df) <- metric_cols
     fit_measure_df <- cbind(fit_measure_df, metrics_df)
   }
+  fit_measure_df$converged <- logical(0)
+  fit_measure_df
+}
+
+lavaan_nonconverged_fit_measures <- function(fit, metrics, test_details = FALSE,
+                                             selected_tests = NULL, standard_test = FALSE) {
+  lav_options <- lavaan::lavInspect(fit, "options")
+  test_vec <- lav_options$test
+  test_label <- if (isTRUE(standard_test)) {
+    "standard"
+  } else if (!is.null(selected_tests) && length(selected_tests) > 0L) {
+    selected_tests[1]
+  } else if (!is.null(lav_options$standard.test) && length(lav_options$standard.test) > 0L) {
+    lav_options$standard.test[1]
+  } else {
+    lavaan_test_primary(test_vec)
+  }
+
+  se_label <- lav_options$se
+  if (is.null(se_label) || length(se_label) == 0L) {
+    se_label <- "standard"
+  } else {
+    se_label <- se_label[1]
+  }
+  if (isTRUE(standard_test)) {
+    se_label <- NA_character_
+  }
+
+  estimator_label <- if (isTRUE(standard_test)) {
+    lavaan_standard_estimator(fit)
+  } else {
+    lavaan_estimator(fit, test_vec = test_vec)
+  }
+  if (!isTRUE(test_details) && grepl("_variant$", estimator_label)) {
+    estimator_label <- test_label
+  }
+
+  metric_cols <- lavaan_metric_colnames(metrics)
+  metrics_df <- NULL
+  if (length(metric_cols) > 0L) {
+    metrics_df <- as.data.frame(
+      matrix(NA_real_, nrow = 1, ncol = length(metric_cols)),
+      stringsAsFactors = FALSE
+    )
+    colnames(metrics_df) <- metric_cols
+  }
+
+  if (isTRUE(test_details)) {
+    fit_measure_df <- data.frame(
+      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+      ESTIMATOR = estimator_label,
+      TEST = test_label,
+      SE = se_label,
+      NPAR = lavaan::lavInspect(fit, "npar"),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  } else {
+    fit_measure_df <- data.frame(
+      NOBS = sum(lavaan::lavInspect(fit, "nobs")),
+      ESTIMATOR = estimator_label,
+      NPAR = lavaan::lavInspect(fit, "npar"),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  }
+
+  if (!is.null(metrics_df)) {
+    fit_measure_df <- cbind(fit_measure_df, metrics_df)
+  }
+
+  fit_measure_df$converged <- FALSE
   fit_measure_df
 }
 
