@@ -31,7 +31,9 @@
 #' @param digits_by_col Named integer vector that forces digits for
 #'   selected columns. Applied before export.
 #'   For `model_fit` and `compare_model_fit`, defaults to
-#'   `c(Chi2 = 2)` when not supplied.
+#'   `c(Chi2 = 2, Chi2_df = 2)` when not supplied. When `Chi2_df`
+#'   is fractional, it is rounded to two decimals before forming
+#'   the `Chi2(df)` header.
 #' @param table_args A named list of arguments forwarded to
 #'   `prepare_table()` and ultimately `insight::format_table()`.
 #'
@@ -80,7 +82,7 @@ save_table <- function(table_data, path, orientation = "landscape",
   rlang::check_installed("tools")
 
   # Detect file format based on file extension
-  file_extension <- tools::file_ext(path)
+  file_extension <- tolower(tools::file_ext(path))
 
   if (file_extension == "docx") {
     format <- "word"
@@ -110,6 +112,16 @@ save_table <- function(table_data, path, orientation = "landscape",
     cli::cli_abort("`table_args` must use named entries.")
   }
 
+  if (missing(digits_by_col) &&
+      inherits(table_data, c("model_fit", "compare_model_fit"))) {
+    digits_by_col <- c(Chi2 = 2, Chi2_df = 2)
+  }
+  if (!is.null(digits_by_col) && "Chi2_df" %in% names(digits_by_col) &&
+      "Chi2_df" %in% names(table_data)) {
+    df_digits <- digits_by_col[["Chi2_df"]]
+    table_data$Chi2_df <- round_df_decimals(table_data$Chi2_df, digits = df_digits)
+  }
+
   base_table_args <- list(
     digits = digits,
     ci_digits = ci_digits,
@@ -132,8 +144,11 @@ save_table <- function(table_data, path, orientation = "landscape",
     # Apply formatting options
     ft <- flextable::set_table_properties(ft, width = 1, layout = "autofit") |>
       flextable::font(fontname = "Arial", part = "all") |>
-      flextable::fontsize(size = 10, part = "all") |>
-      flextable::align(j = 2:ncol(formatted_table), align = "center", part = "all") |>
+      flextable::fontsize(size = 10, part = "all")
+    if (ncol(formatted_table) >= 2) {
+      ft <- flextable::align(ft, j = 2:ncol(formatted_table), align = "center", part = "all")
+    }
+    ft <- ft |>
       flextable::align(j = 1, align = "left", part = "all") |>
       flextable::border_remove() |>
       flextable::hline_top(part = "all",
