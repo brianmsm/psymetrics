@@ -1,7 +1,7 @@
 Package: psymetrics
 Type: Package
 Title: Unified Tools for Psychometric Model Analysis
-Version: 0.1.9
+Version: 0.1.9.9000
 Description: Provides tools for extracting and visualizing psychometric model fit indices, 
     compatible with various models like those from 'lavaan', 'psych', and 'mirt'. 
     Specific package dependencies are suggested and only required if using corresponding model objects.
