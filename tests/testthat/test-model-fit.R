@@ -373,3 +373,34 @@ speed =~ x7 + x8 + x9"
   expect_equal(result$ESTIMATOR, "WLSMV")
   expect_false(is.na(result$Chi2))
 })
+
+test_that("model_fit reports non-converged lavaan fits", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  data <- lavaan::HolzingerSwineford1939[1:20, ]
+  fit <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = data,
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+
+  if (isTRUE(lavaan::lavInspect(fit, "converged"))) {
+    skip("lavaan converged unexpectedly with iter.max = 1")
+  }
+
+  result <- suppressMessages(psymetrics::model_fit(fit, test_details = TRUE))
+
+  expect_s3_class(result, "model_fit")
+  expect_equal(nrow(result), 1)
+  expect_true(all(c("NOBS", "ESTIMATOR", "NPAR", "TEST", "SE") %in% names(result)))
+  expect_true("converged" %in% names(result))
+  expect_false(result$converged)
+
+  for (col in intersect(c("Chi2", "Chi2_df", "p_Chi2"), names(result))) {
+    expect_true(is.na(result[[col]]))
+  }
+})
