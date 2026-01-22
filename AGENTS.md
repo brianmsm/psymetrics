@@ -8,7 +8,8 @@
 
 ## Build, Test, and Development Commands
 - `R CMD build .` — build a source tarball.
-- `R CMD check .` — run full package checks.
+- `R CMD check <tarball>` — run full package checks on the built tarball (preferred over checking the source tree).
+- If the tarball check returns Status: OK and there are no further instructions, remove the tarball and the `<pkg>.Rcheck` directory; if the check does not end in OK, leave them for inspection.
 - `R -q -e "roxygen2::roxygenise()"` — regenerate `man/` and `NAMESPACE` after doc changes.
 - `R -q -e "rmarkdown::render('README.Rmd')"` — refresh `README.md` from the Rmd source.
 
@@ -17,9 +18,14 @@
 - Document exported functions with roxygen2 (`@param`, `@return`, `@export`).
 - Do not hand-edit generated files (`NAMESPACE`, `man/*.Rd`).
 
+## Messaging Guidelines
+- Ensure all user-facing messages honor the function's `verbose` flag when present.
+- For `compare_model_fit()` messaging, prefer including the affected model name(s) for clarity.
+
 ## Testing Guidelines
-- There is no `tests/` suite yet; rely on `R CMD check` and runnable examples.
-- The `v0.1.5` roadmap targets a `testthat` suite and fixes for `R CMD check` warnings/notes; see `ROADMAP.md` for scope.
+- A `testthat` suite exists under `tests/testthat`; coverage is expanding but not exhaustive.
+- Use `R -q -e "devtools::test()"` for quick feedback, and rely on `R CMD check` plus runnable examples for release readiness.
+- The roadmap tracks continued test expansion and `R CMD check` cleanup; see `ROADMAP.md` for scope.
 - If adding tests, follow `testthat` conventions (`tests/testthat/test-*.R`) and add `testthat` to `Suggests`.
 - For tests/examples involving fit indices, avoid a 1-factor/3-item model (df = 0 gives identical indices). Use at least 1 factor with 4 items or 2 factors with 3 items each.
 

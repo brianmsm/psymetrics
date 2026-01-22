@@ -6,14 +6,18 @@ While this file contains the overall plan, the day-to-day discussion and detaile
 
 ## **Current Status & Progress**
 
-* 🚧 In Progress: `v0.1.5` - Stability & Testing Release
+* 🚧 In Progress: `v0.1.9.x` - Stability & Documentation Polish (development)
 
-  This is a maintenance and stability release focused on solidifying the existing codebase before adding new features.
+  Ongoing maintenance and stability work alongside small UX/doc updates.
 
   - **Goal:**
-      - Add a comprehensive test suite using `testthat` for existing functions.
-      - Fix all `R CMD check` `WARNING`s and `NOTE`s.
-      - Improve internal code quality and documentation.
+      - Expand `testthat` coverage for core workflows and edge cases.
+      - Address remaining `R CMD check` warnings/notes surfaced during source-tree checks.
+      - Keep internal docs aligned with current behavior.
+
+* ✅ Completed: `v0.1.5` - Stability & Testing Release
+
+  - Added an initial `testthat` suite covering `model_fit`, `compare_model_fit`, plotting, and `save_table`.
 
 ---
 
