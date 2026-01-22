@@ -392,6 +392,18 @@ test_that("model_fit reports non-converged lavaan fits", {
     skip("lavaan converged unexpectedly with iter.max = 1")
   }
 
+  messages <- capture.output(
+    invisible(psymetrics::model_fit(fit, verbose = FALSE)),
+    type = "message"
+  )
+  expect_false(any(grepl("did not converge", messages)))
+
+  labeled_messages <- capture.output(
+    invisible(psymetrics::model_fit(fit, model_label = "ABC")),
+    type = "message"
+  )
+  expect_true(any(grepl("model ABC did not converge", labeled_messages)))
+
   result <- suppressMessages(psymetrics::model_fit(fit, test_details = TRUE))
 
   expect_s3_class(result, "model_fit")
