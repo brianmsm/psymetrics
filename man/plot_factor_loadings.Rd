@@ -9,8 +9,10 @@ plot_factor_loadings(
   sort = TRUE,
   group_by = TRUE,
   standardized = TRUE,
-  CI = TRUE,
+  ci = TRUE,
   autofit = TRUE,
+  ci_bounds = c("extend", "arrow"),
+  verbose = TRUE,
   ...
 )
 }
@@ -27,11 +29,31 @@ to \code{TRUE}.}
 \item{standardized}{Logical; if \code{TRUE}, uses standardized
 loadings. Defaults to \code{TRUE}.}
 
-\item{CI}{Logical; if \code{TRUE}, includes confidence intervals.
-Defaults to \code{TRUE}.}
+\item{ci}{Logical; if \code{TRUE}, includes confidence intervals.
+Defaults to \code{TRUE}. Also accepts \code{CI} via \code{...} for backward
+compatibility.}
 
-\item{autofit}{Logical; if \code{TRUE}, adjusts the x-axis
-range based on the range of loadings. Defaults to \code{TRUE}.}
+\item{autofit}{Logical; if \code{TRUE}, computes and applies
+x-axis limits via \code{coord_cartesian()} based on loadings
+(and CIs when available). If all values are non-negative,
+the lower limit is set to 0; if all values are non-positive,
+the upper limit is set to 0. For standardized loadings within
+\verb{[-1, 1]}, the limits are extended to include the nearest
+boundary to keep the standardized scale visible. If \code{FALSE},
+the x-axis limits are not modified and ggplot2 determines the range.}
+
+\item{ci_bounds}{Controls how confidence intervals are handled
+for standardized loadings when \code{ci = TRUE} and \code{autofit = TRUE}.
+\code{"extend"} draws full CIs (axis may extend beyond \verb{[-1, 1]});
+\code{"arrow"} constrains the x-axis to \verb{[-1, 1]} (or \verb{[0, 1]}/\verb{[-1, 0]}
+when all values are non-negative/non-positive), clips CIs to that
+range, and adds arrows to indicate off-scale intervals. If any
+standardized point estimate is outside \verb{[-1, 1]}, \code{"arrow"}
+falls back to \code{"extend"}.}
+
+\item{verbose}{Logical; if \code{TRUE}, prints informational messages
+and warnings (for example, when the model did not converge).
+Defaults to \code{TRUE}.}
 
 \item{...}{Additional arguments passed to \code{ggplot2::ggplot}.}
 }
