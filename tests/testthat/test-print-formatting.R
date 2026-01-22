@@ -34,7 +34,7 @@ test_that("format_results rejects overlapping digit arguments", {
 
   expect_error(
     format_results(table_data, digits = 2, table_args = list(digits = 1)),
-    "No pases `digits/ci_digits/p_digits`"
+    "Do not pass `digits/ci_digits/p_digits`"
   )
 })
 

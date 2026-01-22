@@ -4,7 +4,7 @@
 \alias{plot.lavaan}
 \title{Plot Method for lavaan Objects}
 \usage{
-\method{plot}{lavaan}(x, type = "factor_loadings", standardized = TRUE, CI = TRUE, ...)
+\method{plot}{lavaan}(x, type = "factor_loadings", standardized = TRUE, ci = TRUE, ...)
 }
 \arguments{
 \item{x}{A \code{lavaan} model object.}
@@ -25,9 +25,10 @@ observed variables.
 estimates for factor loadings. Only applicable when
 \code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
 
-\item{CI}{Logical; if \code{TRUE}, includes confidence intervals
+\item{ci}{Logical; if \code{TRUE}, includes confidence intervals
 in the factor loading plot. Only applicable when
-\code{type = "factor_loadings"}. Defaults to \code{TRUE}.}
+\code{type = "factor_loadings"}. Defaults to \code{TRUE}. Also accepts
+\code{CI} via \code{...} for backward compatibility.}
 
 \item{...}{Additional arguments passed to the specific
 plotting functions.}

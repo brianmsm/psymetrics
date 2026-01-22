@@ -150,7 +150,7 @@ format_results_impl <- function(x,
   passed_direct <- !missing_digits || !missing_ci_digits || !missing_p_digits
   if (passed_direct && any(core_args %in% names(table_args))) {
     cli::cli_abort(
-      "No pases `digits/ci_digits/p_digits` en ambos: usa solo argumentos directos o solo `table_args`."
+      "Do not pass `digits/ci_digits/p_digits` in both places; use only direct arguments or only `table_args`."
     )
   }
 

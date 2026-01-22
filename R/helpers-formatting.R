@@ -70,6 +70,26 @@ format_numeric_cells <- function(values, digits) {
   values
 }
 
+#' Drop converged column when it provides no additional signal.
+#'
+#' @param x A data frame with formatted values.
+#'
+#' @return A data frame with `converged` removed when all TRUE/NA.
+#' @keywords internal
+#' @noRd
+drop_converged_column <- function(x) {
+  if (!"converged" %in% names(x)) {
+    return(x)
+  }
+
+  converged_vals <- x$converged
+  if (all(is.na(converged_vals) | converged_vals)) {
+    x$converged <- NULL
+  }
+
+  x
+}
+
 #' Round non-integer degrees of freedom values for Chi2 headers.
 #'
 #' @param values Numeric vector with df values.

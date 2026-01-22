@@ -377,3 +377,33 @@ test_that("compare_model_fit errors with fewer than two models", {
     "At least two model fits"
   )
 })
+
+test_that("compare_model_fit mentions the affected model when non-converged", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  data_bad <- lavaan::HolzingerSwineford1939[1:20, ]
+  fit_bad <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = data_bad,
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+
+  if (isTRUE(lavaan::lavInspect(fit_bad, "converged"))) {
+    skip("lavaan converged unexpectedly with iter.max = 1")
+  }
+
+  fit_ok <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  messages <- capture.output(
+    invisible(psymetrics::compare_model_fit(fit_ok, ABC = fit_bad)),
+    type = "message"
+  )
+
+  expect_true(any(grepl("model ABC did not converge", messages)))
+})

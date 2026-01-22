@@ -1,3 +1,14 @@
+# psymetrics (development version)
+
+## Bug Fixes and Improvements
+
+-   **Model Fit**: Non-converged lavaan fits now return a single-row table with `converged = FALSE` and NA metrics, keeping `compare_model_fit()` stable.
+-   **Model Fit**: Non-convergence alerts now respect `verbose` and include model labels when available.
+-   **Plotting**: `plot_factor_loadings()` now skips CI error bars when CI values are unavailable and uses data-driven limits when `autofit = TRUE`.
+-   **Plotting**: `plot_factor_loadings()` now uses `ci` (accepting legacy `CI` via `...`), adds `ci_bounds` to control standardized CI handling (extend vs arrow), warns on non-converged models, and refines `autofit` limits to keep standardized bounds visible.
+-   **Table Export**: `save_table()` aligns default `digits_by_col` for `model_fit`/`compare_model_fit`, accepts case-insensitive `.docx`, and guards alignment for single-column tables.
+-   **Messaging**: Standardized the `digits/ci_digits/p_digits` conflict error in English.
+
 # psymetrics 0.1.9
 
 ## Bug Fixes and Improvements
