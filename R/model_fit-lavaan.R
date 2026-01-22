@@ -227,12 +227,19 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   # Check if the model converged
   if (!lavaan::lavInspect(fit, "converged")) {
-    cli::cli_alert_danger(
-      paste0(
-        "The model did not converge. ",
-        "Fit indices are not available."
-      )
-    )
+    if (isTRUE(verbose)) {
+      if (is.null(model_label)) {
+        cli::cli_alert_danger(
+          "The model did not converge. Fit indices are not available."
+        )
+      } else {
+        cli::cli_alert_danger(
+          cli::cli_text(
+            "The model {model_label} did not converge. Fit indices are not available."
+          )
+        )
+      }
+    }
     fit_measure <- lavaan_nonconverged_fit_measures(
       fit,
       metrics = metrics,
