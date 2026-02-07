@@ -174,22 +174,16 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     if (length(standard_estimators) == 1L) {
       if (length(standard_models) == 1L) {
         cli::cli_inform(
-          cli::cli_text(
-            "Standard-test row uses standard indices for estimator {standard_estimators}. Affected model: {standard_models}."
-          )
+          "Standard-test row uses standard indices for estimator {standard_estimators}. Affected model: {standard_models}."
         )
       } else {
         cli::cli_inform(
-          cli::cli_text(
-            "Standard-test row uses standard indices for estimator {standard_estimators}. Affected models: {standard_models}."
-          )
+          "Standard-test row uses standard indices for estimator {standard_estimators}. Affected models: {standard_models}."
         )
       }
     } else if (length(standard_estimators) > 1L) {
       cli::cli_inform(
-        cli::cli_text(
-          "Standard-test rows use standard indices for estimators: {standard_estimators}. Affected models: {standard_models}."
-        )
+        "Standard-test rows use standard indices for estimators: {standard_estimators}. Affected models: {standard_models}."
       )
     }
   }

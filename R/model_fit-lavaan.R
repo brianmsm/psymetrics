@@ -162,15 +162,11 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     if (length(missing_tests) > 0L && verbose) {
       if (is.null(model_label)) {
         cli::cli_inform(
-          cli::cli_text(
-            "Requested tests not found in the fitted model and were dropped: {missing_tests}."
-          )
+          "Requested tests not found in the fitted model and were dropped: {missing_tests}."
         )
       } else {
         cli::cli_inform(
-          cli::cli_text(
-            "Requested tests not found in the {model_label} model and were dropped: {missing_tests}."
-          )
+          "Requested tests not found in the {model_label} model and were dropped: {missing_tests}."
         )
       }
     }
@@ -196,9 +192,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
-            )
+            "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
           )
         }
       } else if (has_bootstrap) {
@@ -208,16 +202,12 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
-            )
+            "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
           )
         }
       } else if (length(available_nonstandard) == 0L) {
         cli::cli_inform(
-          cli::cli_text(
-            "{model_prefix} reports only standard tests; using standard indices instead."
-          )
+          "{model_prefix} reports only standard tests; using standard indices instead."
         )
       } else {
         if (is.null(model_label)) {
@@ -226,9 +216,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "No requested non-standard tests are available for the {model_label} model; using standard indices instead."
-            )
+            "No requested non-standard tests are available for the {model_label} model; using standard indices instead."
           )
         }
       }
@@ -312,9 +300,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       isTRUE(standard_test_message) &&
       isTRUE(verbose)) {
     cli::cli_inform(
-      cli::cli_text(
-        "Standard-test row uses standard indices for estimator {standard_estimator}."
-      )
+      "Standard-test row uses standard indices for estimator {standard_estimator}."
     )
   }
 
@@ -439,9 +425,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
-            )
+            "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
           )
         }
       } else if (has_bootstrap) {
@@ -451,9 +435,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
-            )
+            "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
           )
         }
       } else {
@@ -463,9 +445,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
           )
         } else {
           cli::cli_inform(
-            cli::cli_text(
-              "The {model_label} model does not report a chi-square test; using standard indices instead."
-            )
+            "The {model_label} model does not report a chi-square test; using standard indices instead."
           )
         }
       }
@@ -517,9 +497,9 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
       lav_options$estimator %in% c("ULS", "DWLS") &&
       lav_options$se == "robust.sem.nt" &&
       standard_test == "browne.residual.nt") {
-    cli::cli_inform(cli::cli_text(
+    cli::cli_inform(
       "Since lavaan 0.6.21, {lav_options$estimator} with continuous data uses Browne's residual-based (NT) test by default; fit indices reflect that test."
-    ))
+    )
   }
 
   # Initialize a vector to track which metrics have been automatically adjusted
