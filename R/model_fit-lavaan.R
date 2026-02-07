@@ -33,6 +33,7 @@
 #'   `"default"`, and `"none"`. Provide a character vector to
 #'   request specific tests; unavailable entries are dropped
 #'   with an informational message when `verbose = TRUE`.
+#'   `NULL` is treated as `"default"`.
 #' @param standard_test A logical value indicating whether to
 #'   include a standard-test row in addition to non-standard
 #'   tests. When `TRUE`, the standard row is shown first and
@@ -65,6 +66,12 @@
 #'   model_fit(fit, standard_test = TRUE, test_details = TRUE)
 #'   model_fit(fit, type = "robust")
 #'   model_fit(fit, metrics = c("cfi", "tli"))
+#'   fit_test <- cfa(
+#'     hs_model,
+#'     data = HolzingerSwineford1939,
+#'     test = c("satorra.bentler", "mean.var.adjusted")
+#'   )
+#'   model_fit(fit_test, test = "satorra.bentler")
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
@@ -128,11 +135,13 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   # Determine the type of index to use
   if (is.null(type)) {
-    if (robust_type == "robust") {
+    if (isTRUE(robust_type)) {
       type <- "scaled"
     } else {
       type <- "standard"
     }
+  } else {
+    type <- match.arg(type, c("standard", "scaled", "robust"))
   }
 
   type_forced_standard <- FALSE
@@ -181,13 +190,29 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         model_prefix <- sprintf("The %s model", model_label)
       }
       if (browne_only) {
-        cli::cli_inform(
-          "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       } else if (has_bootstrap) {
-        cli::cli_inform(
-          "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       } else if (length(available_nonstandard) == 0L) {
         cli::cli_inform(
           cli::cli_text(
@@ -214,7 +239,7 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
 
   if (isTRUE(verbose) &&
       type == "standard" &&
-      robust_type == "robust" &&
+      isTRUE(robust_type) &&
       !type_forced_standard) {
     cli::cli_alert_warning(
       paste0(
@@ -271,7 +296,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       estimator_override = standard_estimator,
       se_override = if (isTRUE(standard_test) && !use_model_se) NA_character_ else NULL,
       test_details = test_details,
-      robust_warning_collector = robust_warning_collector
+      robust_warning_collector = robust_warning_collector,
+      model_label = model_label
     )
     lavaan_emit_robust_warning(
       robust_warning_collector,
@@ -302,7 +328,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       estimator_override = standard_estimator,
       se_override = NA_character_,
       test_details = test_details,
-      robust_warning_collector = robust_warning_collector
+      robust_warning_collector = robust_warning_collector,
+      model_label = model_label
     )
   }
 
@@ -314,7 +341,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       verbose = verbose,
       scaled_test = selected_test,
       test_details = test_details,
-      robust_warning_collector = robust_warning_collector
+      robust_warning_collector = robust_warning_collector,
+      model_label = model_label
     )
   }
 
@@ -333,7 +361,8 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
                                scaled_test = NULL, estimator_override = NULL,
                                se_override = NULL,
                                test_details = FALSE,
-                               robust_warning_collector = NULL) {
+                               robust_warning_collector = NULL,
+                               model_label = NULL) {
 
   original_metrics <- metrics
   lav_options <- lavaan::lavInspect(fit, "options")
@@ -404,23 +433,48 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   if (standard_only && type %in% c("scaled", "robust")) {
     if (verbose && !has_none) {
       if (browne_only) {
-        cli::cli_inform(
-          "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "Browne residual tests do not provide scaled or robust fit measures; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "Browne residual tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       } else if (has_bootstrap) {
-        cli::cli_inform(
-          "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "Bollen-Stine bootstrap tests do not provide scaled or robust fit measures for the {model_label} model; using standard indices instead."
+            )
+          )
+        }
       } else {
-        cli::cli_inform(
-          "The model does not report a chi-square test; using standard indices instead."
-        )
+        if (is.null(model_label)) {
+          cli::cli_inform(
+            "The model does not report a chi-square test; using standard indices instead."
+          )
+        } else {
+          cli::cli_inform(
+            cli::cli_text(
+              "The {model_label} model does not report a chi-square test; using standard indices instead."
+            )
+          )
+        }
       }
     }
     type <- "standard"
   }
 
   if (has_none) {
+    metric_colnames <- lavaan_metric_colnames(metrics)
     if (verbose) {
       cli::cli_alert_warning(
         "Fit measures are not available when test = 'none'; returning NA for requested metrics."
@@ -433,7 +487,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
         TEST = test_label,
         SE = se_label,
         NPAR = lavaan::lavInspect(fit, "npar"),
-        matrix(NA_real_, nrow = 1, ncol = length(metrics)),
+        matrix(NA_real_, nrow = 1, ncol = length(metric_colnames)),
         row.names = NULL,
         check.names = FALSE
       )
@@ -442,7 +496,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
         NOBS = sum(lavaan::lavInspect(fit, "nobs")),
         ESTIMATOR = estimator_label,
         NPAR = lavaan::lavInspect(fit, "npar"),
-        matrix(NA_real_, nrow = 1, ncol = length(metrics)),
+        matrix(NA_real_, nrow = 1, ncol = length(metric_colnames)),
         row.names = NULL,
         check.names = FALSE
       )
@@ -452,14 +506,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
       base_cols <- c(base_cols, "TEST", "SE")
     }
     base_cols <- c(base_cols, "NPAR")
-    colnames(fit_measure_df) <- c(base_cols, toupper(metrics))
-
-    colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
-    colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames(fit_measure_df))
-    colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames(fit_measure_df))
-    colnames(fit_measure_df) <- gsub("^CHISQ$", "Chi2", colnames(fit_measure_df))
-    colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
-    colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
+    colnames(fit_measure_df) <- c(base_cols, metric_colnames)
 
     fit_measure_df$converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
     class(fit_measure_df) <- c("model_fit", class(fit_measure_df))
@@ -479,7 +526,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   adjusted_metrics <- c()
 
   # Adjust metrics based on the selected type
-  metrics_to_use <- sapply(metrics, function(metric) {
+  metrics_to_use <- vapply(metrics, function(metric) {
     if (grepl("\\.(scaled|robust)$", metric)) {
       return(metric)  # Return as is if already specified
     } else if (type == "scaled" && metric %in% scaled_metrics) {
@@ -498,7 +545,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     } else {
       return(metric)
     }
-  })
+  }, character(1), USE.NAMES = FALSE)
 
   # Display an informational message if any metrics were adjusted and verbose is TRUE
   if (verbose && length(adjusted_metrics) > 0 && length(original_metrics) != 1) {
@@ -551,7 +598,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   fit_measure_df <- as.data.frame(unclass(t(fit_measures)), stringsAsFactors = FALSE)
 
   # Rename the columns to be more descriptive
-  colnames(fit_measure_df) <- c("NPAR", toupper(metrics))
+  colnames(fit_measure_df) <- c("NPAR", lavaan_metric_colnames(metrics))
 
   # Add additional columns
   if (isTRUE(test_details)) {
@@ -573,16 +620,6 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
       check.names = FALSE
     )
   }
-
-  # Clean up the column names to remove ".scaled" and ".robust"
-  colnames(fit_measure_df) <- gsub("\\.(SCALED|ROBUST)$", "", colnames(fit_measure_df))
-
-  # Further clean-up of column names
-  colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.LOWER$", "RMSEA_CI_low", colnames(fit_measure_df))
-  colnames(fit_measure_df) <- gsub("^RMSEA\\.CI\\.UPPER$", "RMSEA_CI_high", colnames(fit_measure_df))
-  colnames(fit_measure_df) <- gsub("^CHISQ$", "Chi2", colnames(fit_measure_df))
-  colnames(fit_measure_df) <- gsub("^DF$", "Chi2_df", colnames(fit_measure_df))
-  colnames(fit_measure_df) <- gsub("^PVALUE$", "p_Chi2", colnames(fit_measure_df))
 
   fit_measure_df$converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
 
@@ -902,10 +939,5 @@ lavaan_estimator <- function(fit, test_vec = NULL) {
 is_robust_estimator_lavaan <- function(fit) {
   lav_options <- lavaan::lavInspect(fit, "options")
   test_groups <- lavaan_test_groups()
-  if (lavaan_has_test(lav_options$test, test_groups$robust_tests)) {
-    type <- "robust"
-  } else {
-    type <- "non-robust"
-  }
-  return(type)
+  lavaan_has_test(lav_options$test, test_groups$robust_tests)
 }
