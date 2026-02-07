@@ -171,9 +171,14 @@ plot_factor_loadings <- function(fit,
   # Extract standardized loadings and confidence intervals
   if (standardized) {
     loadings <- lavaan::standardizedSolution(fit)
-    names(loadings)[4] <- "est"
+    if ("est.std" %in% names(loadings)) {
+      loadings$est <- loadings$est.std
+    }
   } else {
     loadings <- lavaan::parameterEstimates(fit)
+  }
+  if (!"est" %in% names(loadings)) {
+    cli::cli_abort("Could not find an estimate column (`est` or `est.std`) in the extracted lavaan loadings.")
   }
 
   # Filter to retain only factor loadings (lambda parameters)
