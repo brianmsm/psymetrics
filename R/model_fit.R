@@ -33,3 +33,17 @@
 model_fit <- function(fit, ...) {
   UseMethod("model_fit")
 }
+
+#' @export
+model_fit.default <- function(fit, ...) {
+  fit_class <- class(fit)
+  if (is.null(fit_class) || length(fit_class) == 0L) {
+    fit_class <- typeof(fit)
+  }
+  fit_class <- paste(fit_class, collapse = ", ")
+
+  cli::cli_abort(c(
+    sprintf("Objects of class '%s' are not currently supported by `model_fit()`.", fit_class),
+    "Supported classes: lavaan."
+  ))
+}
