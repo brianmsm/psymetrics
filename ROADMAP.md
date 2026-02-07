@@ -2,18 +2,23 @@
 
 This document outlines the development plan and versioning strategy for the `psymetrics` package. It serves as a portable, high-level guide for development priorities.
 
-While this file contains the overall plan, the day-to-day discussion and detailed technical specifications for each task live in the GitHub Issues. This document is a mirror of the master plan outlined in [Issue #23](https://github.com/brianmsm/psymetrics/issues/23).
+While this file contains the overall plan, day-to-day discussion and detailed technical specifications for each task live in the linked GitHub Issues.
 
 ## **Current Status & Progress**
 
-* 🚧 In Progress: `v0.1.9.x` - Stability & Documentation Polish (development)
+* 🚧 In Progress: `v0.2.0` - Extend Existing Functions for SEM
 
-  Ongoing maintenance and stability work alongside small UX/doc updates.
+  Current milestone work is focused on official SEM support for existing `lavaan` workflows.
 
   - **Goal:**
-      - Expand `testthat` coverage for core workflows and edge cases.
-      - Address remaining `R CMD check` warnings/notes surfaced during source-tree checks.
-      - Keep internal docs aligned with current behavior.
+      - Validate and document SEM support in `model_fit()`, `compare_model_fit()`, and `plot_factor_loadings()`.
+      - Expand SEM-focused test coverage.
+      - Complete acceptance criteria tracked in **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**.
+
+* ✅ Completed: `v0.1.9.x` - Stability & Documentation Polish
+
+  - Expanded `testthat` coverage for core workflows and edge cases.
+  - Improved formatting/messaging behavior and aligned documentation with current implementation.
 
 * ✅ Completed: `v0.1.5` - Stability & Testing Release
 
@@ -25,12 +30,12 @@ While this file contains the overall plan, the day-to-day discussion and detaile
 
 ### **Phase 1: Complete and Consolidate `lavaan` Workflow (CFA & SEM)**
 
-The focus of this phase is to build a robust and feature-complete workflow for models fitted with `lavaan`, covering both Confortmatory Factor Analysis (CFA) and general Structural Equation Models (SEM).
+The focus of this phase is to build a robust and feature-complete workflow for models fitted with `lavaan`, covering both Confirmatory Factor Analysis (CFA) and general Structural Equation Models (SEM).
 
 * [ ] **`v0.2.0`**: **Extend Existing Functions for SEM.** *(In Progress)*
 
   - *Goal*: Officially support SEM in `model_fit`, `compare_model_fit`, and `plot_factor_loadings`.
-  - *Details*: **[Issue #24](https://github.com/brianmsm/psymetrics/issues/24)**
+  - *Details*: **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**
   
 * [ ] **`v0.3.0`**: Implement `model_estimates()` for parameter extraction.
 
