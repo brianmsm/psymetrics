@@ -42,7 +42,8 @@ format_results.compare_model_fit <- function(x,
     output_args = output_args,
     missing_digits = missing(digits),
     missing_ci_digits = missing(ci_digits),
-    missing_p_digits = missing(p_digits)
+    missing_p_digits = missing(p_digits),
+    missing_align = missing(align)
   )
 }
 

@@ -40,7 +40,8 @@ return all non-standard tests from
 \code{lavInspect(fit, "options")$test}, excluding \code{"standard"},
 \code{"default"}, and \code{"none"}. Provide a character vector to
 request specific tests; unavailable entries are dropped
-with an informational message when \code{verbose = TRUE}.}
+with an informational message when \code{verbose = TRUE}.
+\code{NULL} is treated as \code{"default"}.}
 
 \item{standard_test}{A logical value indicating whether to
 include a standard-test row in addition to non-standard
@@ -87,6 +88,12 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   model_fit(fit, standard_test = TRUE, test_details = TRUE)
   model_fit(fit, type = "robust")
   model_fit(fit, metrics = c("cfi", "tli"))
+  fit_test <- cfa(
+    hs_model,
+    data = HolzingerSwineford1939,
+    test = c("satorra.bentler", "mean.var.adjusted")
+  )
+  model_fit(fit_test, test = "satorra.bentler")
 } else {
   message("Please install 'lavaan' to run this example.")
 }

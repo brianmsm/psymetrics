@@ -31,7 +31,10 @@
 #'   `insight::format_table()`.
 #' @param output_args A named list of arguments forwarded to
 #'   `insight::export_table()` or `tinytable::tt()` depending on
-#'   `output`.
+#'   `output`. If `align` is supplied here and the top-level `align`
+#'   argument is missing, `output_args$align` is used. Supplying `align`
+#'   in both places is an error. `output_args$format` is not allowed;
+#'   use `output` instead.
 #' @note HTML output returns a `tinytable` object. Printing HTML
 #'   tables inside RStudio requires the `rstudioapi` package; you
 #'   can still create the object without it, but printing will
@@ -69,6 +72,11 @@
 #'       output = "markdown",
 #'       align = "center",
 #'       output_args = list(caption = "Fit indices")
+#'     )
+#'     format_results(
+#'       results,
+#'       output = "markdown",
+#'       output_args = list(align = "center", caption = "Fit indices")
 #'     )
 #'   }
 #'   html_table <- format_results(results, output = "html")
@@ -112,7 +120,8 @@ format_results.data.frame <- function(x,
     output_args = output_args,
     missing_digits = missing(digits),
     missing_ci_digits = missing(ci_digits),
-    missing_p_digits = missing(p_digits)
+    missing_p_digits = missing(p_digits),
+    missing_align = missing(align)
   )
 }
 
@@ -129,7 +138,8 @@ format_results_impl <- function(x,
                                 output_args,
                                 missing_digits,
                                 missing_ci_digits,
-                                missing_p_digits) {
+                                missing_p_digits,
+                                missing_align) {
   if (!is.list(table_args)) {
     cli::cli_abort("`table_args` must be a list.")
   }
@@ -172,8 +182,17 @@ format_results_impl <- function(x,
     formatted_table <- apply_digits_by_col(formatted_table, digits_by_col = digits_by_col)
   }
 
-  if (length(output_args) > 0) {
-    output_args <- output_args[!names(output_args) %in% c("format", "align")]
+  if ("format" %in% names(output_args)) {
+    cli::cli_abort("`output_args$format` is not supported. Use the top-level `output` argument.")
+  }
+  if ("align" %in% names(output_args)) {
+    if (!missing_align) {
+      cli::cli_abort(
+        "Do not pass `align` in both places; use either the top-level `align` argument or `output_args$align`."
+      )
+    }
+    align <- output_args[["align"]]
+    output_args$align <- NULL
   }
 
   if (output == "text") {

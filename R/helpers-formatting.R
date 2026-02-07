@@ -57,7 +57,7 @@ format_numeric_cells <- function(values, digits) {
   values <- as.character(values)
   trimmed <- trimws(values)
   numeric_mask <- !is.na(trimmed) &
-    grepl("^-?\\d+(?:\\.\\d+)?$", trimmed)
+    grepl("^[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+-]?\\d+)?$", trimmed)
 
   if (any(numeric_mask)) {
     values[numeric_mask] <- formatC(

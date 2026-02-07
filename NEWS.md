@@ -8,6 +8,12 @@
 -   **Plotting**: `plot_factor_loadings()` now uses `ci` (accepting legacy `CI` via `...`), adds `ci_bounds` to control standardized CI handling (extend vs arrow), warns on non-converged models, and refines `autofit` limits to keep standardized bounds visible.
 -   **Table Export**: `save_table()` aligns default `digits_by_col` for `model_fit`/`compare_model_fit`, accepts case-insensitive `.docx`, and guards alignment for single-column tables.
 -   **Messaging**: Standardized the `digits/ci_digits/p_digits` conflict error in English.
+-   **Formatting**: `format_results()` now accepts `output_args$align` when top-level `align` is not supplied, errors when both are passed, and rejects `output_args$format` (use `output`).
+-   **Model Fit**: Added `model_fit.default()` to return a clear error for unsupported model classes.
+-   **Model Fit / Compare Fit**: `test = NULL` is now treated as `"default"` for lavaan flows, with clearer model-specific fallback messaging.
+-   **Plotting**: `plot_factor_loadings()` now maps standardized estimates by column name (`est.std`) and aborts with an explicit error if no estimate column is available.
+-   **Formatting**: Per-column numeric formatting now recognizes signed and scientific-notation values (for example `1e-05`, `-2E+03`).
+-   **Documentation**: Corrected `save_table()` docs to reflect the default APA template font size (Arial 10).
 
 # psymetrics 0.1.9
 

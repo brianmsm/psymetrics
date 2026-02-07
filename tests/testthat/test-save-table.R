@@ -42,4 +42,11 @@ test_that("save_table writes docx when dependencies are available", {
 
   expect_true(file.exists(output_path))
   expect_equal(result, output_path)
+
+  xml_conn <- unz(output_path, "word/document.xml")
+  on.exit(close(xml_conn), add = TRUE)
+  xml_text <- paste(readLines(xml_conn, warn = FALSE), collapse = "")
+
+  expect_match(xml_text, "MODEL")
+  expect_match(xml_text, "fit")
 })

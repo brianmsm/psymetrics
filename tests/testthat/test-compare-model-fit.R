@@ -407,3 +407,84 @@ test_that("compare_model_fit mentions the affected model when non-converged", {
 
   expect_true(any(grepl("model ABC did not converge", messages)))
 })
+
+test_that("compare_model_fit treats test = NULL as default", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit1 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+  fit2 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  out_default <- suppressMessages(psymetrics::compare_model_fit(fit1, fit2))
+  out_null <- suppressMessages(psymetrics::compare_model_fit(fit1, fit2, test = NULL))
+
+  expect_equal(as.data.frame(out_default), as.data.frame(out_null))
+})
+
+test_that("compare_model_fit lavaan dependency guard does not alter normal flow", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit1 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+  fit2 <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  expect_silent(psymetrics::compare_model_fit(fit1, fit2))
+})
+
+test_that("compare_model_fit standard-only fallback messages include model labels", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+
+  fit_browne <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ULS")
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  messages <- capture.output(
+    invisible(psymetrics::compare_model_fit(ULSModel = fit_browne, fit_ref, type = "scaled")),
+    type = "message"
+  )
+
+  expect_true(any(grepl("ULSModel model", messages)))
+})
+
+test_that("compare_model_fit Bollen-Stine fallback messages include model labels", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9"
+
+  fit_boot <- suppressWarnings(
+    lavaan::cfa(
+      model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "ML",
+      test = "bollen.stine",
+      bootstrap = 20
+    )
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  messages <- capture.output(
+    invisible(psymetrics::compare_model_fit(BootModel = fit_boot, fit_ref, type = "scaled")),
+    type = "message"
+  )
+
+  expect_true(any(grepl("for the BootModel model", messages)))
+})
