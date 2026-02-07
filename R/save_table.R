@@ -48,7 +48,7 @@
 #'
 #' If the `path` has a .docx extension, the table will be saved
 #' as a Word document. The default template aligns the table
-#' to APA style, with Arial font at size 12. If a custom
+#' to APA style, with Arial font at size 10. If a custom
 #' template is provided via the `template` argument, it takes
 #' precedence over the `orientation` setting.
 #' @export
@@ -78,9 +78,6 @@ save_table <- function(table_data, path, orientation = "landscape",
                        template = NULL, digits = 3, ci_digits = digits,
                        p_digits = 3, digits_by_col = NULL,
                        table_args = list()) {
-  # Check if required packages are installed
-  rlang::check_installed("tools")
-
   # Detect file format based on file extension
   file_extension <- tolower(tools::file_ext(path))
 

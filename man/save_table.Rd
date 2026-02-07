@@ -73,7 +73,7 @@ or "portrait" orientation as set by the \code{orientation} argument.
 
 If the \code{path} has a .docx extension, the table will be saved
 as a Word document. The default template aligns the table
-to APA style, with Arial font at size 12. If a custom
+to APA style, with Arial font at size 10. If a custom
 template is provided via the \code{template} argument, it takes
 precedence over the \code{orientation} setting.
 }
