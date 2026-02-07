@@ -50,7 +50,10 @@ the \code{Chi2(df)} header.}
 
 \item{output_args}{A named list of arguments forwarded to
 \code{insight::export_table()} or \code{tinytable::tt()} depending on
-\code{output}.}
+\code{output}. If \code{align} is supplied here and the top-level \code{align}
+argument is missing, \code{output_args$align} is used. Supplying \code{align}
+in both places is an error. \code{output_args$format} is not allowed;
+use \code{output} instead.}
 }
 \value{
 A character string (text), a \code{knitr_kable} (markdown), or a
@@ -97,6 +100,11 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
       output = "markdown",
       align = "center",
       output_args = list(caption = "Fit indices")
+    )
+    format_results(
+      results,
+      output = "markdown",
+      output_args = list(align = "center", caption = "Fit indices")
     )
   }
   html_table <- format_results(results, output = "html")
