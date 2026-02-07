@@ -416,3 +416,41 @@ test_that("model_fit reports non-converged lavaan fits", {
     expect_true(is.na(result[[col]]))
   }
 })
+
+test_that("model_fit validates allowed lavaan type values", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  expect_error(
+    psymetrics::model_fit(fit, type = "invalid"),
+    "arg should be one of|standard|scaled|robust"
+  )
+})
+
+test_that("model_fit handles empty metrics vector", {
+  skip_if_not_installed("lavaan")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  result <- suppressMessages(psymetrics::model_fit(fit, metrics = character(0)))
+
+  expect_s3_class(result, "model_fit")
+  expect_equal(nrow(result), 1)
+  expect_true(all(c("NOBS", "ESTIMATOR", "NPAR", "converged") %in% names(result)))
+})
+
+test_that("model_fit.default returns clear unsupported-class error", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+
+  expect_error(
+    psymetrics::model_fit(fit),
+    "not currently supported by `model_fit\\(\\)`|Supported classes: lavaan"
+  )
+})

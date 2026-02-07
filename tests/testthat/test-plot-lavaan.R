@@ -94,3 +94,94 @@ test_that("plot_factor_loadings warns for non-converged models", {
     "did not converge"
   )
 })
+
+test_that("plot_factor_loadings supports standardized = FALSE", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  expected <- lavaan::parameterEstimates(fit)
+  expected <- expected[expected$op == "=~", "est", drop = TRUE]
+
+  plot <- psymetrics::plot_factor_loadings(
+    fit,
+    standardized = FALSE,
+    sort = FALSE,
+    group_by = FALSE,
+    ci = FALSE
+  )
+
+  expect_s3_class(plot, "ggplot")
+  expect_equal(sort(plot$data$est), sort(expected), tolerance = 1e-8)
+})
+
+test_that("plot_factor_loadings supports group_by = FALSE", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  plot <- psymetrics::plot_factor_loadings(
+    fit,
+    group_by = FALSE,
+    sort = FALSE,
+    ci = FALSE
+  )
+
+  expect_true(all(as.character(plot$data$Factor) == "All Items"))
+})
+
+test_that("plot_factor_loadings supports sort = FALSE", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  expected <- lavaan::standardizedSolution(fit)
+  expected <- expected[expected$op == "=~", "rhs", drop = TRUE]
+
+  plot <- psymetrics::plot_factor_loadings(
+    fit,
+    sort = FALSE,
+    group_by = FALSE,
+    ci = FALSE
+  )
+
+  expect_equal(as.character(plot$data$rhs), expected)
+})
+
+test_that("plot_factor_loadings maps est.std to est by name", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  model <- "visual =~ x1 + x2 + x3 + x4"
+  fit <- suppressWarnings(
+    lavaan::cfa(model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  standardized <- lavaan::standardizedSolution(fit)
+  if (!"est.std" %in% names(standardized)) {
+    skip("The current lavaan output does not provide est.std.")
+  }
+  expected <- standardized[standardized$op == "=~", "est.std", drop = TRUE]
+
+  plot <- psymetrics::plot_factor_loadings(
+    fit,
+    sort = FALSE,
+    group_by = FALSE,
+    ci = FALSE
+  )
+
+  expect_true("est" %in% names(plot$data))
+  expect_equal(sort(plot$data$est), sort(expected), tolerance = 1e-8)
+})
