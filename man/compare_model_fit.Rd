@@ -79,6 +79,19 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   compare_model_fit(fit1, fit2)
   compare_model_fit(fit1, fit2, standard_test = TRUE, test_details = TRUE)
   compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
+  fit3 <- cfa(
+    hs_model,
+    data = HolzingerSwineford1939,
+    test = c("satorra.bentler", "mean.var.adjusted")
+  )
+  compare_model_fit(fit1, fit3, test = "satorra.bentler")
+  compare_model_fit(
+    fit1 = fit1,
+    robust = fit3,
+    test = list(robust = "mean.var.adjusted"),
+    standard_test = list(robust = TRUE),
+    test_details = TRUE
+  )
 } else {
   message("Please install 'lavaan' to run this example.")
 }

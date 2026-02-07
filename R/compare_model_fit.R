@@ -59,6 +59,19 @@
 #'   compare_model_fit(fit1, fit2)
 #'   compare_model_fit(fit1, fit2, standard_test = TRUE, test_details = TRUE)
 #'   compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
+#'   fit3 <- cfa(
+#'     hs_model,
+#'     data = HolzingerSwineford1939,
+#'     test = c("satorra.bentler", "mean.var.adjusted")
+#'   )
+#'   compare_model_fit(fit1, fit3, test = "satorra.bentler")
+#'   compare_model_fit(
+#'     fit1 = fit1,
+#'     robust = fit3,
+#'     test = list(robust = "mean.var.adjusted"),
+#'     standard_test = list(robust = TRUE),
+#'     test_details = TRUE
+#'   )
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
@@ -72,6 +85,10 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
     cli::cli_abort(
       c("At least two model fits must be provided for comparison")
     )
+  }
+  has_lavaan_fit <- any(vapply(fits, inherits, logical(1), "lavaan"))
+  if (has_lavaan_fit) {
+    rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   }
 
   arg_names <- names(fits)
@@ -106,6 +123,7 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   )
 
   standard_estimators <- character(0)
+  standard_models <- character(0)
   if (type %in% c("scaled", "robust") || is.null(type)) {
     for (fit_idx in seq_along(fits)) {
       fit <- fits[[fit_idx]]
@@ -117,7 +135,7 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
       }
       resolved_type <- type
       if (is.null(resolved_type)) {
-        resolved_type <- if (is_robust_estimator_lavaan(fit) == "robust") {
+        resolved_type <- if (isTRUE(is_robust_estimator_lavaan(fit))) {
           "scaled"
         } else {
           "standard"
@@ -146,21 +164,31 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
       }
       if (resolved_type %in% c("scaled", "robust")) {
         standard_estimators <- c(standard_estimators, lavaan_standard_estimator(fit))
+        standard_models <- c(standard_models, model_names[[fit_idx]])
       }
     }
   }
   standard_estimators <- unique(standard_estimators)
+  standard_models <- unique(standard_models)
   if (isTRUE(verbose)) {
     if (length(standard_estimators) == 1L) {
-      cli::cli_inform(
-        cli::cli_text(
-          "Standard-test row uses standard indices for estimator {standard_estimators}."
+      if (length(standard_models) == 1L) {
+        cli::cli_inform(
+          cli::cli_text(
+            "Standard-test row uses standard indices for estimator {standard_estimators}. Affected model: {standard_models}."
+          )
         )
-      )
+      } else {
+        cli::cli_inform(
+          cli::cli_text(
+            "Standard-test row uses standard indices for estimator {standard_estimators}. Affected models: {standard_models}."
+          )
+        )
+      }
     } else if (length(standard_estimators) > 1L) {
       cli::cli_inform(
         cli::cli_text(
-          "Standard-test rows use standard indices for estimators: {standard_estimators}."
+          "Standard-test rows use standard indices for estimators: {standard_estimators}. Affected models: {standard_models}."
         )
       )
     }
@@ -190,10 +218,7 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
           fit,
           type = type,
           metrics = metrics,
-          verbose = verbose,
-          test = test_value,
-          standard_test = standard_value,
-          test_details = test_details
+          verbose = verbose
         )
       }
     },
@@ -329,7 +354,10 @@ resolve_test_by_model <- function(test_value, model_names, alias_names, default_
     }
     resolved
   } else {
-    if (!is.null(test_value) && (!is.character(test_value) || length(test_value) == 0L)) {
+    if (is.null(test_value)) {
+      test_value <- default_value
+    }
+    if (!is.character(test_value) || length(test_value) == 0L) {
       rlang::abort("`test` must be a non-empty character vector or \"default\".")
     }
     rep(list(test_value), length(model_names))
