@@ -2,6 +2,9 @@
 
 ## Bug Fixes and Improvements
 
+-   **SEM Support**: Officially documented `model_fit()` and `compare_model_fit()` support for fitted `lavaan` SEM workflows (including CFA, SEM, growth, multigroup, and multilevel variants).
+-   **Plotting**: `plot_factor_loadings()` now supports `facet_by = c("none", "group", "level", "group_level")` for SEM contexts with grouping metadata.
+-   **Plotting**: `plot_factor_loadings()` now errors when the fitted `lavaan` object has no measurement loadings (`=~`) instead of returning a silent empty plot.
 -   **Model Fit**: Non-converged lavaan fits now return a single-row table with `converged = FALSE` and NA metrics, keeping `compare_model_fit()` stable.
 -   **Model Fit**: Non-convergence alerts now respect `verbose` and include model labels when available.
 -   **Plotting**: `plot_factor_loadings()` now skips CI error bars when CI values are unavailable and uses data-driven limits when `autofit = TRUE`.
