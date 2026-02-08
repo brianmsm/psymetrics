@@ -20,7 +20,8 @@ You can install the development version of psymetrics from
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.9")
+pak::pak("brianmsm/psymetrics@v0.2.0")
+#remotes::install_github("brianmsm/psymetrics@v0.2.0")
 ```
 
 ## Getting Fit Indices
@@ -65,7 +66,8 @@ model_fit(fit, type = "robust")
 # Or specify which indices to extract
 model_fit(fit, metrics = c("cfi", "tli"))
 #> cfi and tli were adjusted to their scaled version.
-#> If you want to control the specific metric type used, specify it explicitly (e.g., `cfi.robust`) or modify the type argument.
+#> If you want to control the specific metric type used, specify it
+#> explicitly (e.g., `cfi.robust`) or modify the type argument.
 #> NOBS | ESTIMATOR | NPAR |  CFI  |  TLI 
 #> ---------------------------------------
 #> 301  |    MLR    |  21  | 0.925 | 0.888
@@ -99,6 +101,51 @@ In this example, compare_model_fit is used to compare the fit indices of
 two different models. This function allows you to easily see the
 differences in model fit across different estimation methods or model
 specifications.
+
+## SEM Workflow with `lavaan::sem()`
+
+`psymetrics` also supports full SEM models fitted with `lavaan::sem()`.
+
+``` r
+sem_model <- '
+  # Measurement model
+  ind60 =~ x1 + x2 + x3
+  dem60 =~ y1 + y2 + y3 + y4
+  dem65 =~ y5 + y6 + y7 + y8
+
+  # Structural model
+  dem60 ~ ind60
+  dem65 ~ ind60 + dem60
+'
+
+fit_sem_mlr <- sem(sem_model, data = PoliticalDemocracy, estimator = "MLR")
+fit_sem_ml <- sem(sem_model, data = PoliticalDemocracy, estimator = "ML")
+
+model_fit(fit_sem_mlr)
+#> NOBS | ESTIMATOR | NPAR | Chi2(41) | p (Chi2) |  CFI  |  TLI  | RMSEA
+#> ---------------------------------------------------------------------
+#> 75   |    MLR    |  25  |  73.78   |  0.001   | 0.949 | 0.932 | 0.103
+#> 
+#> NOBS |   RMSEA  CI    | SRMR 
+#> -----------------------------
+#> 75   | [0.064, 0.141] | 0.055
+compare_model_fit(MLR = fit_sem_mlr, ML = fit_sem_ml)
+#> MODEL | NOBS | ESTIMATOR | NPAR | Chi2(41) | p (Chi2) |  CFI  |  TLI  | RMSEA
+#> -----------------------------------------------------------------------------
+#> MLR   |  75  |    MLR    |  25  |  73.78   |  0.001   | 0.949 | 0.932 | 0.103
+#> ML    |  75  |    ML     |  25  |  72.46   |  0.002   | 0.953 | 0.938 | 0.101
+#> 
+#> MODEL |   RMSEA  CI    | SRMR 
+#> ------------------------------
+#> MLR   | [0.064, 0.141] | 0.055
+#> ML    | [0.061, 0.139] | 0.055
+```
+
+``` r
+plot_factor_loadings(fit_sem_mlr)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="100%" />
 
 ## Format the fit indices in Markdown format
 
@@ -140,7 +187,7 @@ intervals for each loading.
 plot_factor_loadings(fit)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="100%" />
 
 In this example, plot_factor_loadings() displays the factor loadings for
 each item on the respective factors, with confidence intervals. The plot

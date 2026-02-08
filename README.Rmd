@@ -28,7 +28,8 @@ You can install the development version of psymetrics from [GitHub](https://gith
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.1.9")
+pak::pak("brianmsm/psymetrics@v0.2.0")
+#remotes::install_github("brianmsm/psymetrics@v0.2.0")
 ```
 
 ## Getting Fit Indices
@@ -70,6 +71,36 @@ fit_table
 ```
 
 In this example, compare_model_fit is used to compare the fit indices of two different models. This function allows you to easily see the differences in model fit across different estimation methods or model specifications.
+
+## SEM Workflow with `lavaan::sem()`
+
+`psymetrics` also supports full SEM models fitted with `lavaan::sem()`.
+
+```{r}
+sem_model <- '
+  # Measurement model
+  ind60 =~ x1 + x2 + x3
+  dem60 =~ y1 + y2 + y3 + y4
+  dem65 =~ y5 + y6 + y7 + y8
+
+  # Structural model
+  dem60 ~ ind60
+  dem65 ~ ind60 + dem60
+'
+
+fit_sem_mlr <- sem(sem_model, data = PoliticalDemocracy, estimator = "MLR")
+fit_sem_ml <- sem(sem_model, data = PoliticalDemocracy, estimator = "ML")
+
+model_fit(fit_sem_mlr)
+compare_model_fit(MLR = fit_sem_mlr, ML = fit_sem_ml)
+```
+
+```{r}
+#| fig-dpi: 300
+#| fig-width: 6
+#| fig-height: 4.5
+plot_factor_loadings(fit_sem_mlr)
+```
 
 ## Format the fit indices in Markdown format
 
