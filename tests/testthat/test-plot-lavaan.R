@@ -95,6 +95,65 @@ test_that("plot_factor_loadings warns for non-converged models", {
   )
 })
 
+test_that("plot_factor_loadings is silent with verbose = FALSE for non-converged SEM", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  sem_model <- "
+visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9
+textual ~ visual
+speed ~ visual + textual
+"
+  fit <- suppressWarnings(
+    lavaan::sem(
+      sem_model,
+      data = lavaan::HolzingerSwineford1939[1:20, ],
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+
+  if (isTRUE(lavaan::lavInspect(fit, "converged"))) {
+    skip("SEM model converged unexpectedly with iter.max = 1; skipping silence test.")
+  }
+
+  baseline_warnings <- character(0)
+  baseline_messages <- character(0)
+  withCallingHandlers(
+    lavaan::standardizedSolution(fit),
+    warning = function(w) {
+      baseline_warnings <<- c(baseline_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    },
+    message = function(m) {
+      baseline_messages <<- c(baseline_messages, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  if ((length(baseline_warnings) + length(baseline_messages)) == 0L) {
+    skip("Current lavaan setup does not emit non-fatal conditions for this SEM case.")
+  }
+
+  captured_warnings <- character(0)
+  captured_messages <- character(0)
+  withCallingHandlers(
+    psymetrics::plot_factor_loadings(fit, verbose = FALSE),
+    warning = function(w) {
+      captured_warnings <<- c(captured_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    },
+    message = function(m) {
+      captured_messages <<- c(captured_messages, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+
+  expect_length(captured_warnings, 0)
+  expect_length(captured_messages, 0)
+})
+
 test_that("plot_factor_loadings supports standardized = FALSE", {
   skip_if_not_installed("lavaan")
   skip_if_not_installed("ggplot2")
