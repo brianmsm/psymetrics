@@ -12,12 +12,13 @@ plot_factor_loadings(
   ci = TRUE,
   autofit = TRUE,
   ci_bounds = c("extend", "arrow"),
+  facet_by = c("none", "group", "level", "group_level"),
   verbose = TRUE,
   ...
 )
 }
 \arguments{
-\item{fit}{A \code{lavaan} model object.}
+\item{fit}{A fitted \code{lavaan} model object (including CFA and SEM).}
 
 \item{sort}{Logical; if \code{TRUE}, sorts items by loading
 size. Defaults to \code{TRUE}.}
@@ -51,9 +52,22 @@ range, and adds arrows to indicate off-scale intervals. If any
 standardized point estimate is outside \verb{[-1, 1]}, \code{"arrow"}
 falls back to \code{"extend"}.}
 
+\item{facet_by}{Character string controlling faceting for SEM
+contexts with grouping metadata. Options:
+\itemize{
+\item \code{"none"} (default): no faceting.
+\item \code{"group"}: facet by \code{lavaan} group.
+\item \code{"level"}: facet by \code{lavaan} level (multilevel models).
+\item \code{"group_level"}: facet by combined group and level.
+If requested metadata is unavailable, a message is shown
+when \code{verbose = TRUE} and plotting continues without faceting.
+}}
+
 \item{verbose}{Logical; if \code{TRUE}, prints informational messages
 and warnings (for example, when the model did not converge).
-Defaults to \code{TRUE}.}
+Defaults to \code{TRUE}. When \code{FALSE}, non-fatal messages and
+warnings from internal \code{lavaan} extraction calls are suppressed;
+errors are still raised.}
 
 \item{...}{Additional arguments passed to \code{ggplot2::ggplot}.}
 }
@@ -63,9 +77,11 @@ an error message.
 }
 \description{
 Creates a dot plot of standardized factor loadings
-for a \code{lavaan} model. The plot shows factor loadings
-along with optional confidence intervals for each item
-in the model.
+for a fitted \code{lavaan} model, including CFA and SEM.
+The plot uses only the measurement model portion
+(\verb{=~} parameters), along with optional confidence
+intervals for each item. If the model does not contain
+\verb{=~} parameters, the function errors with a clear message.
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE) &&
@@ -77,6 +93,13 @@ if (requireNamespace("lavaan", quietly = TRUE) &&
               speed   =~ x7 + x8 + x9'
   fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   plot_factor_loadings(fit)
+  sem_model <- 'visual  =~ x1 + x2 + x3
+                textual =~ x4 + x5 + x6
+                speed   =~ x7 + x8 + x9
+                textual ~ visual
+                speed ~ textual'
+  fit_sem <- sem(sem_model, data = HolzingerSwineford1939, group = "school")
+  plot_factor_loadings(fit_sem, facet_by = "group")
 } else {
   message("Please install 'lavaan' and 'ggplot2' to run this example.")
 }

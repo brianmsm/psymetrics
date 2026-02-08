@@ -16,7 +16,7 @@ model class.
 \details{
 Current available method:
 \itemize{
-\item \strong{Confirmatory Factor Analysis}: \code{\link[=plot.lavaan]{plot.lavaan()}} for
+\item \strong{\code{lavaan} CFA and SEM models}: \code{\link[=plot.lavaan]{plot.lavaan()}} for
 plotting factor loadings and other metrics for models
 from the \code{lavaan} package.
 }

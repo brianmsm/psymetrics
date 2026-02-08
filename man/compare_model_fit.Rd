@@ -15,7 +15,10 @@ compare_model_fit(
 )
 }
 \arguments{
-\item{...}{Two or more model objects to be compared.}
+\item{...}{Two or more model objects to be compared.
+For \code{lavaan}, pass any fitted objects created with
+\code{lavaan::cfa()}, \code{lavaan::sem()}, \code{lavaan::growth()},
+or related functions.}
 
 \item{type}{A character string specifying the type of fit
 indices to extract. Options are \code{"standard"}, \code{"scaled"},
@@ -66,6 +69,8 @@ model, with an additional column identifying the models.
 \code{compare_model_fit()} compares the fit indices of two or more
 models. It extracts the fit indices using \code{\link[=model_fit]{model_fit()}}
 and combines them into a single data frame for easy comparison.
+It supports any fitted \code{lavaan} model objects (including
+CFA, SEM, growth, multigroup, and multilevel variants).
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE)) {
@@ -77,6 +82,14 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
   fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   compare_model_fit(fit1, fit2)
+  sem_model <- 'visual  =~ x1 + x2 + x3
+                textual =~ x4 + x5 + x6
+                speed   =~ x7 + x8 + x9
+                textual ~ visual
+                speed ~ textual'
+  sem1 <- sem(sem_model, data = HolzingerSwineford1939, estimator = "ML")
+  sem2 <- sem(sem_model, data = HolzingerSwineford1939, estimator = "MLR")
+  compare_model_fit(sem1, sem2)
   compare_model_fit(fit1, fit2, standard_test = TRUE, test_details = TRUE)
   compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
   fit3 <- cfa(

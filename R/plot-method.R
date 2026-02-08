@@ -11,7 +11,7 @@
 #'
 #' @details
 #' Current available method:
-#'   - **Confirmatory Factor Analysis**: [plot.lavaan()] for
+#'   - **`lavaan` CFA and SEM models**: [plot.lavaan()] for
 #'     plotting factor loadings and other metrics for models
 #'     from the `lavaan` package.
 #'

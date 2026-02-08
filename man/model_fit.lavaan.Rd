@@ -16,8 +16,9 @@
 )
 }
 \arguments{
-\item{fit}{A \code{lavaan} object estimated with \code{lavaan::cfa()},
-\code{lavaan::sem()}, or similar functions.}
+\item{fit}{A fitted \code{lavaan} object (for example from
+\code{lavaan::cfa()}, \code{lavaan::sem()}, \code{lavaan::growth()},
+and related functions).}
 
 \item{type}{A character string specifying the type of
 fit indices to extract. Options are \code{"standard"},
@@ -65,7 +66,8 @@ the data frame can include multiple rows.
 }
 \description{
 \code{model_fit.lavaan} extracts fit indices from a \code{lavaan}
-model object. The function allows you to specify the
+model object from CFA, SEM, growth, multigroup, and
+related workflows. The function allows you to specify the
 type of indices to extract: \code{"standard"}, \code{"scaled"},
 or \code{"robust"}. If the model uses a robust estimator
 and you specify \code{type = "scaled"} or \code{type = "robust"},
@@ -85,6 +87,13 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit <- cfa(hs_model, data = HolzingerSwineford1939,
              estimator = "MLR")
   model_fit(fit)
+  sem_model <- 'visual  =~ x1 + x2 + x3
+                textual =~ x4 + x5 + x6
+                speed   =~ x7 + x8 + x9
+                textual ~ visual
+                speed ~ textual'
+  fit_sem <- sem(sem_model, data = HolzingerSwineford1939)
+  model_fit(fit_sem)
   model_fit(fit, standard_test = TRUE, test_details = TRUE)
   model_fit(fit, type = "robust")
   model_fit(fit, metrics = c("cfi", "tli"))

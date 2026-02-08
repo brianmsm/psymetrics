@@ -4,8 +4,13 @@
 #' `compare_model_fit()` compares the fit indices of two or more
 #' models. It extracts the fit indices using [`model_fit()`]
 #' and combines them into a single data frame for easy comparison.
+#' It supports any fitted `lavaan` model objects (including
+#' CFA, SEM, growth, multigroup, and multilevel variants).
 #'
 #' @param ... Two or more model objects to be compared.
+#'   For `lavaan`, pass any fitted objects created with
+#'   `lavaan::cfa()`, `lavaan::sem()`, `lavaan::growth()`,
+#'   or related functions.
 #' @param type A character string specifying the type of fit
 #'   indices to extract. Options are `"standard"`, `"scaled"`,
 #'   and `"robust"`. Defaults to `NULL`, which automatically
@@ -57,6 +62,14 @@
 #'   fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
 #'   fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
 #'   compare_model_fit(fit1, fit2)
+#'   sem_model <- 'visual  =~ x1 + x2 + x3
+#'                 textual =~ x4 + x5 + x6
+#'                 speed   =~ x7 + x8 + x9
+#'                 textual ~ visual
+#'                 speed ~ textual'
+#'   sem1 <- sem(sem_model, data = HolzingerSwineford1939, estimator = "ML")
+#'   sem2 <- sem(sem_model, data = HolzingerSwineford1939, estimator = "MLR")
+#'   compare_model_fit(sem1, sem2)
 #'   compare_model_fit(fit1, fit2, standard_test = TRUE, test_details = TRUE)
 #'   compare_model_fit(fit1, fit2, metrics = c("cfi", "tli", "rmsea"))
 #'   fit3 <- cfa(

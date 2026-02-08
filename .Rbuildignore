@@ -16,3 +16,4 @@
 ^CITATION\.cff$
 .agent
 ExecPlan*
+^tests/manual($|/)

@@ -7,13 +7,16 @@
 \method{plot}{lavaan}(x, type = "factor_loadings", standardized = TRUE, ci = TRUE, ...)
 }
 \arguments{
-\item{x}{A \code{lavaan} model object.}
+\item{x}{A fitted \code{lavaan} model object (for example from
+\code{lavaan::cfa()}, \code{lavaan::sem()}, or \code{lavaan::growth()}).}
 
 \item{type}{A character string indicating the type of plot
 to generate. Options are:
 \itemize{
 \item \code{"factor_loadings"}: Generates a dot plot of standardized
-factor loadings, optionally including confidence intervals.
+factor loadings (\verb{=~} parameters), optionally including
+confidence intervals. If the model has no measurement
+component, an error is raised.
 \item \code{"residuals"}: Generates a residual plot to visualize the
 differences between observed and model-implied covariances.
 \item \code{"path"}: Generates a path diagram representing the model
@@ -40,16 +43,19 @@ object for \code{path} plots. An error message will be returned
 if required packages are not available.
 }
 \description{
-This is a plot method for objects of class \code{lavaan}. It
-allows users to create different types of plots to visualize
-key aspects of \code{lavaan} models, including factor loadings,
-residuals, and path diagrams.
+This is a plot method for fitted \code{lavaan} objects, including
+CFA and SEM workflows created with \code{lavaan::cfa()},
+\code{lavaan::sem()}, and related functions. It allows users to
+create different types of plots to visualize key aspects of
+\code{lavaan} models, including factor loadings, residuals, and
+path diagrams.
 }
 \details{
 \itemize{
 \item \strong{Factor Loadings Plot}: Displays a dot plot of factor
-loadings, with items on the y-axis and loadings on the
-x-axis. Confidence intervals can be added if desired.
+loadings (\verb{=~} parameters only), with items on the y-axis
+and loadings on the x-axis. Confidence intervals can be
+added if desired.
 \item \strong{Residuals Plot}: Shows the residuals (differences
 between observed and model-implied covariances), typically
 as a heatmap or scatterplot.

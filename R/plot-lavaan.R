@@ -1,16 +1,21 @@
 #' Plot Method for lavaan Objects
 #'
 #' @description
-#' This is a plot method for objects of class `lavaan`. It
-#' allows users to create different types of plots to visualize
-#' key aspects of `lavaan` models, including factor loadings,
-#' residuals, and path diagrams.
+#' This is a plot method for fitted `lavaan` objects, including
+#' CFA and SEM workflows created with `lavaan::cfa()`,
+#' `lavaan::sem()`, and related functions. It allows users to
+#' create different types of plots to visualize key aspects of
+#' `lavaan` models, including factor loadings, residuals, and
+#' path diagrams.
 #'
-#' @param x A `lavaan` model object.
+#' @param x A fitted `lavaan` model object (for example from
+#'   `lavaan::cfa()`, `lavaan::sem()`, or `lavaan::growth()`).
 #' @param type A character string indicating the type of plot
 #'   to generate. Options are:
 #'   - `"factor_loadings"`: Generates a dot plot of standardized
-#'      factor loadings, optionally including confidence intervals.
+#'      factor loadings (`=~` parameters), optionally including
+#'      confidence intervals. If the model has no measurement
+#'      component, an error is raised.
 #'   - `"residuals"`: Generates a residual plot to visualize the
 #'      differences between observed and model-implied covariances.
 #'   - `"path"`: Generates a path diagram representing the model
@@ -32,8 +37,9 @@
 #'   if required packages are not available.
 #' @details
 #'   - **Factor Loadings Plot**: Displays a dot plot of factor
-#'     loadings, with items on the y-axis and loadings on the
-#'     x-axis. Confidence intervals can be added if desired.
+#'     loadings (`=~` parameters only), with items on the y-axis
+#'     and loadings on the x-axis. Confidence intervals can be
+#'     added if desired.
 #'   - **Residuals Plot**: Shows the residuals (differences
 #'     between observed and model-implied covariances), typically
 #'     as a heatmap or scatterplot.
@@ -90,11 +96,13 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'
 #' @description
 #' Creates a dot plot of standardized factor loadings
-#' for a `lavaan` model. The plot shows factor loadings
-#' along with optional confidence intervals for each item
-#' in the model.
+#' for a fitted `lavaan` model, including CFA and SEM.
+#' The plot uses only the measurement model portion
+#' (`=~` parameters), along with optional confidence
+#' intervals for each item. If the model does not contain
+#' `=~` parameters, the function errors with a clear message.
 #'
-#' @param fit A `lavaan` model object.
+#' @param fit A fitted `lavaan` model object (including CFA and SEM).
 #' @param sort Logical; if `TRUE`, sorts items by loading
 #'   size. Defaults to `TRUE`.
 #' @param group_by Logical; if `TRUE` and the model has
@@ -121,9 +129,19 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'   range, and adds arrows to indicate off-scale intervals. If any
 #'   standardized point estimate is outside `[-1, 1]`, `"arrow"`
 #'   falls back to `"extend"`.
+#' @param facet_by Character string controlling faceting for SEM
+#'   contexts with grouping metadata. Options:
+#'   - `"none"` (default): no faceting.
+#'   - `"group"`: facet by `lavaan` group.
+#'   - `"level"`: facet by `lavaan` level (multilevel models).
+#'   - `"group_level"`: facet by combined group and level.
+#'   If requested metadata is unavailable, a message is shown
+#'   when `verbose = TRUE` and plotting continues without faceting.
 #' @param verbose Logical; if `TRUE`, prints informational messages
 #'   and warnings (for example, when the model did not converge).
-#'   Defaults to `TRUE`.
+#'   Defaults to `TRUE`. When `FALSE`, non-fatal messages and
+#'   warnings from internal `lavaan` extraction calls are suppressed;
+#'   errors are still raised.
 #' @param ... Additional arguments passed to `ggplot2::ggplot`.
 #'
 #' @return A ggplot object if `ggplot2` is installed, otherwise
@@ -143,6 +161,13 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'               speed   =~ x7 + x8 + x9'
 #'   fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
 #'   plot_factor_loadings(fit)
+#'   sem_model <- 'visual  =~ x1 + x2 + x3
+#'                 textual =~ x4 + x5 + x6
+#'                 speed   =~ x7 + x8 + x9
+#'                 textual ~ visual
+#'                 speed ~ textual'
+#'   fit_sem <- sem(sem_model, data = HolzingerSwineford1939, group = "school")
+#'   plot_factor_loadings(fit_sem, facet_by = "group")
 #' } else {
 #'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
 #' }
@@ -153,11 +178,16 @@ plot_factor_loadings <- function(fit,
                                  ci = TRUE,
                                  autofit = TRUE,
                                  ci_bounds = c("extend", "arrow"),
+                                 facet_by = c("none", "group", "level", "group_level"),
                                  verbose = TRUE,
                                  ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
+  if (!inherits(fit, "lavaan")) {
+    cli::cli_abort("The {.arg fit} argument must be a fitted {.cls lavaan} object.")
+  }
   ci_bounds <- match.arg(ci_bounds)
+  facet_by <- match.arg(facet_by)
   dots <- list(...)
   if ("CI" %in% names(dots) && missing(ci)) {
     ci <- dots$CI
@@ -168,25 +198,12 @@ plot_factor_loadings <- function(fit,
     cli::cli_warn("The model did not converge. Interpret the loadings with caution.")
   }
 
-  # Extract standardized loadings and confidence intervals
-  if (standardized) {
-    loadings <- lavaan::standardizedSolution(fit)
-    if ("est.std" %in% names(loadings)) {
-      loadings$est <- loadings$est.std
-    }
-  } else {
-    loadings <- lavaan::parameterEstimates(fit)
-  }
-  if (!"est" %in% names(loadings)) {
-    cli::cli_abort("Could not find an estimate column (`est` or `est.std`) in the extracted lavaan loadings.")
-  }
-
-  # Filter to retain only factor loadings (lambda parameters)
-  loadings <- loadings[loadings$op == "=~", ]
-  required_cols <- c("lhs", "rhs", "est")
+  loadings <- lavaan_extract_loading_data(
+    fit = fit,
+    standardized = standardized,
+    verbose = verbose
+  )
   optional_ci_cols <- c("ci.lower", "ci.upper")
-  available_cols <- c(required_cols, intersect(optional_ci_cols, names(loadings)))
-  loadings <- loadings[, available_cols, drop = FALSE]
   has_ci <- all(optional_ci_cols %in% names(loadings)) &&
     any(!is.na(c(loadings$ci.lower, loadings$ci.upper)))
 
@@ -194,7 +211,7 @@ plot_factor_loadings <- function(fit,
   loadings$rhs <- if (sort) {
     factor(loadings$rhs, levels = levels(stats::reorder(loadings$rhs, loadings$est)))
   } else {
-    factor(loadings$rhs)
+    factor(loadings$rhs, levels = rev(unique(loadings$rhs)))
   }
 
   use_ci_bounds <- isTRUE(standardized) && isTRUE(ci) && isTRUE(autofit) && has_ci
@@ -263,6 +280,24 @@ plot_factor_loadings <- function(fit,
   } else {
     loadings$Factor <- "All Items"
   }
+  facet_by_effective <- lavaan_resolve_facet_by(
+    loadings = loadings,
+    facet_by = facet_by,
+    verbose = verbose
+  )
+  if (facet_by_effective == "group_level") {
+    loadings$Facet <- interaction(
+      factor(loadings$group),
+      factor(loadings$level),
+      sep = " | ",
+      drop = TRUE,
+      lex.order = TRUE
+    )
+  } else if (facet_by_effective == "group") {
+    loadings$Facet <- factor(loadings$group)
+  } else if (facet_by_effective == "level") {
+    loadings$Facet <- factor(loadings$level)
+  }
 
   # Plot with .data to avoid global variable warnings
   plot <- do.call(
@@ -280,6 +315,9 @@ plot_factor_loadings <- function(fit,
     ggplot2::theme(legend.position = "bottom")
   if (isTRUE(autofit) && !is.null(x_limits)) {
     plot <- plot + ggplot2::coord_cartesian(xlim = x_limits)
+  }
+  if (facet_by_effective != "none") {
+    plot <- plot + ggplot2::facet_wrap(~Facet)
   }
 
   # Add confidence intervals if ci is TRUE and available
@@ -327,4 +365,138 @@ plot_factor_loadings <- function(fit,
   }
 
   plot
+}
+
+lavaan_extract_loading_data <- function(fit, standardized = TRUE, verbose = TRUE) {
+  if (standardized) {
+    loadings <- lavaan_maybe_quiet(
+      lavaan::standardizedSolution(fit),
+      quiet = !isTRUE(verbose)
+    )
+    if ("est.std" %in% names(loadings)) {
+      loadings$est <- loadings$est.std
+    }
+  } else {
+    loadings <- lavaan_maybe_quiet(
+      lavaan::parameterEstimates(fit),
+      quiet = !isTRUE(verbose)
+    )
+  }
+  if (!"est" %in% names(loadings)) {
+    cli::cli_abort("Could not find an estimate column (`est` or `est.std`) in the extracted lavaan loadings.")
+  }
+  loadings <- loadings[loadings$op == "=~", , drop = FALSE]
+  loadings <- lavaan_attach_loading_metadata(
+    loadings,
+    fit,
+    verbose = verbose
+  )
+  if (nrow(loadings) == 0L) {
+    cli::cli_abort(
+      "The model does not contain measurement loadings (`=~`); `plot_factor_loadings()` requires a measurement component."
+    )
+  }
+  required_cols <- c("lhs", "rhs", "est")
+  optional_cols <- c("ci.lower", "ci.upper", "group", "level")
+  loadings <- loadings[, c(required_cols, intersect(optional_cols, names(loadings))), drop = FALSE]
+  loadings
+}
+
+lavaan_attach_loading_metadata <- function(loadings, fit, verbose = TRUE) {
+  if (nrow(loadings) == 0L) {
+    return(loadings)
+  }
+  pe <- lavaan_maybe_quiet(
+    lavaan::parameterEstimates(fit),
+    quiet = !isTRUE(verbose)
+  )
+  if (!all(c("lhs", "op", "rhs") %in% names(pe))) {
+    return(loadings)
+  }
+  pe <- pe[pe$op == "=~", , drop = FALSE]
+  if (nrow(pe) == 0L) {
+    return(loadings)
+  }
+  meta_cols <- intersect(c("group", "level"), names(pe))
+  if (length(meta_cols) == 0L) {
+    return(loadings)
+  }
+
+  lhs_op_rhs <- paste(loadings$lhs, loadings$op, loadings$rhs, sep = "\r")
+  loadings$.idx <- stats::ave(seq_len(nrow(loadings)), lhs_op_rhs, FUN = seq_along)
+  pe_lhs_op_rhs <- paste(pe$lhs, pe$op, pe$rhs, sep = "\r")
+  pe$.idx <- stats::ave(seq_len(nrow(pe)), pe_lhs_op_rhs, FUN = seq_along)
+
+  load_key <- paste(loadings$lhs, loadings$op, loadings$rhs, loadings$.idx, sep = "\r")
+  pe_key <- paste(pe$lhs, pe$op, pe$rhs, pe$.idx, sep = "\r")
+  match_idx <- match(load_key, pe_key)
+
+  for (meta_col in meta_cols) {
+    if (!meta_col %in% names(loadings) || all(is.na(loadings[[meta_col]]))) {
+      loadings[[meta_col]] <- pe[[meta_col]][match_idx]
+    }
+  }
+
+  loadings$.idx <- NULL
+  loadings <- lavaan_apply_group_labels(loadings, fit, verbose = verbose)
+  loadings
+}
+
+lavaan_maybe_quiet <- function(expr, quiet = FALSE) {
+  if (!isTRUE(quiet)) {
+    return(expr)
+  }
+  suppressMessages(suppressWarnings(expr))
+}
+
+lavaan_apply_group_labels <- function(loadings, fit, verbose = TRUE) {
+  if (!"group" %in% names(loadings) || all(is.na(loadings$group))) {
+    return(loadings)
+  }
+  group_labels <- lavaan_maybe_quiet(
+    tryCatch(lavaan::lavInspect(fit, "group.label"), error = function(e) NULL),
+    quiet = !isTRUE(verbose)
+  )
+  if (is.null(group_labels) || length(group_labels) == 0L) {
+    return(loadings)
+  }
+  group_idx <- suppressWarnings(as.integer(as.character(loadings$group)))
+  valid <- !is.na(group_idx) & group_idx >= 1L & group_idx <= length(group_labels)
+  if (!any(valid)) {
+    return(loadings)
+  }
+  mapped <- as.character(loadings$group)
+  mapped[valid] <- group_labels[group_idx[valid]]
+  loadings$group <- mapped
+  loadings
+}
+
+lavaan_resolve_facet_by <- function(loadings, facet_by = "none", verbose = TRUE) {
+  has_group <- "group" %in% names(loadings) && !all(is.na(loadings$group))
+  has_level <- "level" %in% names(loadings) && !all(is.na(loadings$level))
+  if (facet_by == "group" && !has_group) {
+    if (isTRUE(verbose)) {
+      cli::cli_inform(
+        "Ignoring `facet_by = \"group\"` because the model has no group metadata."
+      )
+    }
+    return("none")
+  }
+  if (facet_by == "level" && !has_level) {
+    if (isTRUE(verbose)) {
+      cli::cli_inform(
+        "Ignoring `facet_by = \"level\"` because the model has no level metadata."
+      )
+    }
+    return("none")
+  }
+  if (facet_by == "group_level" && !(has_group && has_level)) {
+    if (isTRUE(verbose)) {
+      cli::cli_inform(
+        "Ignoring `facet_by = \"group_level\"` because the model does not provide both group and level metadata."
+      )
+    }
+    return("none")
+  }
+  facet_by
 }
