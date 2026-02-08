@@ -65,7 +65,9 @@ when \code{verbose = TRUE} and plotting continues without faceting.
 
 \item{verbose}{Logical; if \code{TRUE}, prints informational messages
 and warnings (for example, when the model did not converge).
-Defaults to \code{TRUE}.}
+Defaults to \code{TRUE}. When \code{FALSE}, non-fatal messages and
+warnings from internal \code{lavaan} extraction calls are suppressed;
+errors are still raised.}
 
 \item{...}{Additional arguments passed to \code{ggplot2::ggplot}.}
 }

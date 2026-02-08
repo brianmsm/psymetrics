@@ -139,7 +139,9 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'   when `verbose = TRUE` and plotting continues without faceting.
 #' @param verbose Logical; if `TRUE`, prints informational messages
 #'   and warnings (for example, when the model did not converge).
-#'   Defaults to `TRUE`.
+#'   Defaults to `TRUE`. When `FALSE`, non-fatal messages and
+#'   warnings from internal `lavaan` extraction calls are suppressed;
+#'   errors are still raised.
 #' @param ... Additional arguments passed to `ggplot2::ggplot`.
 #'
 #' @return A ggplot object if `ggplot2` is installed, otherwise
@@ -195,7 +197,8 @@ plot_factor_loadings <- function(fit,
 
   loadings <- lavaan_extract_loading_data(
     fit = fit,
-    standardized = standardized
+    standardized = standardized,
+    verbose = verbose
   )
   optional_ci_cols <- c("ci.lower", "ci.upper")
   has_ci <- all(optional_ci_cols %in% names(loadings)) &&
@@ -361,20 +364,30 @@ plot_factor_loadings <- function(fit,
   plot
 }
 
-lavaan_extract_loading_data <- function(fit, standardized = TRUE) {
+lavaan_extract_loading_data <- function(fit, standardized = TRUE, verbose = TRUE) {
   if (standardized) {
-    loadings <- lavaan::standardizedSolution(fit)
+    loadings <- lavaan_maybe_quiet(
+      lavaan::standardizedSolution(fit),
+      quiet = !isTRUE(verbose)
+    )
     if ("est.std" %in% names(loadings)) {
       loadings$est <- loadings$est.std
     }
   } else {
-    loadings <- lavaan::parameterEstimates(fit)
+    loadings <- lavaan_maybe_quiet(
+      lavaan::parameterEstimates(fit),
+      quiet = !isTRUE(verbose)
+    )
   }
   if (!"est" %in% names(loadings)) {
     cli::cli_abort("Could not find an estimate column (`est` or `est.std`) in the extracted lavaan loadings.")
   }
   loadings <- loadings[loadings$op == "=~", , drop = FALSE]
-  loadings <- lavaan_attach_loading_metadata(loadings, fit)
+  loadings <- lavaan_attach_loading_metadata(
+    loadings,
+    fit,
+    verbose = verbose
+  )
   if (nrow(loadings) == 0L) {
     cli::cli_abort(
       "The model does not contain measurement loadings (`=~`); `plot_factor_loadings()` requires a measurement component."
@@ -386,11 +399,14 @@ lavaan_extract_loading_data <- function(fit, standardized = TRUE) {
   loadings
 }
 
-lavaan_attach_loading_metadata <- function(loadings, fit) {
+lavaan_attach_loading_metadata <- function(loadings, fit, verbose = TRUE) {
   if (nrow(loadings) == 0L) {
     return(loadings)
   }
-  pe <- lavaan::parameterEstimates(fit)
+  pe <- lavaan_maybe_quiet(
+    lavaan::parameterEstimates(fit),
+    quiet = !isTRUE(verbose)
+  )
   if (!all(c("lhs", "op", "rhs") %in% names(pe))) {
     return(loadings)
   }
@@ -420,6 +436,13 @@ lavaan_attach_loading_metadata <- function(loadings, fit) {
 
   loadings$.idx <- NULL
   loadings
+}
+
+lavaan_maybe_quiet <- function(expr, quiet = FALSE) {
+  if (!isTRUE(quiet)) {
+    return(expr)
+  }
+  suppressMessages(suppressWarnings(expr))
 }
 
 lavaan_resolve_facet_by <- function(loadings, facet_by = "none", verbose = TRUE) {
