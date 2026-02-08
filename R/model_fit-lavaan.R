@@ -2,7 +2,8 @@
 #'
 #' @description
 #' `model_fit.lavaan` extracts fit indices from a `lavaan`
-#' model object. The function allows you to specify the
+#' model object from CFA, SEM, growth, multigroup, and
+#' related workflows. The function allows you to specify the
 #' type of indices to extract: `"standard"`, `"scaled"`,
 #' or `"robust"`. If the model uses a robust estimator
 #' and you specify `type = "scaled"` or `type = "robust"`,
@@ -12,8 +13,9 @@
 #' When the model was fitted with multiple tests, the function
 #' can return multiple rows (one per non-standard test).
 #'
-#' @param fit A `lavaan` object estimated with `lavaan::cfa()`,
-#'   `lavaan::sem()`, or similar functions.
+#' @param fit A fitted `lavaan` object (for example from
+#'   `lavaan::cfa()`, `lavaan::sem()`, `lavaan::growth()`,
+#'   and related functions).
 #' @param type A character string specifying the type of
 #'   fit indices to extract. Options are `"standard"`,
 #'   `"scaled"`, and `"robust"`. Defaults to `NULL`,
@@ -63,6 +65,13 @@
 #'   fit <- cfa(hs_model, data = HolzingerSwineford1939,
 #'              estimator = "MLR")
 #'   model_fit(fit)
+#'   sem_model <- 'visual  =~ x1 + x2 + x3
+#'                 textual =~ x4 + x5 + x6
+#'                 speed   =~ x7 + x8 + x9
+#'                 textual ~ visual
+#'                 speed ~ textual'
+#'   fit_sem <- sem(sem_model, data = HolzingerSwineford1939)
+#'   model_fit(fit_sem)
 #'   model_fit(fit, standard_test = TRUE, test_details = TRUE)
 #'   model_fit(fit, type = "robust")
 #'   model_fit(fit, metrics = c("cfi", "tli"))

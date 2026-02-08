@@ -27,7 +27,8 @@ It serves as a unified interface for obtaining key fit
 metrics, which can vary depending on the type of model and
 the specific method implemented for that model class.
 \itemize{
-\item \strong{Confirmatory Factor Analysis}: \code{\link[=model_fit.lavaan]{model_fit.lavaan()}}
+\item \strong{Confirmatory Factor Analysis (CFA) and Structural Equation
+Models (SEM)}: \code{\link[=model_fit.lavaan]{model_fit.lavaan()}}
 \item \strong{Exploratory Factor Analysis} (Future): Future methods
 may include support for models from the \code{psych} package.
 \item \strong{IRT models}: Future methods may include support

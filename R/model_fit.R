@@ -6,7 +6,8 @@
 #' It serves as a unified interface for obtaining key fit
 #' metrics, which can vary depending on the type of model and
 #' the specific method implemented for that model class.
-#' - **Confirmatory Factor Analysis**: [model_fit.lavaan()]
+#' - **Confirmatory Factor Analysis (CFA) and Structural Equation
+#'   Models (SEM)**: [model_fit.lavaan()]
 #' - **Exploratory Factor Analysis** (Future): Future methods
 #'   may include support for models from the `psych` package.
 #' - **IRT models**: Future methods may include support
