@@ -155,10 +155,12 @@ test_that("multigroup SEM supports facet_by = group", {
   )
 
   p <- psymetrics::plot_factor_loadings(fit, facet_by = "group", verbose = FALSE)
+  expected_group_labels <- lavaan::lavInspect(fit, "group.label")
 
   expect_s3_class(p, "ggplot")
   expect_true("group" %in% names(p$data))
   expect_gt(length(unique(as.character(p$data$group))), 1)
+  expect_setequal(unique(as.character(p$data$group)), expected_group_labels)
   expect_true(inherits(p$facet, "FacetWrap"))
 })
 

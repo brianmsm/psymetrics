@@ -23,6 +23,18 @@ test_that("plot.lavaan errors on unsupported type", {
   expect_error(plot(fit, type = "unsupported"), "Unsupported plot type")
 })
 
+test_that("plot_factor_loadings errors clearly for non-lavaan objects", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+
+  expect_error(
+    psymetrics::plot_factor_loadings(fit),
+    "must be a fitted"
+  )
+})
+
 test_that("plot_factor_loadings respects ci alias and ci_bounds messaging", {
   skip_if_not_installed("lavaan")
   skip_if_not_installed("ggplot2")
@@ -154,6 +166,69 @@ speed ~ visual + textual
   expect_length(captured_messages, 0)
 })
 
+test_that("plot_factor_loadings is silent for standardized = FALSE with verbose = FALSE", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  sem_model <- "
+    visual =~ x1 + x2 + x3
+    textual =~ x4 + x5 + x6
+    speed =~ x7 + x8 + x9
+    textual ~ visual
+    speed ~ visual + textual
+  "
+  fit <- suppressWarnings(
+    lavaan::sem(
+      sem_model,
+      data = lavaan::HolzingerSwineford1939[1:20, ],
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+
+  if (isTRUE(lavaan::lavInspect(fit, "converged"))) {
+    skip("SEM model converged unexpectedly with iter.max = 1; skipping silence test.")
+  }
+
+  baseline_warnings <- character(0)
+  baseline_messages <- character(0)
+  withCallingHandlers(
+    lavaan::parameterEstimates(fit),
+    warning = function(w) {
+      baseline_warnings <<- c(baseline_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    },
+    message = function(m) {
+      baseline_messages <<- c(baseline_messages, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  if ((length(baseline_warnings) + length(baseline_messages)) == 0L) {
+    skip("Current lavaan setup does not emit non-fatal conditions for this SEM case.")
+  }
+
+  captured_warnings <- character(0)
+  captured_messages <- character(0)
+  withCallingHandlers(
+    psymetrics::plot_factor_loadings(
+      fit,
+      standardized = FALSE,
+      verbose = FALSE
+    ),
+    warning = function(w) {
+      captured_warnings <<- c(captured_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    },
+    message = function(m) {
+      captured_messages <<- c(captured_messages, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+
+  expect_length(captured_warnings, 0)
+  expect_length(captured_messages, 0)
+})
+
 test_that("plot_factor_loadings supports standardized = FALSE", {
   skip_if_not_installed("lavaan")
   skip_if_not_installed("ggplot2")
@@ -166,12 +241,15 @@ test_that("plot_factor_loadings supports standardized = FALSE", {
   expected <- lavaan::parameterEstimates(fit)
   expected <- expected[expected$op == "=~", "est", drop = TRUE]
 
-  plot <- psymetrics::plot_factor_loadings(
-    fit,
-    standardized = FALSE,
-    sort = FALSE,
-    group_by = FALSE,
-    ci = FALSE
+  expect_silent(
+    plot <- psymetrics::plot_factor_loadings(
+      fit,
+      standardized = FALSE,
+      sort = FALSE,
+      group_by = FALSE,
+      ci = FALSE,
+      verbose = FALSE
+    )
   )
 
   expect_s3_class(plot, "ggplot")
@@ -217,6 +295,7 @@ test_that("plot_factor_loadings supports sort = FALSE", {
   )
 
   expect_equal(as.character(plot$data$rhs), expected)
+  expect_equal(levels(plot$data$rhs), rev(unique(expected)))
 })
 
 test_that("plot_factor_loadings maps est.std to est by name", {
