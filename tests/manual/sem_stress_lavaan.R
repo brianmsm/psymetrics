@@ -1,3 +1,6 @@
+## Manual stress script for local QA (not run by testthat/CRAN checks).
+## Run from the project root with:
+##   Rscript tests/manual/sem_stress_lavaan.R
 suppressPackageStartupMessages({
   library(devtools)
 })
