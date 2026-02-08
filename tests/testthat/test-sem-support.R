@@ -181,6 +181,37 @@ test_that("multilevel SEM supports facet_by = level", {
   expect_true(inherits(p$facet, "FacetWrap"))
 })
 
+test_that("multilevel SEM works with model_fit and compare_model_fit", {
+  skip_if_not_installed("lavaan")
+
+  fit_twolevel <- suppressWarnings(
+    lavaan::sem(
+      sem_twolevel_model,
+      data = lavaan::Demo.twolevel,
+      cluster = "cluster"
+    )
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  out <- suppressMessages(psymetrics::model_fit(fit_twolevel, test_details = TRUE, verbose = FALSE))
+  cmp <- suppressMessages(
+    psymetrics::compare_model_fit(
+      ref = fit_ref,
+      twolevel = fit_twolevel,
+      test_details = TRUE,
+      verbose = FALSE
+    )
+  )
+
+  expect_s3_class(out, "model_fit")
+  expect_true(all(c("TEST", "SE") %in% names(out)))
+  expect_s3_class(cmp, "compare_model_fit")
+  expect_true(all(c("MODEL", "TEST", "SE") %in% names(cmp)))
+  expect_true(all(c("ref", "twolevel") %in% cmp$MODEL))
+})
+
 test_that("SEM with missing = fiml returns valid fit summaries", {
   skip_if_not_installed("lavaan")
 
@@ -255,6 +286,30 @@ test_that("growth models are supported by model_fit and plot_factor_loadings", {
   expect_gt(nrow(p$data), 0)
 })
 
+test_that("growth models work with compare_model_fit", {
+  skip_if_not_installed("lavaan")
+
+  fit_growth <- suppressWarnings(
+    lavaan::growth(growth_model, data = lavaan::Demo.growth)
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  cmp <- suppressMessages(
+    psymetrics::compare_model_fit(
+      ref = fit_ref,
+      growth = fit_growth,
+      test_details = TRUE,
+      verbose = FALSE
+    )
+  )
+
+  expect_s3_class(cmp, "compare_model_fit")
+  expect_true(all(c("MODEL", "TEST", "SE") %in% names(cmp)))
+  expect_true(all(c("ref", "growth") %in% cmp$MODEL))
+})
+
 test_that("path-only SEM errors in plot_factor_loadings and plot.lavaan", {
   skip_if_not_installed("lavaan")
   skip_if_not_installed("ggplot2")
@@ -263,6 +318,25 @@ test_that("path-only SEM errors in plot_factor_loadings and plot.lavaan", {
   fit_path <- suppressWarnings(
     lavaan::sem("y ~ x1 + x2\nx1 ~~ x2", data = path_data)
   )
+  fit_ref <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  out <- suppressMessages(psymetrics::model_fit(fit_path, test_details = TRUE, verbose = FALSE))
+  cmp <- suppressMessages(
+    psymetrics::compare_model_fit(
+      ref = fit_ref,
+      path = fit_path,
+      test_details = TRUE,
+      verbose = FALSE
+    )
+  )
+
+  expect_s3_class(out, "model_fit")
+  expect_equal(nrow(out), 1)
+  expect_true(all(c("TEST", "SE") %in% names(out)))
+  expect_s3_class(cmp, "compare_model_fit")
+  expect_true(all(c("ref", "path") %in% cmp$MODEL))
 
   expect_error(
     psymetrics::plot_factor_loadings(fit_path),
@@ -289,6 +363,24 @@ test_that("facet_by falls back with informative message when metadata is unavail
       verbose = TRUE
     ),
     "Ignoring `facet_by = \"group_level\"`"
+  )
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("facet_by fallback stays silent when verbose = FALSE", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  fit <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  expect_silent(
+    p <- psymetrics::plot_factor_loadings(
+      fit,
+      facet_by = "group_level",
+      verbose = FALSE
+    )
   )
   expect_s3_class(p, "ggplot")
 })
