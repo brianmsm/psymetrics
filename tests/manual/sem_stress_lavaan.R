@@ -1,9 +1,10 @@
 ## Manual stress script for local QA (not run by testthat/CRAN checks).
 ## Run from the project root with:
 ##   Rscript tests/manual/sem_stress_lavaan.R
-suppressPackageStartupMessages({
-  library(devtools)
-})
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  cat("Skipping SEM stress run: package 'devtools' is not installed.\n")
+  quit(save = "no", status = 0)
+}
 
 if (!requireNamespace("lavaan", quietly = TRUE)) {
   cat("Skipping SEM stress run: package 'lavaan' is not installed.\n")
