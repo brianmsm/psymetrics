@@ -183,6 +183,9 @@ plot_factor_loadings <- function(fit,
                                  ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
   rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
+  if (!inherits(fit, "lavaan")) {
+    cli::cli_abort("The {.arg fit} argument must be a fitted {.cls lavaan} object.")
+  }
   ci_bounds <- match.arg(ci_bounds)
   facet_by <- match.arg(facet_by)
   dots <- list(...)
@@ -208,7 +211,7 @@ plot_factor_loadings <- function(fit,
   loadings$rhs <- if (sort) {
     factor(loadings$rhs, levels = levels(stats::reorder(loadings$rhs, loadings$est)))
   } else {
-    factor(loadings$rhs)
+    factor(loadings$rhs, levels = rev(unique(loadings$rhs)))
   }
 
   use_ci_bounds <- isTRUE(standardized) && isTRUE(ci) && isTRUE(autofit) && has_ci
@@ -435,6 +438,7 @@ lavaan_attach_loading_metadata <- function(loadings, fit, verbose = TRUE) {
   }
 
   loadings$.idx <- NULL
+  loadings <- lavaan_apply_group_labels(loadings, fit, verbose = verbose)
   loadings
 }
 
@@ -443,6 +447,28 @@ lavaan_maybe_quiet <- function(expr, quiet = FALSE) {
     return(expr)
   }
   suppressMessages(suppressWarnings(expr))
+}
+
+lavaan_apply_group_labels <- function(loadings, fit, verbose = TRUE) {
+  if (!"group" %in% names(loadings) || all(is.na(loadings$group))) {
+    return(loadings)
+  }
+  group_labels <- lavaan_maybe_quiet(
+    tryCatch(lavaan::lavInspect(fit, "group.label"), error = function(e) NULL),
+    quiet = !isTRUE(verbose)
+  )
+  if (is.null(group_labels) || length(group_labels) == 0L) {
+    return(loadings)
+  }
+  group_idx <- suppressWarnings(as.integer(as.character(loadings$group)))
+  valid <- !is.na(group_idx) & group_idx >= 1L & group_idx <= length(group_labels)
+  if (!any(valid)) {
+    return(loadings)
+  }
+  mapped <- as.character(loadings$group)
+  mapped[valid] <- group_labels[group_idx[valid]]
+  loadings$group <- mapped
+  loadings
 }
 
 lavaan_resolve_facet_by <- function(loadings, facet_by = "none", verbose = TRUE) {
