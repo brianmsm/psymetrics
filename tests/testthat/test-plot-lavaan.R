@@ -185,3 +185,18 @@ test_that("plot_factor_loadings maps est.std to est by name", {
   expect_true("est" %in% names(plot$data))
   expect_equal(sort(plot$data$est), sort(expected), tolerance = 1e-8)
 })
+
+test_that("plot_factor_loadings errors for lavaan models without =~ loadings", {
+  skip_if_not_installed("lavaan")
+  skip_if_not_installed("ggplot2")
+
+  path_data <- transform(mtcars, x1 = wt, x2 = hp, y = mpg)
+  fit <- suppressWarnings(
+    lavaan::sem("y ~ x1 + x2\nx1 ~~ x2", data = path_data)
+  )
+
+  expect_error(
+    psymetrics::plot_factor_loadings(fit),
+    "does not contain measurement loadings"
+  )
+})
