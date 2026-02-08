@@ -6,14 +6,20 @@ While this file contains the overall plan, day-to-day discussion and detailed te
 
 ## **Current Status & Progress**
 
-* 🚧 In Progress: `v0.2.0` - Extend Existing Functions for SEM
+* 🚧 In Progress: `v0.3.0` - Implement `model_estimates()`
 
-  Current milestone work is focused on official SEM support for existing `lavaan` workflows.
+  Current milestone work is focused on implementing parameter extraction helpers for supported model classes.
 
   - **Goal:**
-      - Validate and document SEM support in `model_fit()`, `compare_model_fit()`, and `plot_factor_loadings()`.
-      - Expand SEM-focused test coverage.
-      - Complete acceptance criteria tracked in **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**.
+      - Add `model_estimates()` for extracting model parameters in a tidy output format.
+      - Establish tests and documentation for core extraction workflows.
+      - Complete acceptance criteria tracked in **[Issue #17](https://github.com/brianmsm/psymetrics/issues/17)**.
+
+* ✅ Completed: `v0.2.0` - Extend Existing Functions for SEM
+
+  - Officially validated and documented SEM support for fitted `lavaan` objects in `model_fit()`, `compare_model_fit()`, and `plot_factor_loadings()`.
+  - Expanded SEM coverage for structural models, growth models, multigroup/multilevel contexts, categorical estimators, missing-data handling, and non-converged/path-only edge cases.
+  - Completed milestone acceptance criteria tracked in **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**.
 
 * ✅ Completed: `v0.1.9.x` - Stability & Documentation Polish
 
@@ -32,7 +38,7 @@ While this file contains the overall plan, day-to-day discussion and detailed te
 
 The focus of this phase is to build a robust and feature-complete workflow for models fitted with `lavaan`, covering both Confirmatory Factor Analysis (CFA) and general Structural Equation Models (SEM).
 
-* [ ] **`v0.2.0`**: **Extend Existing Functions for SEM.** *(In Progress)*
+* [x] **`v0.2.0`**: **Extend Existing Functions for SEM.** *(Completed on February 8, 2026)*
 
   - *Goal*: Officially support SEM in `model_fit`, `compare_model_fit`, and `plot_factor_loadings`.
   - *Details*: **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**
