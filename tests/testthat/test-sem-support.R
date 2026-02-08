@@ -237,6 +237,83 @@ test_that("SEM with missing = fiml returns valid fit summaries", {
   expect_false(is.na(out$NOBS))
 })
 
+test_that("SEM with test = none returns NA fit metrics and supports compare_model_fit", {
+  skip_if_not_installed("lavaan")
+
+  fit_none <- suppressWarnings(
+    lavaan::sem(
+      sem_hs_model,
+      data = lavaan::HolzingerSwineford1939,
+      test = "none"
+    )
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
+  )
+
+  out <- suppressMessages(psymetrics::model_fit(fit_none, type = "scaled", test_details = TRUE))
+  cmp <- suppressMessages(
+    psymetrics::compare_model_fit(
+      ref = fit_ref,
+      none = fit_none,
+      type = "scaled",
+      test_details = TRUE,
+      verbose = FALSE
+    )
+  )
+
+  expect_s3_class(out, "model_fit")
+  expect_true(all(c("TEST", "SE") %in% names(out)))
+  expect_equal(out$TEST, "none")
+  expect_true(all(is.na(out$Chi2)))
+  expect_true(all(is.na(out$CFI)))
+
+  expect_s3_class(cmp, "compare_model_fit")
+  expect_true(all(c("ref", "none") %in% cmp$MODEL))
+  none_rows <- cmp[cmp$MODEL == "none", ]
+  expect_true(all(is.na(none_rows$Chi2)))
+})
+
+test_that("SEM with Bollen-Stine test falls back to standard metrics", {
+  skip_if_not_installed("lavaan")
+
+  fit_boot <- suppressWarnings(
+    lavaan::sem(
+      sem_hs_model,
+      data = lavaan::HolzingerSwineford1939,
+      estimator = "ML",
+      test = "bollen.stine",
+      bootstrap = 20
+    )
+  )
+  fit_ref <- suppressWarnings(
+    lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "MLR")
+  )
+
+  out <- suppressMessages(psymetrics::model_fit(fit_boot, type = "scaled", test_details = TRUE))
+  cmp <- suppressMessages(
+    psymetrics::compare_model_fit(
+      ref = fit_ref,
+      boot = fit_boot,
+      type = "scaled",
+      test_details = TRUE,
+      verbose = FALSE
+    )
+  )
+
+  expect_s3_class(out, "model_fit")
+  expect_equal(out$ESTIMATOR, "ML")
+  expect_true(out$TEST %in% c("bollen.stine", "standard"))
+  expect_false(is.na(out$Chi2))
+
+  expect_s3_class(cmp, "compare_model_fit")
+  expect_true(all(c("ref", "boot") %in% cmp$MODEL))
+  boot_rows <- cmp[cmp$MODEL == "boot", ]
+  expect_true(all(boot_rows$TEST %in% c("bollen.stine", "standard")))
+  expect_true(all(boot_rows$ESTIMATOR == "ML"))
+  expect_true(all(!is.na(boot_rows$Chi2)))
+})
+
 test_that("non-converged SEM keeps stable outputs for model_fit and compare_model_fit", {
   skip_if_not_installed("lavaan")
 
