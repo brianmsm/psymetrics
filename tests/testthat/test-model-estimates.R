@@ -189,11 +189,132 @@ test_that("model_estimates returns stable output for non-converged models", {
   }
 
   out <- suppressMessages(psymetrics::model_estimates(fit_bad, verbose = FALSE))
+  expected_raw <- lavaan::parameterEstimates(
+    fit_bad,
+    ci = TRUE,
+    level = 0.95,
+    standardized = FALSE,
+    remove.eq = FALSE,
+    remove.ineq = FALSE,
+    remove.system.eq = FALSE
+  )
 
   expect_s3_class(out, "model_estimates")
-  expect_equal(nrow(out), 1)
-  expect_false(isTRUE(out$converged[[1]]))
-  expect_true(all(is.na(out[1, c("Coefficient", "SE", "CI_low", "CI_high", "z", "p")])))
+  expect_equal(nrow(out), nrow(expected_raw))
+  expect_true(all(out$converged == FALSE))
+  expect_true(any(!is.na(out$Coefficient)))
+  expect_true(any(out$Component %in% c("Loading", "Regression", "Variance")))
+  expect_true(any(is.na(out$SE)))
+})
+
+test_that("model_estimates keeps standardized estimates for non-converged models", {
+  skip_if_not_installed("lavaan")
+
+  fit_bad <- suppressWarnings(
+    lavaan::sem(
+      hs_sem_model,
+      data = lavaan::HolzingerSwineford1939[1:20, ],
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+  if (isTRUE(lavaan::lavInspect(fit_bad, "converged"))) {
+    skip("Model converged unexpectedly with iter.max = 1.")
+  }
+
+  out_std <- suppressMessages(
+    suppressWarnings(
+      psymetrics::model_estimates(fit_bad, standardized = TRUE, verbose = FALSE)
+    )
+  )
+  expected_std <- suppressWarnings(
+    lavaan::standardizedSolution(
+      fit_bad,
+      type = "std.all",
+      ci = TRUE,
+      level = 0.95,
+      remove.eq = FALSE,
+      remove.ineq = FALSE,
+      remove.def = FALSE
+    )
+  )
+
+  expect_s3_class(out_std, "model_estimates")
+  expect_equal(nrow(out_std), nrow(expected_std))
+  expect_true(all(out_std$converged == FALSE))
+  expect_equal(out_std$To, as.character(expected_std$lhs))
+  expect_equal(out_std$Operator, as.character(expected_std$op))
+  expect_equal(out_std$From, as.character(expected_std$rhs))
+  expect_equal(out_std$Coefficient, as.numeric(expected_std$est.std))
+})
+
+test_that("model_estimates verbose messaging is controlled and lavaan warnings are preserved", {
+  skip_if_not_installed("lavaan")
+
+  fit_ok <- suppressWarnings(
+    lavaan::sem(hs_sem_model, data = lavaan::HolzingerSwineford1939)
+  )
+  msg_ok <- testthat::capture_messages(
+    psymetrics::model_estimates(fit_ok, standardized = FALSE, verbose = TRUE)
+  )
+  expect_false(any(grepl("did not converge", msg_ok, ignore.case = TRUE)))
+
+  fit_bad <- suppressWarnings(
+    lavaan::sem(
+      hs_sem_model,
+      data = lavaan::HolzingerSwineford1939[1:20, ],
+      estimator = "MLR",
+      control = list(iter.max = 1)
+    )
+  )
+  if (isTRUE(lavaan::lavInspect(fit_bad, "converged"))) {
+    skip("Model converged unexpectedly with iter.max = 1.")
+  }
+
+  msg_verbose <- testthat::capture_messages(
+    suppressWarnings(
+      psymetrics::model_estimates(fit_bad, standardized = FALSE, verbose = TRUE)
+    )
+  )
+  expect_true(any(grepl("did not converge", msg_verbose, ignore.case = TRUE)))
+  expect_true(any(grepl("inferential columns are fully unavailable", msg_verbose, ignore.case = TRUE)))
+
+  msg_silent <- testthat::capture_messages(
+    suppressWarnings(
+      psymetrics::model_estimates(fit_bad, standardized = FALSE, verbose = FALSE)
+    )
+  )
+  expect_length(msg_silent, 0L)
+
+  expected_warn <- testthat::capture_warnings(
+    lavaan::standardizedSolution(
+      fit_bad,
+      type = "std.all",
+      ci = TRUE,
+      level = 0.95,
+      remove.eq = FALSE,
+      remove.ineq = FALSE,
+      remove.def = FALSE
+    )
+  )
+  out_warn <- testthat::capture_warnings(
+    suppressMessages(
+      psymetrics::model_estimates(fit_bad, standardized = TRUE, verbose = FALSE)
+    )
+  )
+
+  normalize_warning <- function(x) {
+    gsub("\\s+", " ", trimws(as.character(x)))
+  }
+
+  if (length(expected_warn) == 0L) {
+    expect_length(out_warn, 0L)
+  } else {
+    expect_true(length(out_warn) >= 1L)
+    expected_snippet <- substr(normalize_warning(expected_warn[[1]]), 1, 60)
+    out_norm <- vapply(out_warn, normalize_warning, character(1))
+    expect_true(any(grepl(expected_snippet, out_norm, fixed = TRUE)))
+  }
 })
 
 test_that("model_estimates handles valid empty component filters across outputs", {

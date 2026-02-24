@@ -69,15 +69,10 @@ model_estimates.lavaan <- function(fit,
 
   if (!converged) {
     if (isTRUE(verbose)) {
-      cli::cli_alert_danger(
-        "The model did not converge. Parameter estimates are returned as NA."
+      cli::cli_alert_warning(
+        "The model did not converge. Returning available parameter estimates; some inferential columns may be NA."
       )
     }
-    estimates <- lavaan_nonconverged_estimates()
-    class(estimates) <- c("model_estimates", class(estimates))
-    attr(estimates, "ci") <- ci
-    attr(estimates, "standardized") <- standardized_type
-    return(estimates)
   }
 
   estimates_raw <- if (standardized_type == "none") {
@@ -106,7 +101,8 @@ model_estimates.lavaan <- function(fit,
   estimates <- lavaan_build_estimates_table(
     estimates_raw,
     coefficient_col = coefficient_col,
-    verbose = verbose
+    verbose = verbose,
+    converged = converged
   )
 
   if (!all(component_filter == "all")) {
@@ -128,7 +124,8 @@ model_estimates.lavaan <- function(fit,
 
 # Helpers -----------------------------------------------------------------
 
-lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose = TRUE) {
+lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose = TRUE,
+                                         converged = TRUE) {
   required_cols <- c("lhs", "op", "rhs")
   missing_required <- setdiff(required_cols, names(estimates_raw))
   if (length(missing_required) > 0L) {
@@ -172,7 +169,7 @@ lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose
   }
 
   out$Component <- lavaan_map_estimate_component(out$Operator, out$To, out$From)
-  out$converged <- TRUE
+  out$converged <- isTRUE(converged)
 
   missing_source_cols <- unname(column_map)[!unname(column_map) %in% names(estimates_raw)]
   missing_report <- character(0)
@@ -332,22 +329,4 @@ lavaan_estimates_normalize_component <- function(component) {
   }
 
   unique(normalized)
-}
-
-lavaan_nonconverged_estimates <- function() {
-  data.frame(
-    To = NA_character_,
-    Operator = NA_character_,
-    From = NA_character_,
-    Coefficient = NA_real_,
-    SE = NA_real_,
-    CI_low = NA_real_,
-    CI_high = NA_real_,
-    z = NA_real_,
-    p = NA_real_,
-    Component = "Other",
-    converged = FALSE,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
 }
