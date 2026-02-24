@@ -28,8 +28,8 @@ You can install the development version of psymetrics from [GitHub](https://gith
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.2.0")
-#remotes::install_github("brianmsm/psymetrics@v0.2.0")
+pak::pak("brianmsm/psymetrics@v0.3.0")
+#remotes::install_github("brianmsm/psymetrics@v0.3.0")
 ```
 
 ## Getting Fit Indices
@@ -95,6 +95,22 @@ model_fit(fit_sem_mlr)
 compare_model_fit(MLR = fit_sem_mlr, ML = fit_sem_ml)
 ```
 
+## Extracting Model Parameters (`model_estimates`)
+
+You can also extract parameter estimates from CFA/SEM models and view them by component blocks (for example, loadings and regressions).
+
+```{r}
+estimates <- model_estimates(fit_sem_mlr)
+estimates
+
+# Keep only selected components and standardized estimates
+model_estimates(
+  fit_sem_mlr,
+  component = c("loading", "regression"),
+  standardized = TRUE
+)
+```
+
 ```{r}
 #| fig-dpi: 300
 #| fig-width: 6
@@ -150,7 +166,7 @@ For technical details on a specific future feature, please see the corresponding
 The following features are planned to enhance the workflow for **CFA and SEM**.
 
 *   **Parameter Analysis:**
-    *   [ ] **New Function:** Create `model_estimates()` to extract model parameters from `lavaan` models. [(Issue #17)](https://github.com/brianmsm/psymetrics/issues/17)
+    *   [x] **New Function:** Create `model_estimates()` to extract model parameters from `lavaan` models. [(Issue #17)](https://github.com/brianmsm/psymetrics/issues/17)
     *   [ ] **New Function:** Create `compare_model_estimates()` to compare parameters between two or more `lavaan` CFA models. [(Issue #18)](https://github.com/brianmsm/psymetrics/issues/18)
 
 *   **Visualization:**
