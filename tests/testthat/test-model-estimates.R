@@ -62,6 +62,33 @@ test_that("model_estimates supports SEM extraction and component filtering", {
   expect_setequal(unique(out_lr$Component), c("Loading", "Regression"))
 })
 
+test_that("model_estimates informs when requested components are absent", {
+  skip_if_not_installed("lavaan")
+
+  fit <- suppressWarnings(
+    lavaan::cfa(hs_cfa_model, data = lavaan::HolzingerSwineford1939)
+  )
+
+  msgs <- testthat::capture_messages(
+    psymetrics::model_estimates(
+      fit,
+      component = c("loading", "regression"),
+      verbose = TRUE
+    )
+  )
+  out <- suppressMessages(
+    psymetrics::model_estimates(
+      fit,
+      component = c("loading", "regression"),
+      verbose = TRUE
+    )
+  )
+
+  expect_true(all(out$Component == "Loading"))
+  expect_true(any(grepl("not present in this model", msgs, ignore.case = TRUE)))
+  expect_true(any(grepl("Regression", msgs)))
+})
+
 test_that("model_estimates supports standardized variants and aliases", {
   skip_if_not_installed("lavaan")
 

@@ -106,8 +106,18 @@ model_estimates.lavaan <- function(fit,
   )
 
   if (!all(component_filter == "all")) {
+    available_components <- unique(estimates$Component)
+    missing_components <- setdiff(component_filter, available_components)
+
     estimates <- estimates[estimates$Component %in% component_filter, , drop = FALSE]
     rownames(estimates) <- NULL
+
+    if (isTRUE(verbose) && length(missing_components) > 0L) {
+      cli::cli_inform(
+        "Requested component{?s} not present in this model: {missing_components}."
+      )
+    }
+
     if (nrow(estimates) == 0L && isTRUE(verbose)) {
       cli::cli_inform(
         "No parameters matched `component = {component}`."
