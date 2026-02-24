@@ -8,7 +8,8 @@
 #' alignment options.
 #'
 #' @param table_data A data frame containing the table data
-#'   to be exported.
+#'   to be exported. Objects like `model_fit`,
+#'   `compare_model_fit`, and `model_estimates` are supported.
 #' @param path A string specifying the file path where the
 #'   table should be saved. The file extension determines
 #'   the format (currently only .docx is supported).
@@ -127,35 +128,44 @@ save_table <- function(table_data, path, orientation = "landscape",
   table_call_args <- utils::modifyList(base_table_args, table_args)
   formatted_table <- do.call(prepare_table, c(list(x = table_data), table_call_args))
 
-  if (!is.null(digits_by_col)) {
-    formatted_table <- apply_digits_by_col(formatted_table, digits_by_col = digits_by_col)
-  }
+  formatted_table <- apply_digits_by_col(formatted_table, digits_by_col = digits_by_col)
 
   # Create the document and add the table only if the format is Word
   if (format == "word") {
     # Check if required packages are installed
     rlang::check_installed(c("flextable", "officer"))
-    # Create a flextable
-    ft <- flextable::flextable(formatted_table)
+    doc <- officer::read_docx(template)
 
-    # Apply formatting options
-    ft <- flextable::set_table_properties(ft, width = 1, layout = "autofit") |>
-      flextable::font(fontname = "Arial", part = "all") |>
-      flextable::fontsize(size = 10, part = "all")
-    if (ncol(formatted_table) >= 2) {
-      ft <- flextable::align(ft, j = 2:ncol(formatted_table), align = "center", part = "all")
+    if (is.data.frame(formatted_table)) {
+      ft <- save_table_as_flextable(formatted_table)
+      doc <- flextable::body_add_flextable(doc, value = ft)
+    } else {
+      for (i in seq_along(formatted_table)) {
+        block <- formatted_table[[i]]
+        if (!is.data.frame(block)) {
+          next
+        }
+
+        block_name <- names(formatted_table)[[i]]
+        caption <- model_estimates_block_caption(block, fallback = block_name, index = i)
+        doc <- tryCatch(
+          officer::body_add_par(doc, value = caption, style = "heading 2"),
+          error = function(e) {
+            cli::cli_warn(
+              "Could not use style {.val heading 2} in the current template; using {.val Normal} for component headings."
+            )
+            officer::body_add_par(doc, value = caption, style = "Normal")
+          }
+        )
+
+        ft <- save_table_as_flextable(block)
+        doc <- flextable::body_add_flextable(doc, value = ft)
+
+        if (i < length(formatted_table)) {
+          doc <- officer::body_add_par(doc, value = "", style = "Normal")
+        }
+      }
     }
-    ft <- ft |>
-      flextable::align(j = 1, align = "left", part = "all") |>
-      flextable::border_remove() |>
-      flextable::hline_top(part = "all",
-                           border = officer::fp_border(color = "black", width = 0.5)) |>
-      flextable::hline_bottom(part = "body",
-                              border = officer::fp_border(color = "black", width = 0.5))
-
-    # Read the Word template
-    doc <- officer::read_docx(template) |>
-      flextable::body_add_flextable(value = ft)
 
     # Save the document
     print(doc, target = path)
@@ -163,4 +173,27 @@ save_table <- function(table_data, path, orientation = "landscape",
   }
 
   invisible(path)
+}
+
+save_table_as_flextable <- function(table_df) {
+  ft <- flextable::flextable(table_df)
+  ft <- flextable::set_table_properties(ft, width = 1, layout = "autofit") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::fontsize(size = 10, part = "all")
+
+  if (ncol(table_df) >= 2) {
+    ft <- flextable::align(ft, j = 2:ncol(table_df), align = "center", part = "all")
+  }
+
+  ft |>
+    flextable::align(j = 1, align = "left", part = "all") |>
+    flextable::border_remove() |>
+    flextable::hline_top(
+      part = "all",
+      border = officer::fp_border(color = "black", width = 0.5)
+    ) |>
+    flextable::hline_bottom(
+      part = "body",
+      border = officer::fp_border(color = "black", width = 0.5)
+    )
 }
