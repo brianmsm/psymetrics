@@ -88,6 +88,22 @@ test_that("format_results.data.frame applies digits_by_col", {
   expect_match(text_out, "2.5")
 })
 
+test_that("apply_digits_by_col supports list-of-data-frames", {
+  blocks <- list(
+    data.frame(Value = c("1.234", "2"), stringsAsFactors = FALSE, check.names = FALSE),
+    data.frame(Value = c("-3.21", "< .001"), stringsAsFactors = FALSE, check.names = FALSE)
+  )
+
+  result <- psymetrics:::apply_digits_by_col(
+    blocks,
+    digits_by_col = c(Value = 1)
+  )
+
+  expect_true(is.list(result))
+  expect_equal(result[[1]]$Value, c("1.2", "2.0"))
+  expect_equal(result[[2]]$Value, c("-3.2", "< .001"))
+})
+
 test_that("format_results rounds Chi2 df labels to 2 decimals", {
   table_data <- data.frame(
     Chi2 = 20.68,
