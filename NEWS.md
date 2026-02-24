@@ -1,3 +1,19 @@
+# psymetrics 0.3.0
+
+## New Features
+
+-   **Parameter Extraction**: Added `model_estimates()` for `lavaan` CFA/SEM workflows, including optional standardized extraction (`std.all`, `std.lv`, `std.nox`) and component filtering.
+-   **Component Blocks**: Parameter outputs are organized into semantic blocks (`Loading`, `Regression`, `Correlation`, `Variance`, `Mean`, `Defined`, `Threshold`, and `Other`) for text/markdown/html/docx reporting.
+-   **Formatting**: Added `format_results.model_estimates()` and `print.model_estimates()` to integrate `model_estimates` with the package table pipeline.
+-   **Exporting**: `save_table()` now supports list-based table exports (used by `model_estimates`) and writes DOCX output as per-component blocks.
+
+## Robustness & Testing
+
+-   **Non-convergence**: `model_estimates.lavaan()` now returns available parameter rows even when the fit does not converge, flags rows with `converged = FALSE`, and keeps unavailable inferential columns as `NA`.
+-   **Messaging & Warnings**: With `verbose = TRUE`, `model_estimates()` now reports non-convergence and missing requested components; warnings emitted by `lavaan` are preserved and propagated.
+-   **Operator Coverage**: Added explicit handling for threshold and unmapped operators, preserving rows in an `Other` component bucket instead of dropping them.
+-   **Testing**: Added dedicated tests for extraction, component filtering, standardization aliases, non-converged (raw and standardized) extraction, verbose messaging/warning propagation, formatting (text/markdown/html), printing, and DOCX export.
+
 # psymetrics 0.2.0
 
 ## SEM & lavaan Workflow
