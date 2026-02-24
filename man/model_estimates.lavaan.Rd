@@ -6,7 +6,7 @@
 \usage{
 \method{model_estimates}{lavaan}(
   fit,
-  standardize = FALSE,
+  standardized = FALSE,
   ci = 0.95,
   component = "all",
   verbose = TRUE,
@@ -17,7 +17,7 @@
 \item{fit}{A fitted \code{lavaan} object (for example from
 \code{lavaan::cfa()}, \code{lavaan::sem()}, or \code{lavaan::growth()}).}
 
-\item{standardize}{Controls standardized extraction.
+\item{standardized}{Controls standardized extraction.
 Accepted values are \code{FALSE}, \code{TRUE}, \code{"std.all"},
 \code{"std.lv"}, \code{"std.nox"}, plus aliases:
 \code{"all"}, \code{"latent"}, \code{"lv"}, and \code{"no_exogenous"}.}
@@ -64,7 +64,7 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit <- sem(sem_model, data = PoliticalDemocracy)
   model_estimates(fit)
   model_estimates(fit, component = c("loading", "regression"))
-  model_estimates(fit, standardize = "std.lv")
+  model_estimates(fit, standardized = "std.lv")
 } else {
   message("Please install 'lavaan' to run this example.")
 }

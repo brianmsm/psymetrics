@@ -9,7 +9,7 @@
 #'
 #' @param fit A fitted `lavaan` object (for example from
 #'   `lavaan::cfa()`, `lavaan::sem()`, or `lavaan::growth()`).
-#' @param standardize Controls standardized extraction.
+#' @param standardized Controls standardized extraction.
 #'   Accepted values are `FALSE`, `TRUE`, `"std.all"`,
 #'   `"std.lv"`, `"std.nox"`, plus aliases:
 #'   `"all"`, `"latent"`, `"lv"`, and `"no_exogenous"`.
@@ -46,12 +46,12 @@
 #'   fit <- sem(sem_model, data = PoliticalDemocracy)
 #'   model_estimates(fit)
 #'   model_estimates(fit, component = c("loading", "regression"))
-#'   model_estimates(fit, standardize = "std.lv")
+#'   model_estimates(fit, standardized = "std.lv")
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
 model_estimates.lavaan <- function(fit,
-                                   standardize = FALSE,
+                                   standardized = FALSE,
                                    ci = 0.95,
                                    component = "all",
                                    verbose = TRUE,
@@ -63,7 +63,7 @@ model_estimates.lavaan <- function(fit,
   }
 
   ci <- lavaan_estimates_normalize_ci(ci, verbose = verbose)
-  standardize_type <- lavaan_estimates_normalize_standardize(standardize)
+  standardized_type <- lavaan_estimates_normalize_standardized(standardized)
   component_filter <- lavaan_estimates_normalize_component(component)
   converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
 
@@ -76,11 +76,11 @@ model_estimates.lavaan <- function(fit,
     estimates <- lavaan_nonconverged_estimates()
     class(estimates) <- c("model_estimates", class(estimates))
     attr(estimates, "ci") <- ci
-    attr(estimates, "standardize") <- standardize_type
+    attr(estimates, "standardized") <- standardized_type
     return(estimates)
   }
 
-  estimates_raw <- if (standardize_type == "none") {
+  estimates_raw <- if (standardized_type == "none") {
     lavaan::parameterEstimates(
       fit,
       ci = TRUE,
@@ -93,7 +93,7 @@ model_estimates.lavaan <- function(fit,
   } else {
     lavaan::standardizedSolution(
       fit,
-      type = standardize_type,
+      type = standardized_type,
       ci = TRUE,
       level = ci,
       remove.eq = FALSE,
@@ -102,7 +102,7 @@ model_estimates.lavaan <- function(fit,
     )
   }
 
-  coefficient_col <- if (standardize_type == "none") "est" else "est.std"
+  coefficient_col <- if (standardized_type == "none") "est" else "est.std"
   estimates <- lavaan_build_estimates_table(
     estimates_raw,
     coefficient_col = coefficient_col,
@@ -121,7 +121,7 @@ model_estimates.lavaan <- function(fit,
 
   class(estimates) <- c("model_estimates", class(estimates))
   attr(estimates, "ci") <- ci
-  attr(estimates, "standardize") <- standardize_type
+  attr(estimates, "standardized") <- standardized_type
   estimates
 }
 
@@ -229,19 +229,19 @@ lavaan_map_estimate_component <- function(operator, to, from) {
   component
 }
 
-lavaan_estimates_normalize_standardize <- function(standardize) {
-  if (is.logical(standardize) && length(standardize) == 1L) {
-    return(if (isTRUE(standardize)) "std.all" else "none")
+lavaan_estimates_normalize_standardized <- function(standardized) {
+  if (is.logical(standardized) && length(standardized) == 1L) {
+    return(if (isTRUE(standardized)) "std.all" else "none")
   }
 
-  if (!is.character(standardize) || length(standardize) != 1L) {
+  if (!is.character(standardized) || length(standardized) != 1L) {
     cli::cli_abort(
-      "`standardize` must be one of FALSE, TRUE, \"std.all\", \"std.lv\", \"std.nox\", \"all\", \"latent\", \"lv\", or \"no_exogenous\"."
+      "`standardized` must be one of FALSE, TRUE, \"std.all\", \"std.lv\", \"std.nox\", \"all\", \"latent\", \"lv\", or \"no_exogenous\"."
     )
   }
 
-  standardize_key <- tolower(trimws(standardize))
-  standardize_map <- c(
+  standardized_key <- tolower(trimws(standardized))
+  standardized_map <- c(
     "false" = "none",
     "none" = "none",
     "raw" = "none",
@@ -259,13 +259,13 @@ lavaan_estimates_normalize_standardize <- function(standardize) {
     "std.nox" = "std.nox"
   )
 
-  if (!standardize_key %in% names(standardize_map)) {
+  if (!standardized_key %in% names(standardized_map)) {
     cli::cli_abort(
-      "`standardize` must be one of FALSE, TRUE, \"std.all\", \"std.lv\", \"std.nox\", \"all\", \"latent\", \"lv\", or \"no_exogenous\"."
+      "`standardized` must be one of FALSE, TRUE, \"std.all\", \"std.lv\", \"std.nox\", \"all\", \"latent\", \"lv\", or \"no_exogenous\"."
     )
   }
 
-  unname(standardize_map[[standardize_key]])
+  unname(standardized_map[[standardized_key]])
 }
 
 lavaan_estimates_normalize_ci <- function(ci, verbose = TRUE) {

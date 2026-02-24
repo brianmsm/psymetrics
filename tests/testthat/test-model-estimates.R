@@ -62,7 +62,7 @@ test_that("model_estimates supports SEM extraction and component filtering", {
   expect_setequal(unique(out_lr$Component), c("Loading", "Regression"))
 })
 
-test_that("model_estimates supports standardize variants and aliases", {
+test_that("model_estimates supports standardized variants and aliases", {
   skip_if_not_installed("lavaan")
 
   fit <- suppressWarnings(
@@ -70,27 +70,31 @@ test_that("model_estimates supports standardize variants and aliases", {
   )
 
   out_raw <- suppressMessages(
-    psymetrics::model_estimates(fit, standardize = FALSE, component = "regression", verbose = FALSE)
+    psymetrics::model_estimates(fit, standardized = FALSE, component = "regression", verbose = FALSE)
   )
   out_std_true <- suppressMessages(
-    psymetrics::model_estimates(fit, standardize = TRUE, component = "regression", verbose = FALSE)
+    psymetrics::model_estimates(fit, standardized = TRUE, component = "regression", verbose = FALSE)
   )
   out_std_all <- suppressMessages(
-    psymetrics::model_estimates(fit, standardize = "std.all", component = "regression", verbose = FALSE)
+    psymetrics::model_estimates(fit, standardized = "std.all", component = "regression", verbose = FALSE)
   )
   out_alias_all <- suppressMessages(
-    psymetrics::model_estimates(fit, standardize = "all", component = "regression", verbose = FALSE)
+    psymetrics::model_estimates(fit, standardized = "all", component = "regression", verbose = FALSE)
+  )
+  out_legacy_partial <- suppressMessages(
+    psymetrics::model_estimates(fit, standardize = "std.all", component = "regression", verbose = FALSE)
   )
 
   expect_false(isTRUE(all.equal(out_raw$Coefficient, out_std_true$Coefficient)))
   expect_equal(out_std_true$Coefficient, out_std_all$Coefficient)
   expect_equal(out_std_all$Coefficient, out_alias_all$Coefficient)
+  expect_equal(out_std_all$Coefficient, out_legacy_partial$Coefficient)
 
-  expect_silent(psymetrics::model_estimates(fit, standardize = "std.lv", verbose = FALSE))
-  expect_silent(psymetrics::model_estimates(fit, standardize = "std.nox", verbose = FALSE))
-  expect_silent(psymetrics::model_estimates(fit, standardize = "latent", verbose = FALSE))
-  expect_silent(psymetrics::model_estimates(fit, standardize = "lv", verbose = FALSE))
-  expect_silent(psymetrics::model_estimates(fit, standardize = "no_exogenous", verbose = FALSE))
+  expect_silent(psymetrics::model_estimates(fit, standardized = "std.lv", verbose = FALSE))
+  expect_silent(psymetrics::model_estimates(fit, standardized = "std.nox", verbose = FALSE))
+  expect_silent(psymetrics::model_estimates(fit, standardized = "latent", verbose = FALSE))
+  expect_silent(psymetrics::model_estimates(fit, standardized = "lv", verbose = FALSE))
+  expect_silent(psymetrics::model_estimates(fit, standardized = "no_exogenous", verbose = FALSE))
 })
 
 test_that("lavaan_build_estimates_table emits non-duplicated missing inferential messages", {
