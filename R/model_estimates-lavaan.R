@@ -66,6 +66,10 @@ model_estimates.lavaan <- function(fit,
   standardized_type <- lavaan_estimates_normalize_standardized(standardized)
   component_filter <- lavaan_estimates_normalize_component(component)
   converged <- isTRUE(lavaan::lavInspect(fit, "converged"))
+  group_labels <- tryCatch(
+    lavaan::lavInspect(fit, "group.label"),
+    error = function(e) NULL
+  )
 
   if (!converged) {
     if (isTRUE(verbose)) {
@@ -102,7 +106,8 @@ model_estimates.lavaan <- function(fit,
     estimates_raw,
     coefficient_col = coefficient_col,
     verbose = verbose,
-    converged = converged
+    converged = converged,
+    group_labels = group_labels
   )
 
   if (!all(component_filter == "all")) {
@@ -135,7 +140,7 @@ model_estimates.lavaan <- function(fit,
 # Helpers -----------------------------------------------------------------
 
 lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose = TRUE,
-                                         converged = TRUE) {
+                                         converged = TRUE, group_labels = NULL) {
   required_cols <- c("lhs", "op", "rhs")
   missing_required <- setdiff(required_cols, names(estimates_raw))
   if (length(missing_required) > 0L) {
@@ -174,7 +179,11 @@ lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose
   for (target_col in names(optional_map)) {
     source_col <- optional_map[[target_col]]
     if (source_col %in% names(estimates_raw)) {
-      out[[target_col]] <- estimates_raw[[source_col]]
+      column_values <- estimates_raw[[source_col]]
+      if (identical(target_col, "Group")) {
+        column_values <- lavaan_map_group_labels(column_values, group_labels)
+      }
+      out[[target_col]] <- column_values
     }
   }
 
@@ -212,6 +221,26 @@ lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose
   }
 
   out
+}
+
+lavaan_map_group_labels <- function(group_values, group_labels = NULL) {
+  group_chr <- as.character(group_values)
+
+  if (is.null(group_labels) || length(group_labels) == 0L) {
+    return(group_chr)
+  }
+
+  group_id <- suppressWarnings(as.integer(group_chr))
+  valid_group <- !is.na(group_id) &
+    group_id >= 1L &
+    group_id <= length(group_labels)
+  if (!any(valid_group)) {
+    return(group_chr)
+  }
+
+  mapped <- group_chr
+  mapped[valid_group] <- as.character(group_labels[group_id[valid_group]])
+  mapped
 }
 
 lavaan_map_estimate_component <- function(operator, to, from) {

@@ -119,6 +119,35 @@ test_that("model_estimates supports standardized variants and documented aliases
   expect_silent(psymetrics::model_estimates(fit, standardized = "no_exogenous", verbose = FALSE))
 })
 
+test_that("model_estimates keeps group identifiers for multigroup models", {
+  skip_if_not_installed("lavaan")
+
+  fit <- suppressWarnings(
+    lavaan::sem(
+      hs_sem_model,
+      data = lavaan::HolzingerSwineford1939,
+      group = "school"
+    )
+  )
+
+  out <- suppressMessages(
+    psymetrics::model_estimates(
+      fit,
+      component = c("loading", "regression"),
+      verbose = FALSE
+    )
+  )
+  expected_groups <- lavaan::lavInspect(fit, "group.label")
+
+  expect_true("Group" %in% names(out))
+  expect_setequal(unique(out$Group[!is.na(out$Group)]), expected_groups)
+  expect_false(any(out$Group %in% c("1", "2")))
+
+  blocks <- psymetrics:::prepare_table(out)
+  expect_true(is.list(blocks))
+  expect_true(all(vapply(blocks, function(block) "Group" %in% names(block), logical(1))))
+})
+
 test_that("lavaan_build_estimates_table emits non-duplicated missing inferential messages", {
   estimates_raw <- data.frame(
     lhs = "f",
@@ -141,6 +170,35 @@ test_that("lavaan_build_estimates_table emits non-duplicated missing inferential
   expect_length(msgs, 1)
   expect_match(msgs[[1]], "were set to NA")
   expect_false(any(grepl("fully unavailable", msgs)))
+})
+
+test_that("lavaan_estimates_normalize_ci validates and normalizes values", {
+  expect_equal(psymetrics:::lavaan_estimates_normalize_ci(0.95, verbose = FALSE), 0.95)
+
+  msgs <- testthat::capture_messages(
+    ci_used <- psymetrics:::lavaan_estimates_normalize_ci(c(0.90, 0.80), verbose = TRUE)
+  )
+  expect_equal(ci_used, 0.90)
+  expect_true(any(grepl("using the first value", msgs, ignore.case = TRUE)))
+
+  expect_silent(psymetrics:::lavaan_estimates_normalize_ci(c(0.90, 0.80), verbose = FALSE))
+
+  expect_error(
+    psymetrics:::lavaan_estimates_normalize_ci(0, verbose = FALSE),
+    "numeric value in \\(0, 1\\)"
+  )
+  expect_error(
+    psymetrics:::lavaan_estimates_normalize_ci(1, verbose = FALSE),
+    "numeric value in \\(0, 1\\)"
+  )
+  expect_error(
+    psymetrics:::lavaan_estimates_normalize_ci(NA_real_, verbose = FALSE),
+    "numeric value in \\(0, 1\\)"
+  )
+  expect_error(
+    psymetrics:::lavaan_estimates_normalize_ci("0.95", verbose = FALSE),
+    "numeric value in \\(0, 1\\)"
+  )
 })
 
 test_that("model_estimates_compose_link keeps previous semantics", {
