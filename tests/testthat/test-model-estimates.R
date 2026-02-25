@@ -89,7 +89,7 @@ test_that("model_estimates informs when requested components are absent", {
   expect_true(any(grepl("Regression", msgs)))
 })
 
-test_that("model_estimates supports standardized variants and aliases", {
+test_that("model_estimates supports standardized variants and documented aliases", {
   skip_if_not_installed("lavaan")
 
   fit <- suppressWarnings(
@@ -108,14 +108,9 @@ test_that("model_estimates supports standardized variants and aliases", {
   out_alias_all <- suppressMessages(
     psymetrics::model_estimates(fit, standardized = "all", component = "regression", verbose = FALSE)
   )
-  out_legacy_partial <- suppressMessages(
-    psymetrics::model_estimates(fit, standardize = "std.all", component = "regression", verbose = FALSE)
-  )
-
   expect_false(isTRUE(all.equal(out_raw$Coefficient, out_std_true$Coefficient)))
   expect_equal(out_std_true$Coefficient, out_std_all$Coefficient)
   expect_equal(out_std_all$Coefficient, out_alias_all$Coefficient)
-  expect_equal(out_std_all$Coefficient, out_legacy_partial$Coefficient)
 
   expect_silent(psymetrics::model_estimates(fit, standardized = "std.lv", verbose = FALSE))
   expect_silent(psymetrics::model_estimates(fit, standardized = "std.nox", verbose = FALSE))
