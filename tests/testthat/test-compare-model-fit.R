@@ -317,8 +317,9 @@ textual =~ x4 + x5 + x6"
   )
 
   message_count <- sum(grepl("Robust fit measures are not available", messages))
+  messages_collapsed <- gsub("\\s+", " ", paste(messages, collapse = " "))
   expect_equal(message_count, 1)
-  expect_true(any(grepl("mean\\.var\\.adjusted \\(.+\\)", messages)))
+  expect_true(grepl("mean\\.var\\.adjusted \\(.+\\)", messages_collapsed))
 })
 
 test_that("compare_model_fit validates named test lists", {

@@ -243,7 +243,8 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
         "You are using a robust estimator but requesting 'standard' indices. ",
         "It is recommended to use 'scaled' or 'robust' indices that correspond ",
         "to the estimator used."
-      )
+      ),
+      wrap = TRUE
     )
   }
 
@@ -252,13 +253,13 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
     if (isTRUE(verbose)) {
       if (is.null(model_label)) {
         cli::cli_alert_danger(
-          "The model did not converge. Fit indices are not available."
+          "The model did not converge. Fit indices are not available.",
+          wrap = TRUE
         )
       } else {
         cli::cli_alert_danger(
-          cli::cli_text(
-            "The model {model_label} did not converge. Fit indices are not available."
-          )
+          "The model {model_label} did not converge. Fit indices are not available.",
+          wrap = TRUE
         )
       }
     }
@@ -466,7 +467,8 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     metric_colnames <- lavaan_metric_colnames(metrics)
     if (verbose) {
       cli::cli_alert_warning(
-        "Fit measures are not available when test = 'none'; returning NA for requested metrics."
+        "Fit measures are not available when test = 'none'; returning NA for requested metrics.",
+        wrap = TRUE
       )
     }
     if (isTRUE(test_details)) {
@@ -539,7 +541,7 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
   # Display an informational message if any metrics were adjusted and verbose is TRUE
   if (verbose && length(adjusted_metrics) > 0 && length(original_metrics) != 1) {
     cli::cli_inform(c(
-      cli::cli_text("{.field {adjusted_metrics}} were adjusted to their {type} version{?s}."),
+      "{.field {adjusted_metrics}} were adjusted to their {type} version{?s}.",
       "If you want to control the specific metric type used, specify it explicitly (e.g., {.code cfi.robust}) or modify the {.field type} argument."
     ))
   }
@@ -567,9 +569,8 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
     if (any(is.na(robust_values)) && verbose) {
       if (is.null(robust_warning_collector)) {
         cli::cli_alert_warning(
-          cli::cli_text(
-            "Robust fit measures are not available for test {test_label} ({estimator_warning}); returning NA for requested robust metrics."
-          )
+          "Robust fit measures are not available for test {test_label} ({estimator_warning}); returning NA for requested robust metrics.",
+          wrap = TRUE
         )
       } else {
         lavaan_record_robust_warning(
@@ -650,9 +651,8 @@ lavaan_emit_robust_warning <- function(collector, verbose = TRUE, message = TRUE
   entries_text <- paste(entries, collapse = ", ")
   test_label <- if (length(entries) == 1L) "test" else "tests"
   cli::cli_alert_warning(
-    cli::cli_text(
-      "Robust fit measures are not available for {test_label} {entries_text}; returning NA for requested robust metrics."
-    )
+    "Robust fit measures are not available for {test_label} {entries_text}; returning NA for requested robust metrics.",
+    wrap = TRUE
   )
   invisible(NULL)
 }

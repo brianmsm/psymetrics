@@ -74,7 +74,8 @@ model_estimates.lavaan <- function(fit,
   if (!converged) {
     if (isTRUE(verbose)) {
       cli::cli_alert_warning(
-        "The model did not converge. Returning available parameter estimates; some inferential columns may be NA."
+        "The model did not converge. Returning available parameter estimates; some inferential columns may be NA.",
+        wrap = TRUE
       )
     }
   }
@@ -216,7 +217,8 @@ lavaan_build_estimates_table <- function(estimates_raw, coefficient_col, verbose
   if (isTRUE(verbose) && any(negative_variance)) {
     n_negative <- sum(negative_variance)
     cli::cli_alert_warning(
-      "Potential Heywood case detected: {n_negative} variance parameter{?s} below zero."
+      "Potential Heywood case detected: {n_negative} variance parameter{?s} below zero.",
+      wrap = TRUE
     )
   }
 

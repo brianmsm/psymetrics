@@ -6,14 +6,21 @@ While this file contains the overall plan, day-to-day discussion and detailed te
 
 ## **Current Status & Progress**
 
-* 🚧 In Progress: `v0.3.0` - Implement `model_estimates()`
+* 🚧 In Progress: `v0.4.0` - Implement `compare_model_estimates()`
 
-  Current milestone work is focused on implementing parameter extraction helpers for supported model classes.
+  Current milestone work is focused on parameter-level comparisons across fitted models.
 
   - **Goal:**
-      - Add `model_estimates()` for extracting model parameters in a tidy output format.
-      - Establish tests and documentation for core extraction workflows.
-      - Complete acceptance criteria tracked in **[Issue #17](https://github.com/brianmsm/psymetrics/issues/17)**.
+      - Add `compare_model_estimates()` for comparing parameter estimates across two or more models.
+      - Provide output compatible with existing formatting and export workflows (`print()`, `format_results()`, and `save_table()`).
+      - Complete acceptance criteria tracked in **[Issue #18](https://github.com/brianmsm/psymetrics/issues/18)**.
+
+* ✅ Completed: `v0.3.0` - Implement `model_estimates()`
+
+  - Added `model_estimates()` support for `lavaan` CFA/SEM workflows.
+  - Integrated `model_estimates` with formatting and DOCX export pipelines.
+  - Expanded tests and documentation for extraction, formatting, and export behavior.
+  - Completed milestone acceptance criteria tracked in **[Issue #17](https://github.com/brianmsm/psymetrics/issues/17)** (implemented via **[PR #44](https://github.com/brianmsm/psymetrics/pull/44)**, merged on February 25, 2026).
 
 * ✅ Completed: `v0.2.0` - Extend Existing Functions for SEM
 
@@ -43,7 +50,7 @@ The focus of this phase is to build a robust and feature-complete workflow for m
   - *Goal*: Officially support SEM in `model_fit`, `compare_model_fit`, and `plot_factor_loadings`.
   - *Details*: **[Issue #25](https://github.com/brianmsm/psymetrics/issues/25)**
   
-* [ ] **`v0.3.0`**: Implement `model_estimates()` for parameter extraction.
+* [x] **`v0.3.0`**: Implement `model_estimates()` for parameter extraction. *(Completed on February 25, 2026)*
 
   - *Details*: **[Issue #17](https://github.com/brianmsm/psymetrics/issues/17)**
   
