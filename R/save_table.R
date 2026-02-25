@@ -140,6 +140,25 @@ save_table <- function(table_data, path, orientation = "landscape",
       ft <- save_table_as_flextable(formatted_table)
       doc <- flextable::body_add_flextable(doc, value = ft)
     } else {
+      heading_style <- tryCatch(
+        {
+          style_info <- officer::styles_info(doc, type = "paragraph")
+          heading_idx <- which(tolower(style_info$style_name) == "heading 2")
+          if (length(heading_idx) > 0L) {
+            as.character(style_info$style_name[[heading_idx[1]]])
+          } else {
+            NA_character_
+          }
+        },
+        error = function(e) NA_character_
+      )
+      if (is.na(heading_style)) {
+        cli::cli_warn(
+          "Could not use style {.val heading 2} in the current template; using {.val Normal} for component headings."
+        )
+      }
+      heading_style <- if (is.na(heading_style)) "Normal" else heading_style
+
       for (i in seq_along(formatted_table)) {
         block <- formatted_table[[i]]
         if (!is.data.frame(block)) {
@@ -148,15 +167,7 @@ save_table <- function(table_data, path, orientation = "landscape",
 
         block_name <- names(formatted_table)[[i]]
         caption <- model_estimates_block_caption(block, fallback = block_name, index = i)
-        doc <- tryCatch(
-          officer::body_add_par(doc, value = caption, style = "heading 2"),
-          error = function(e) {
-            cli::cli_warn(
-              "Could not use style {.val heading 2} in the current template; using {.val Normal} for component headings."
-            )
-            officer::body_add_par(doc, value = caption, style = "Normal")
-          }
-        )
+        doc <- officer::body_add_par(doc, value = caption, style = heading_style)
 
         ft <- save_table_as_flextable(block)
         doc <- flextable::body_add_flextable(doc, value = ft)
