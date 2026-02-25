@@ -1,11 +1,11 @@
 #' Apply per-column digit overrides to formatted tables (internal).
 #'
-#' @param x A data frame with formatted values.
+#' @param x A formatted data frame or a list of formatted data frames.
 #' @param digits_by_col Named integer vector that forces digits for
 #'   selected columns. Matching is exact, then by prefix, and only pure
 #'   numeric cells are modified.
 #'
-#' @return A formatted data frame with per-column digit overrides applied.
+#' @return An object of the same shape as `x` with digits applied.
 #' @keywords internal
 #' @noRd
 apply_digits_by_col <- function(x, digits_by_col) {
@@ -24,22 +24,42 @@ apply_digits_by_col <- function(x, digits_by_col) {
     cli::cli_abort("`digits_by_col` must contain whole-number digits.")
   }
 
-  column_names <- names(x)
-  for (col_key in names(digits_by_col)) {
-    target_cols <- if (col_key %in% column_names) {
-      col_key
-    } else {
-      column_names[startsWith(column_names, col_key)]
+  apply_to_df <- function(df) {
+    column_names <- names(df)
+    for (col_key in names(digits_by_col)) {
+      target_cols <- if (col_key %in% column_names) {
+        col_key
+      } else {
+        column_names[startsWith(column_names, col_key)]
+      }
+
+      if (length(target_cols) == 0) {
+        next
+      }
+
+      digits <- as.integer(digits_by_col[[col_key]])
+      for (col_name in target_cols) {
+        df[[col_name]] <- format_numeric_cells(df[[col_name]], digits = digits)
+      }
     }
 
-    if (length(target_cols) == 0) {
-      next
-    }
+    df
+  }
 
-    digits <- as.integer(digits_by_col[[col_key]])
-    for (col_name in target_cols) {
-      x[[col_name]] <- format_numeric_cells(x[[col_name]], digits = digits)
-    }
+  if (is.data.frame(x)) {
+    return(apply_to_df(x))
+  }
+
+  if (is.list(x)) {
+    # If we need to support more container types in the future,
+    # consider splitting this dispatcher into dedicated handlers.
+    return(lapply(x, function(block) {
+      if (is.data.frame(block)) {
+        apply_to_df(block)
+      } else {
+        block
+      }
+    }))
   }
 
   x
