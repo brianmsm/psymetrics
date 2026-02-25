@@ -50,21 +50,11 @@ prepare_table.model_estimates <- function(x, digits = 3, ci_digits = digits,
 
   if (length(blocks) == 0L) {
     empty_block <- x[0, display_cols, drop = FALSE]
-    if (nrow(empty_block) > 0L) {
-      empty_block <- insight::format_table(
-        empty_block,
-        digits = digits,
-        ci_digits = ci_digits,
-        p_digits = p_digits,
-        ...
-      )
-    } else {
-      empty_block <- as.data.frame(
-        lapply(empty_block, function(x) character(0)),
-        stringsAsFactors = FALSE,
-        check.names = FALSE
-      )
-    }
+    empty_block <- as.data.frame(
+      lapply(empty_block, function(x) character(0)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
     attr(empty_block, "table_caption") <- c("# No Parameters ", "blue")
     blocks <- list("No Parameters" = empty_block)
   }
