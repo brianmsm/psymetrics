@@ -1,0 +1,120 @@
+# Save a Table to a Specified Format
+
+`save_table()` exports a table to various formats, with current support
+for Word documents (.docx). The table is formatted using a specified or
+default template and can be customized with different font styles,
+sizes, and alignment options.
+
+## Usage
+
+``` r
+save_table(
+  table_data,
+  path,
+  orientation = "landscape",
+  template = NULL,
+  digits = 3,
+  ci_digits = digits,
+  p_digits = 3,
+  digits_by_col = NULL,
+  table_args = list()
+)
+```
+
+## Arguments
+
+- table_data:
+
+  A data frame containing the table data to be exported. Objects like
+  `model_fit`, `compare_model_fit`, and `model_estimates` are supported.
+
+- path:
+
+  A string specifying the file path where the table should be saved. The
+  file extension determines the format (currently only .docx is
+  supported).
+
+- orientation:
+
+  A character string indicating the table's orientation when using the
+  default template. Options are `"landscape"` (default) or `"portrait"`.
+  `"vertical"` is accepted as an alias for `"portrait"`. Ignored if a
+  custom template is provided.
+
+- template:
+
+  A string specifying the path to a custom Word template (.docx). If
+  NULL, a default template provided by the package is used, with
+  orientation set by the `orientation` argument.
+
+- digits:
+
+  An integer indicating the number of decimal places to use when
+  formatting numeric columns. Defaults to 3.
+
+- ci_digits:
+
+  Number of digits for rounding confidence intervals. Default is
+  `digits`.
+
+- p_digits:
+
+  Number of digits for rounding p-values. Default is 3.
+
+- digits_by_col:
+
+  Named integer vector that forces digits for selected columns. Applied
+  before export. For `model_fit` and `compare_model_fit`, defaults to
+  `c(Chi2 = 2, Chi2_df = 2)` when not supplied. When `Chi2_df` is
+  fractional, it is rounded to two decimals before forming the
+  `Chi2(df)` header.
+
+- table_args:
+
+  A named list of arguments forwarded to `prepare_table()` and
+  ultimately
+  [`insight::format_table()`](https://easystats.github.io/insight/reference/format_table.html).
+
+## Details
+
+This function checks the file extension to determine the export format.
+Currently, only Word documents (.docx) are supported. The function
+formats the table using the `flextable` package and exports it using the
+`officer` package. Users can provide a custom Word template or rely on
+the package's default template, in either "landscape" or "portrait"
+orientation as set by the `orientation` argument.
+
+If the `path` has a .docx extension, the table will be saved as a Word
+document. The default template aligns the table to APA style, with Arial
+font at size 10. If a custom template is provided via the `template`
+argument, it takes precedence over the `orientation` setting.
+
+## Examples
+
+``` r
+if (requireNamespace("lavaan", quietly = TRUE)) {
+  library(lavaan)
+  library(psymetrics)
+  hs_model <- 'visual  =~ x1 + x2 + x3
+               textual =~ x4 + x5 + x6
+               speed   =~ x7 + x8 + x9'
+  fit1 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "ML")
+  fit2 <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
+  fit_compared <- compare_model_fit(fit1, fit2)
+  output_path <- tempfile(fileext = ".docx")
+  save_table(fit_compared, path = output_path, orientation = "landscape")
+  save_table(
+    fit_compared,
+    path = output_path,
+    orientation = "landscape",
+    digits_by_col = c(Chi2 = 2, SRMR = 2)
+  )
+  unlink(output_path)
+} else {
+  message("Please install 'lavaan' to run this example.")
+}
+#> Table successfully saved as a Word document at
+#> /tmp/Rtmplzwlg3/file1af112a11b5b.docx.
+#> Table successfully saved as a Word document at
+#> /tmp/Rtmplzwlg3/file1af112a11b5b.docx.
+```
