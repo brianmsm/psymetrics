@@ -15,7 +15,8 @@ Authors@R:
     )
 Author: Brian Peña Calero [aut, cre]
 Maintainer: Brian Peña Calero <brianmsm@gmail.com>
-URL: https://github.com/brianmsm/psymetrics
+URL: https://brianmsm.github.io/psymetrics/,
+    https://github.com/brianmsm/psymetrics
 BugReports: https://github.com/brianmsm/psymetrics/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
