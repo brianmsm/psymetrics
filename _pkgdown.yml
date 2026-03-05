@@ -1,0 +1,48 @@
+url: https://brianmsm.github.io/psymetrics/
+
+template:
+  bootstrap: 5
+
+home:
+  title: psymetrics
+  description: >
+    Unified tools for psychometric model fit analysis, model parameter extraction,
+    reporting, and visualization.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+articles:
+  - title: Core Workflows
+    navbar: Core Workflows
+    contents:
+      - get-started-fit-indices
+      - sem-and-estimates-lavaan
+      - reporting-and-visualization
+
+reference:
+  - title: Fit Indices
+    contents:
+      - model_fit
+      - model_fit.lavaan
+      - compare_model_fit
+  - title: Model Estimates
+    contents:
+      - model_estimates
+      - model_estimates.lavaan
+  - title: Reporting And Tables
+    contents:
+      - format_results
+      - save_table
+  - title: Visualization
+    contents:
+      - plot_factor_loadings
+      - plot.lavaan
+      - plot-methods
+  - title: S3 Print Methods
+    contents:
+      - print.model_fit
+      - print.compare_model_fit
+      - print.model_estimates
