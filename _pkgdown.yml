@@ -2,12 +2,21 @@ url: https://brianmsm.github.io/psymetrics/
 
 template:
   bootstrap: 5
+  bslib:
+    bootswatch: flatly
 
 home:
   title: psymetrics
   description: >
     Unified tools for psychometric model fit analysis, model parameter extraction,
     reporting, and visualization.
+  links:
+    - text: Get started
+      href: articles/get-started-fit-indices.html
+    - text: Roadmap
+      href: ROADMAP.html
+    - text: Changelog
+      href: news/index.html
 
 navbar:
   structure:
