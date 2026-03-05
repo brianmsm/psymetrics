@@ -1,0 +1,123 @@
+---
+title: "Get started with fit indices"
+description: >
+  A compact end-to-end workflow to fit a lavaan CFA model, extract fit indices,
+  and compare two fitted models with psymetrics.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with fit indices}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+
+has_lavaan <- requireNamespace("lavaan", quietly = TRUE)
+```
+
+## Goal
+
+By the end of this guide, you will be able to:
+
+1. Fit a CFA model with `lavaan`.
+2. Extract fit indices with `model_fit()`.
+3. Compare alternative estimators with `compare_model_fit()`.
+4. Fit an ordinal-item version with `WLSMV` and `ordered = TRUE`.
+
+## Prerequisites
+
+- R >= 4.1.0
+- Packages: `psymetrics`, `lavaan`
+
+```{r, eval=FALSE}
+install.packages("lavaan")
+```
+
+## Setup
+
+```{r, eval=has_lavaan}
+library(psymetrics)
+library(lavaan)
+```
+
+## Step 1: Fit a baseline CFA model
+
+```{r, eval=has_lavaan}
+model <- '
+  visual  =~ x1 + x2 + x3
+  textual =~ x4 + x5 + x6
+  speed   =~ x7 + x8 + x9
+'
+
+fit_mlr <- cfa(
+  model,
+  data = HolzingerSwineford1939,
+  estimator = "MLR"
+)
+```
+
+## Step 2: Extract fit indices
+
+```{r, eval=has_lavaan}
+model_fit(fit_mlr)
+```
+
+Request only selected metrics when needed:
+
+```{r, eval=has_lavaan}
+model_fit(fit_mlr, metrics = c("cfi", "tli", "rmsea"))
+```
+
+## Step 3: Compare two fitted models
+
+```{r, eval=has_lavaan}
+fit_ulsm <- cfa(
+  model,
+  data = HolzingerSwineford1939,
+  estimator = "ULSM"
+)
+compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
+```
+
+## Step 4: Ordinal example with `WLSMV` (`ordered = TRUE`)
+
+This example converts the nine Holzinger-Swineford items (`x1` to `x9`) into
+four ordered categories, then fits the same CFA model with `WLSMV`.
+
+```{r, eval=has_lavaan}
+item_names <- paste0("x", 1:9)
+ordered_data <- HolzingerSwineford1939
+
+ordered_data[item_names] <- lapply(
+  ordered_data[item_names],
+  function(x) ordered(cut(x, breaks = 4, include.lowest = TRUE))
+)
+
+fit_wlsmv <- cfa(
+  model,
+  data = ordered_data,
+  estimator = "WLSMV",
+  ordered = TRUE
+)
+
+model_fit(fit_wlsmv)
+compare_model_fit(MLR = fit_mlr, WLSMV = fit_wlsmv)
+```
+
+## Common pitfalls
+
+- When using robust estimators, metric names may map to scaled/robust variants.
+- Keep model names explicit (`MLR`, `ULSM`, etc.) for clearer comparison tables.
+- This ordinal recoding is only a didactic example; use substantively justified
+  category definitions in real analyses.
+
+## Next steps
+
+- Continue with [SEM and parameter estimates](sem-and-estimates-lavaan.html).
+- See full API details in the [Reference](../reference/index.html).

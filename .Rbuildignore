@@ -17,3 +17,10 @@
 .agent
 ExecPlan*
 ^tests/manual($|/)
+^vignettes/get-started-fit-indices\.Rmd$
+^vignettes/sem-and-estimates-lavaan\.Rmd$
+^vignettes/reporting-and-visualization\.Rmd$
+^_pkgdown\.yml$
+^index\.md$
+^docs$
+^\.github$
