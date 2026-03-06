@@ -19,7 +19,7 @@ save_table(
 \arguments{
 \item{table_data}{A data frame containing the table data
 to be exported. Objects like \code{model_fit},
-\code{compare_model_fit}, and \code{model_estimates} are supported.}
+\code{compare_model_fit}, \code{compare_model_estimates}, and \code{model_estimates} are supported.}
 
 \item{path}{A string specifying the file path where the
 table should be saved. The file extension determines

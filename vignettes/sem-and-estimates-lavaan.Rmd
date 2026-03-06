@@ -1,11 +1,12 @@
 ---
-title: "SEM and parameter estimates with lavaan"
+title: "SEM, parameter estimates, and comparisons with lavaan"
 description: >
-  Fit a SEM model with lavaan, inspect model fit, and extract parameter blocks
-  with model_estimates() in psymetrics.
+  Fit CFA and SEM models with lavaan, inspect model fit, extract parameter blocks,
+  and compare parameter estimates with model_estimates() and compare_model_estimates()
+  in psymetrics.
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{SEM and parameter estimates with lavaan}
+  %\VignetteIndexEntry{SEM, parameter estimates, and comparisons with lavaan}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,9 +26,11 @@ has_lavaan <- requireNamespace("lavaan", quietly = TRUE)
 
 This article shows how to:
 
-1. Fit a SEM model with `lavaan::sem()`.
-2. Compare fit across estimators.
-3. Extract parameter estimates by component.
+1. Fit related CFA and SEM models with `lavaan`.
+2. Inspect and compare model fit.
+3. Extract parameter estimates by component with `model_estimates()`.
+4. Compare parameter estimates across models with `compare_model_estimates()`.
+5. Customize comparison layouts with public `select` presets and advanced `table_args` overrides.
 
 ## Prerequisites
 
@@ -40,59 +43,138 @@ library(psymetrics)
 library(lavaan)
 ```
 
-## Fit SEM models
+## Fit related CFA and SEM models
+
+We will use the same measurement structure in two fitted models:
+
+- a CFA model with three latent factors;
+- a SEM model that keeps the same measurement model and adds regressions among factors.
+
+This gives us a realistic comparison where some parameters are shared across models and some appear only in the SEM.
 
 ```{r, eval=has_lavaan}
-sem_model <- '
-  ind60 =~ x1 + x2 + x3
-  dem60 =~ y1 + y2 + y3 + y4
-  dem65 =~ y5 + y6 + y7 + y8
-
-  dem60 ~ ind60
-  dem65 ~ ind60 + dem60
+hs_cfa_model <- '
+  visual =~ x1 + x2 + x3
+  textual =~ x4 + x5 + x6
+  speed =~ x7 + x8 + x9
 '
 
-fit_sem_mlr <- sem(
-  sem_model,
-  data = PoliticalDemocracy,
-  estimator = "MLR"
-)
-fit_sem_ml <- sem(
-  sem_model,
-  data = PoliticalDemocracy,
-  estimator = "ML"
-)
+hs_sem_model <- '
+  visual =~ x1 + x2 + x3
+  textual =~ x4 + x5 + x6
+  speed =~ x7 + x8 + x9
+  textual ~ visual
+  speed ~ visual + textual
+'
+
+fit_cfa <- cfa(hs_cfa_model, data = HolzingerSwineford1939)
+fit_sem <- sem(hs_sem_model, data = HolzingerSwineford1939)
 ```
 
 ## Inspect and compare fit
 
+You can still use the fit-oriented helpers before moving to parameter-level output.
+
 ```{r, eval=has_lavaan}
-model_fit(fit_sem_mlr)
-compare_model_fit(MLR = fit_sem_mlr, ML = fit_sem_ml)
+model_fit(fit_cfa)
+compare_model_fit(CFA = fit_cfa, SEM = fit_sem)
 ```
 
-## Extract parameter estimates
+## Extract parameter estimates with `model_estimates()`
 
-All parameter blocks:
+For a single fitted model, `model_estimates()` gives you parameter blocks such as loadings, regressions, variances, and means.
 
-```{r}
-model_estimates(fit_sem_mlr)
+```{r, eval=has_lavaan}
+model_estimates(fit_sem)
 ```
 
-Only selected components:
+You can narrow the output to the parts most relevant to your workflow. For example, when you only want loadings and regressions:
 
-```{r}
+```{r, eval=has_lavaan}
 model_estimates(
-  fit_sem_mlr,
+  fit_sem,
   component = c("loading", "regression"),
   standardized = TRUE
 )
 ```
 
-## Practical notes
+## Compare estimates across models
 
-- Use `component` to narrow output to the section relevant for your report.
-- Use `standardized = TRUE` when comparing relative magnitudes.
+The simplest comparison uses the default `select = "ci"`, which shows estimates with confidence intervals.
+
+```{r, eval=has_lavaan}
+compared_default <- compare_model_estimates(CFA = fit_cfa, SEM = fit_sem)
+compared_default
+```
+
+This is especially useful when one model contains parameters that do not exist in the other. In this example, the regression rows only appear for the SEM, while shared loadings still line up across both models.
+
+## Focus the comparison on selected components
+
+As with `model_estimates()`, you can restrict the comparison to a subset of components.
+
+```{r, eval=has_lavaan}
+compare_model_estimates(
+  CFA = fit_cfa,
+  SEM = fit_sem,
+  component = c("loading", "regression")
+)
+```
+
+Use this when you want a tighter table for a manuscript, report, or diagnostics pass.
+
+## Use public `select` presets
+
+The public `select` argument controls which statistics are shown and how they are arranged by default for the object.
+
+For example, `select = "se_p"` shows estimates, standard errors, and significance stars in a compact single column per model.
+
+```{r, eval=has_lavaan}
+compared_se <- compare_model_estimates(
+  CFA = fit_cfa,
+  SEM = fit_sem,
+  select = "se_p"
+)
+compared_se
+```
+
+If you prefer numeric p-values in a second column, use a two-column preset such as `"ci_p2"`.
+
+```{r, eval=has_lavaan}
+compare_model_estimates(
+  CFA = fit_cfa,
+  SEM = fit_sem,
+  select = "ci_p2"
+)
+```
+
+## Override the layout for a specific output
+
+The `select` value stored in the object is the default layout. For one-off exports or alternate views, override it in `format_results()` with `table_args`.
+
+```{r, eval=has_lavaan}
+format_results(
+  compared_se,
+  output = "text",
+  table_args = list(select = "{estimate} ({ci})|{p}")
+)
+```
+
+You can also use custom templates that keep everything in one cell.
+
+```{r, eval=has_lavaan}
+format_results(
+  compared_se,
+  output = "text",
+  table_args = list(select = "{estimate}{stars} ({se})")
+)
+```
+
+## When to use each layer
+
+Use `compare_model_estimates(select = ...)` when you want the object itself to carry a default presentation.
+
+Use `format_results(..., table_args = list(select = ...))` when you want a temporary view for a particular report, export, or presentation without changing the object's default layout.
 
 ## Next steps
 
