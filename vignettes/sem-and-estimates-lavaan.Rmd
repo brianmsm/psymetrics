@@ -148,9 +148,11 @@ compare_model_estimates(
 )
 ```
 
-## Override the layout for a specific output
+## Render the same comparison in another layout
 
-The `select` value stored in the object is the default layout. For one-off exports or alternate views, override it in `format_results()` with `table_args`.
+In most cases, prefer setting `select` directly in `compare_model_estimates()`. That keeps the default presentation close to where the comparison is created.
+
+`format_results(..., table_args = list(select = ...))` is useful when you already have a comparison object and want to render the same aligned estimates in a different way for a specific output. This works because the `compare_model_estimates()` result keeps the underlying estimate, standard error, confidence interval, and p-value columns needed to rebuild the display later.
 
 ```{r, eval=has_lavaan}
 format_results(
@@ -172,11 +174,14 @@ format_results(
 
 ## When to use each layer
 
-Use `compare_model_estimates(select = ...)` when you want the object itself to carry a default presentation.
+Start with `compare_model_estimates(select = ...)` when you know the layout you want most of the time.
 
-Use `format_results(..., table_args = list(select = ...))` when you want a temporary view for a particular report, export, or presentation without changing the object's default layout.
+Use `format_results(..., table_args = list(select = ...))` when you want an alternate console view, export, or manuscript-ready layout from the same stored comparison object without recomputing the comparison.
+
+If you do not need that flexibility, staying with `select` inside `compare_model_estimates()` is the simpler option.
 
 ## Next steps
 
 - Continue with [Reporting and visualization](reporting-and-visualization.html).
 - See function-level details in the [Reference](../reference/index.html).
+
