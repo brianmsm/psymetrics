@@ -2,8 +2,11 @@ url: https://brianmsm.github.io/psymetrics/
 
 template:
   bootstrap: 5
+  light-switch: true
   bslib:
     bootswatch: flatly
+    navbar-light-bg: "#1187dd"
+    navbar-dark-bg: "#141f35"
 
 home:
   title: psymetrics
@@ -21,7 +24,7 @@ home:
 navbar:
   structure:
     left: [intro, reference, articles, news]
-    right: [search, github]
+    right: [search, github, lightswitch]
 
 articles:
   - title: Core Workflows
