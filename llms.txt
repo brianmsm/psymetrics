@@ -82,6 +82,8 @@ GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
   : Generic Function to Extract Model Parameter Estimates
 - [`model_estimates(`*`<lavaan>`*`)`](https://brianmsm.github.io/psymetrics/reference/model_estimates.lavaan.md)
   : Extract Parameter Estimates from a lavaan Model
+- [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+  : Compare Parameter Estimates Across Multiple Models
 
 ## Reporting And Tables
 
@@ -105,6 +107,8 @@ GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
   : Print Method for Model Fit Indices
 - [`print(`*`<compare_model_fit>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_fit.md)
   : Print Method for compare_model_fit Objects
+- [`print(`*`<compare_model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_estimates.md)
+  : Print Method for compare_model_estimates Objects
 - [`print(`*`<model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.model_estimates.md)
   : Print Method for model_estimates Objects
 
@@ -118,11 +122,12 @@ GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
   A compact end-to-end workflow to fit a lavaan CFA model, extract fit
   indices, and compare two fitted models with psymetrics.
 
-- [SEM and parameter estimates with
+- [SEM, parameter estimates, and comparisons with
   lavaan](https://brianmsm.github.io/psymetrics/articles/sem-and-estimates-lavaan.md):
 
-  Fit a SEM model with lavaan, inspect model fit, and extract parameter
-  blocks with model_estimates() in psymetrics.
+  Fit CFA and SEM models with lavaan, inspect model fit, extract
+  parameter blocks, and compare parameter estimates with
+  model_estimates() and compare_model_estimates() in psymetrics.
 
 - [Reporting and
   visualization](https://brianmsm.github.io/psymetrics/articles/reporting-and-visualization.md):

@@ -10,14 +10,16 @@ GitHub Issues.
 
 ## **Current Status & Progress**
 
-- 🚧 In Progress: `v0.4.0` - Implement `compare_model_estimates()`
+- 🚧 In Progress: `v0.4.0` - Implement
+  [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
 
   Current milestone work is focused on parameter-level comparisons
   across fitted models.
 
   - **Goal:**
-    - Add `compare_model_estimates()` for comparing parameter estimates
-      across two or more models.
+    - Add
+      [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+      for comparing parameter estimates across two or more models.
     - Provide output compatible with existing formatting and export
       workflows ([`print()`](https://rdrr.io/r/base/print.html),
       [`format_results()`](https://brianmsm.github.io/psymetrics/reference/format_results.md),
@@ -92,8 +94,9 @@ for parameter extraction. *(Completed on February 25, 2026)*
 - *Details*: **[Issue
   \#17](https://github.com/brianmsm/psymetrics/issues/17)**
 
-**`v0.4.0`**: Implement `compare_model_estimates()` for parameter
-comparison.
+**`v0.4.0`**: Implement
+[`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+for parameter comparison.
 
 - *Details*: **[Issue
   \#18](https://github.com/brianmsm/psymetrics/issues/18)**

@@ -125,8 +125,6 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
 } else {
   message("Please install 'lavaan' to run this example.")
 }
-#> This is lavaan 0.6-21
-#> lavaan is FREE software! Please report any bugs.
 #> Standard-test row uses standard indices for estimator ML. Affected model: fit2.
 #> cfi, tli, and rmsea were adjusted to their scaled version.
 #> If you want to control the specific metric type used, specify it explicitly

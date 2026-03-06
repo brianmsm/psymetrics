@@ -5,16 +5,16 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>SEM and parameter estimates with lavaan • psymetrics</title>
+<title>SEM, parameter estimates, and comparisons with lavaan • psymetrics</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="SEM and parameter estimates with lavaan">
-<meta name="description" content="Fit a SEM model with lavaan, inspect model fit, and extract parameter blocks with model_estimates() in psymetrics.
+<meta property="og:title" content="SEM, parameter estimates, and comparisons with lavaan">
+<meta name="description" content="Fit CFA and SEM models with lavaan, inspect model fit, extract parameter blocks, and compare parameter estimates with model_estimates() and compare_model_estimates() in psymetrics.
 ">
-<meta property="og:description" content="Fit a SEM model with lavaan, inspect model fit, and extract parameter blocks with model_estimates() in psymetrics.
+<meta property="og:description" content="Fit CFA and SEM models with lavaan, inspect model fit, extract parameter blocks, and compare parameter estimates with model_estimates() and compare_model_estimates() in psymetrics.
 ">
 </head>
 <body>
@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">psymetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><h6 class="dropdown-header" data-toc-skip>Core Workflows</h6></li>
-    <li><a class="dropdown-item" href="../articles/sem-and-estimates-lavaan.html">SEM and parameter estimates with lavaan</a></li>
+    <li><a class="dropdown-item" href="../articles/sem-and-estimates-lavaan.html">SEM, parameter estimates, and comparisons with lavaan</a></li>
     <li><a class="dropdown-item" href="../articles/reporting-and-visualization.html">Reporting and visualization</a></li>
   </ul>
 </li>
@@ -72,7 +72,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>SEM and parameter estimates with lavaan</h1>
+      <h1>SEM, parameter estimates, and comparisons with lavaan</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/brianmsm/psymetrics/blob/master/vignettes/sem-and-estimates-lavaan.Rmd" class="external-link"><code>vignettes/sem-and-estimates-lavaan.Rmd</code></a></small>
@@ -86,9 +86,14 @@
 </h2>
 <p>This article shows how to:</p>
 <ol style="list-style-type: decimal">
-<li>Fit a SEM model with <code><a href="https://rdrr.io/pkg/lavaan/man/sem.html" class="external-link">lavaan::sem()</a></code>.</li>
-<li>Compare fit across estimators.</li>
-<li>Extract parameter estimates by component.</li>
+<li>Fit related CFA and SEM models with <code>lavaan</code>.</li>
+<li>Inspect and compare model fit.</li>
+<li>Extract parameter estimates by component with
+<code><a href="../reference/model_estimates.html">model_estimates()</a></code>.</li>
+<li>Compare parameter estimates across models with
+<code><a href="../reference/compare_model_estimates.html">compare_model_estimates()</a></code>.</li>
+<li>Customize comparison layouts with public <code>select</code> presets
+and advanced <code>table_args</code> overrides.</li>
 </ol>
 </div>
 <div class="section level2">
@@ -107,140 +112,464 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lavaan.ugent.be" class="external-link">lavaan</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="fit-sem-models">Fit SEM models<a class="anchor" aria-label="anchor" href="#fit-sem-models"></a>
+<h2 id="fit-related-cfa-and-sem-models">Fit related CFA and SEM models<a class="anchor" aria-label="anchor" href="#fit-related-cfa-and-sem-models"></a>
 </h2>
+<p>We will use the same measurement structure in two fitted models:</p>
+<ul>
+<li>a CFA model with three latent factors;</li>
+<li>a SEM model that keeps the same measurement model and adds
+regressions among factors.</li>
+</ul>
+<p>This gives us a realistic comparison where some parameters are shared
+across models and some appear only in the SEM.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sem_model</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
-<span><span class="st">  ind60 =~ x1 + x2 + x3</span></span>
-<span><span class="st">  dem60 =~ y1 + y2 + y3 + y4</span></span>
-<span><span class="st">  dem65 =~ y5 + y6 + y7 + y8</span></span>
-<span><span class="st"></span></span>
-<span><span class="st">  dem60 ~ ind60</span></span>
-<span><span class="st">  dem65 ~ ind60 + dem60</span></span>
+<code class="sourceCode R"><span><span class="va">hs_cfa_model</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
+<span><span class="st">  visual =~ x1 + x2 + x3</span></span>
+<span><span class="st">  textual =~ x4 + x5 + x6</span></span>
+<span><span class="st">  speed =~ x7 + x8 + x9</span></span>
 <span><span class="st">'</span></span>
 <span></span>
-<span><span class="va">fit_sem_mlr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/sem.html" class="external-link">sem</a></span><span class="op">(</span></span>
-<span>  <span class="va">sem_model</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">PoliticalDemocracy</span>,</span>
-<span>  estimator <span class="op">=</span> <span class="st">"MLR"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">fit_sem_ml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/sem.html" class="external-link">sem</a></span><span class="op">(</span></span>
-<span>  <span class="va">sem_model</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">PoliticalDemocracy</span>,</span>
-<span>  estimator <span class="op">=</span> <span class="st">"ML"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">hs_sem_model</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
+<span><span class="st">  visual =~ x1 + x2 + x3</span></span>
+<span><span class="st">  textual =~ x4 + x5 + x6</span></span>
+<span><span class="st">  speed =~ x7 + x8 + x9</span></span>
+<span><span class="st">  textual ~ visual</span></span>
+<span><span class="st">  speed ~ visual + textual</span></span>
+<span><span class="st">'</span></span>
+<span></span>
+<span><span class="va">fit_cfa</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">cfa</a></span><span class="op">(</span><span class="va">hs_cfa_model</span>, data <span class="op">=</span> <span class="va">HolzingerSwineford1939</span><span class="op">)</span></span>
+<span><span class="va">fit_sem</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/sem.html" class="external-link">sem</a></span><span class="op">(</span><span class="va">hs_sem_model</span>, data <span class="op">=</span> <span class="va">HolzingerSwineford1939</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="inspect-and-compare-fit">Inspect and compare fit<a class="anchor" aria-label="anchor" href="#inspect-and-compare-fit"></a>
 </h2>
+<p>You can still use the fit-oriented helpers before moving to
+parameter-level output.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_fit.html">model_fit</a></span><span class="op">(</span><span class="va">fit_sem_mlr</span><span class="op">)</span></span>
-<span><span class="co">#&gt; NOBS | ESTIMATOR | NPAR | Chi2(41) | p (Chi2) |  CFI  |  TLI  | RMSEA</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_fit.html">model_fit</a></span><span class="op">(</span><span class="va">fit_cfa</span><span class="op">)</span></span>
+<span><span class="co">#&gt; NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |  CFI  |  TLI  | RMSEA</span></span>
 <span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; 75   |    MLR    |  25  |  73.78   |  0.001   | 0.949 | 0.932 | 0.103</span></span>
+<span><span class="co">#&gt; 301  |    ML     |  21  |  85.31   |  &lt; .001  | 0.931 | 0.896 | 0.092</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; NOBS |   RMSEA  CI    | SRMR </span></span>
 <span><span class="co">#&gt; -----------------------------</span></span>
-<span><span class="co">#&gt; 75   | [0.064, 0.141] | 0.055</span></span>
-<span><span class="fu"><a href="../reference/compare_model_fit.html">compare_model_fit</a></span><span class="op">(</span>MLR <span class="op">=</span> <span class="va">fit_sem_mlr</span>, ML <span class="op">=</span> <span class="va">fit_sem_ml</span><span class="op">)</span></span>
-<span><span class="co">#&gt; MODEL | NOBS | ESTIMATOR | NPAR | Chi2(41) | p (Chi2) |  CFI  |  TLI  | RMSEA</span></span>
+<span><span class="co">#&gt; 301  | [0.071, 0.114] | 0.065</span></span>
+<span><span class="fu"><a href="../reference/compare_model_fit.html">compare_model_fit</a></span><span class="op">(</span>CFA <span class="op">=</span> <span class="va">fit_cfa</span>, SEM <span class="op">=</span> <span class="va">fit_sem</span><span class="op">)</span></span>
+<span><span class="co">#&gt; MODEL | NOBS | ESTIMATOR | NPAR | Chi2(24) | p (Chi2) |  CFI  |  TLI  | RMSEA</span></span>
 <span><span class="co">#&gt; -----------------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; MLR   |  75  |    MLR    |  25  |  73.78   |  0.001   | 0.949 | 0.932 | 0.103</span></span>
-<span><span class="co">#&gt; ML    |  75  |    ML     |  25  |  72.46   |  0.002   | 0.953 | 0.938 | 0.101</span></span>
+<span><span class="co">#&gt; CFA   | 301  |    ML     |  21  |  85.31   |  &lt; .001  | 0.931 | 0.896 | 0.092</span></span>
+<span><span class="co">#&gt; SEM   | 301  |    ML     |  21  |  85.31   |  &lt; .001  | 0.931 | 0.896 | 0.092</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MODEL |   RMSEA  CI    | SRMR </span></span>
 <span><span class="co">#&gt; ------------------------------</span></span>
-<span><span class="co">#&gt; MLR   | [0.064, 0.141] | 0.055</span></span>
-<span><span class="co">#&gt; ML    | [0.061, 0.139] | 0.055</span></span></code></pre></div>
+<span><span class="co">#&gt; CFA   | [0.071, 0.114] | 0.065</span></span>
+<span><span class="co">#&gt; SEM   | [0.071, 0.114] | 0.065</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extract-parameter-estimates">Extract parameter estimates<a class="anchor" aria-label="anchor" href="#extract-parameter-estimates"></a>
+<h2 id="extract-parameter-estimates-with-model_estimates">Extract parameter estimates with <code>model_estimates()</code><a class="anchor" aria-label="anchor" href="#extract-parameter-estimates-with-model_estimates"></a>
 </h2>
-<p>All parameter blocks:</p>
+<p>For a single fitted model, <code><a href="../reference/model_estimates.html">model_estimates()</a></code> gives you
+parameter blocks such as loadings, regressions, variances, and
+means.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span><span class="va">fit_sem_mlr</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span><span class="va">fit_sem</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # Loading</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Link        | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
-<span><span class="co">#&gt; --------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; ind60 =~ x1 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
-<span><span class="co">#&gt; ind60 =~ x2 |    2.182    | 0.144 | [1.899, 2.464] | 15.133 | &lt; .001</span></span>
-<span><span class="co">#&gt; ind60 =~ x3 |    1.819    | 0.140 | [1.544, 2.093] | 12.979 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y1 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
-<span><span class="co">#&gt; dem60 =~ y2 |    1.354    | 0.158 | [1.045, 1.663] | 8.596  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y3 |    1.044    | 0.127 | [0.796, 1.292] | 8.246  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y4 |    1.300    | 0.132 | [1.041, 1.558] | 9.853  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y5 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
-<span><span class="co">#&gt; dem65 =~ y6 |    1.258    | 0.198 | [0.870, 1.647] | 6.344  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y7 |    1.282    | 0.160 | [0.969, 1.596] | 8.015  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y8 |    1.310    | 0.186 | [0.946, 1.673] | 7.059  | &lt; .001</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; # Regression</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Link          | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
 <span><span class="co">#&gt; ----------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; dem60 ~ ind60 |    1.474    | 0.331 | [0.824, 2.123] | 4.449  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 ~ ind60 |    0.453    | 0.213 | [0.035, 0.872] | 2.123  | 0.034 </span></span>
-<span><span class="co">#&gt; dem65 ~ dem60 |    0.864    | 0.086 | [0.696, 1.033] | 10.032 | &lt; .001</span></span>
+<span><span class="co">#&gt; visual =~ x1  |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; visual =~ x2  |    0.554    | 0.100 | [0.358, 0.749] | 5.554  | &lt; .001</span></span>
+<span><span class="co">#&gt; visual =~ x3  |    0.729    | 0.109 | [0.516, 0.943] | 6.685  | &lt; .001</span></span>
+<span><span class="co">#&gt; textual =~ x4 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; textual =~ x5 |    1.113    | 0.065 | [0.985, 1.241] | 17.014 | &lt; .001</span></span>
+<span><span class="co">#&gt; textual =~ x6 |    0.926    | 0.055 | [0.817, 1.035] | 16.703 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed =~ x7   |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; speed =~ x8   |    1.180    | 0.165 | [0.857, 1.503] | 7.152  | &lt; .001</span></span>
+<span><span class="co">#&gt; speed =~ x9   |    1.082    | 0.151 | [0.785, 1.378] | 7.155  | &lt; .001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | Coefficient |  SE   |       CI        |   z   |   p   </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |    0.504    | 0.093 | [ 0.322, 0.687] | 5.420 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed ~ visual   |    0.297    | 0.078 | [ 0.144, 0.450] | 3.801 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed ~ textual  |    0.053    | 0.053 | [-0.051, 0.158] | 0.999 | 0.318 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; # Variance</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Link           | Coefficient |  SE   |       CI        |   z   |   p   </span></span>
-<span><span class="co">#&gt; -----------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; x1 ~~ x1       |    0.082    | 0.018 | [ 0.046, 0.118] | 4.427 | &lt; .001</span></span>
-<span><span class="co">#&gt; x2 ~~ x2       |    0.118    | 0.072 | [-0.024, 0.260] | 1.635 | 0.102 </span></span>
-<span><span class="co">#&gt; x3 ~~ x3       |    0.467    | 0.083 | [ 0.304, 0.630] | 5.624 | &lt; .001</span></span>
-<span><span class="co">#&gt; y1 ~~ y1       |    1.942    | 0.400 | [ 1.158, 2.725] | 4.858 | &lt; .001</span></span>
-<span><span class="co">#&gt; y2 ~~ y2       |    6.490    | 1.353 | [ 3.838, 9.141] | 4.798 | &lt; .001</span></span>
-<span><span class="co">#&gt; y3 ~~ y3       |    5.340    | 1.091 | [ 3.201, 7.479] | 4.893 | &lt; .001</span></span>
-<span><span class="co">#&gt; y4 ~~ y4       |    2.887    | 0.626 | [ 1.660, 4.115] | 4.610 | &lt; .001</span></span>
-<span><span class="co">#&gt; y5 ~~ y5       |    2.390    | 0.566 | [ 1.280, 3.500] | 4.220 | &lt; .001</span></span>
-<span><span class="co">#&gt; y6 ~~ y6       |    4.343    | 0.865 | [ 2.647, 6.039] | 5.020 | &lt; .001</span></span>
-<span><span class="co">#&gt; y7 ~~ y7       |    3.510    | 0.586 | [ 2.361, 4.658] | 5.990 | &lt; .001</span></span>
-<span><span class="co">#&gt; y8 ~~ y8       |    2.940    | 0.803 | [ 1.367, 4.514] | 3.663 | &lt; .001</span></span>
-<span><span class="co">#&gt; ind60 ~~ ind60 |    0.448    | 0.073 | [ 0.305, 0.591] | 6.148 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 ~~ dem60 |    3.872    | 0.836 | [ 2.232, 5.511] | 4.629 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 ~~ dem65 |    0.115    | 0.215 | [-0.307, 0.537] | 0.534 | 0.594</span></span></code></pre></div>
-<p>Only selected components:</p>
+<span><span class="co">#&gt; Link               | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           |    0.549    | 0.114 | [0.326, 0.772] | 4.833  | &lt; .001</span></span>
+<span><span class="co">#&gt; x2 ~~ x2           |    1.134    | 0.102 | [0.934, 1.333] | 11.146 | &lt; .001</span></span>
+<span><span class="co">#&gt; x3 ~~ x3           |    0.844    | 0.091 | [0.667, 1.022] | 9.317  | &lt; .001</span></span>
+<span><span class="co">#&gt; x4 ~~ x4           |    0.371    | 0.048 | [0.278, 0.465] | 7.779  | &lt; .001</span></span>
+<span><span class="co">#&gt; x5 ~~ x5           |    0.446    | 0.058 | [0.332, 0.561] | 7.642  | &lt; .001</span></span>
+<span><span class="co">#&gt; x6 ~~ x6           |    0.356    | 0.043 | [0.272, 0.441] | 8.277  | &lt; .001</span></span>
+<span><span class="co">#&gt; x7 ~~ x7           |    0.799    | 0.081 | [0.640, 0.959] | 9.823  | &lt; .001</span></span>
+<span><span class="co">#&gt; x8 ~~ x8           |    0.488    | 0.074 | [0.342, 0.633] | 6.573  | &lt; .001</span></span>
+<span><span class="co">#&gt; x9 ~~ x9           |    0.566    | 0.071 | [0.427, 0.705] | 8.003  | &lt; .001</span></span>
+<span><span class="co">#&gt; visual ~~ visual   |    0.809    | 0.145 | [0.524, 1.094] | 5.564  | &lt; .001</span></span>
+<span><span class="co">#&gt; textual ~~ textual |    0.774    | 0.097 | [0.582, 0.965] | 7.935  | &lt; .001</span></span>
+<span><span class="co">#&gt; speed ~~ speed     |    0.297    | 0.070 | [0.160, 0.433] | 4.253  | &lt; .001</span></span></code></pre></div>
+<p>You can narrow the output to the parts most relevant to your
+workflow. For example, when you only want loadings and regressions:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit_sem_mlr</span>,</span>
+<span>  <span class="va">fit_sem</span>,</span>
 <span>  component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loading"</span>, <span class="st">"regression"</span><span class="op">)</span>,</span>
 <span>  standardized <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; # Loading</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Link        | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
-<span><span class="co">#&gt; --------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; ind60 =~ x1 |    0.920    | 0.022 | [0.876, 0.963] | 41.336 | &lt; .001</span></span>
-<span><span class="co">#&gt; ind60 =~ x2 |    0.973    | 0.016 | [0.941, 1.005] | 59.590 | &lt; .001</span></span>
-<span><span class="co">#&gt; ind60 =~ x3 |    0.872    | 0.029 | [0.815, 0.929] | 30.097 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y1 |    0.845    | 0.039 | [0.768, 0.922] | 21.555 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y2 |    0.760    | 0.057 | [0.648, 0.872] | 13.329 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y3 |    0.705    | 0.071 | [0.566, 0.844] | 9.924  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem60 =~ y4 |    0.860    | 0.037 | [0.787, 0.933] | 23.020 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y5 |    0.803    | 0.057 | [0.692, 0.914] | 14.185 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y6 |    0.783    | 0.052 | [0.682, 0.884] | 15.139 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y7 |    0.819    | 0.035 | [0.750, 0.888] | 23.359 | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 =~ y8 |    0.847    | 0.048 | [0.752, 0.942] | 17.499 | &lt; .001</span></span>
+<span><span class="co">#&gt; Link          | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; ----------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  |    0.772    | 0.055 | [0.664, 0.880] | 14.041 | &lt; .001</span></span>
+<span><span class="co">#&gt; visual =~ x2  |    0.424    | 0.060 | [0.307, 0.540] | 7.105  | &lt; .001</span></span>
+<span><span class="co">#&gt; visual =~ x3  |    0.581    | 0.055 | [0.473, 0.689] | 10.539 | &lt; .001</span></span>
+<span><span class="co">#&gt; textual =~ x4 |    0.852    | 0.023 | [0.807, 0.896] | 37.776 | &lt; .001</span></span>
+<span><span class="co">#&gt; textual =~ x5 |    0.855    | 0.022 | [0.811, 0.899] | 38.273 | &lt; .001</span></span>
+<span><span class="co">#&gt; textual =~ x6 |    0.838    | 0.023 | [0.792, 0.884] | 35.881 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed =~ x7   |    0.570    | 0.053 | [0.465, 0.674] | 10.714 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed =~ x8   |    0.723    | 0.051 | [0.624, 0.822] | 14.309 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed =~ x9   |    0.665    | 0.051 | [0.565, 0.765] | 13.015 | &lt; .001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; # Regression</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Link          | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
-<span><span class="co">#&gt; ----------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; dem60 ~ ind60 |    0.448    | 0.107 | [0.238, 0.658] | 4.179  | &lt; .001</span></span>
-<span><span class="co">#&gt; dem65 ~ ind60 |    0.146    | 0.064 | [0.020, 0.271] | 2.267  | 0.023 </span></span>
-<span><span class="co">#&gt; dem65 ~ dem60 |    0.913    | 0.046 | [0.822, 1.004] | 19.672 | &lt; .001</span></span></code></pre></div>
+<span><span class="co">#&gt; Link             | Coefficient |  SE   |       CI        |   z   |   p   </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |    0.459    | 0.064 | [ 0.334, 0.584] | 7.189 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed ~ visual   |    0.431    | 0.090 | [ 0.255, 0.608] | 4.802 | &lt; .001</span></span>
+<span><span class="co">#&gt; speed ~ textual  |    0.085    | 0.085 | [-0.081, 0.251] | 1.007 | 0.314</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="practical-notes">Practical notes<a class="anchor" aria-label="anchor" href="#practical-notes"></a>
+<h2 id="compare-estimates-across-models">Compare estimates across models<a class="anchor" aria-label="anchor" href="#compare-estimates-across-models"></a>
 </h2>
-<ul>
-<li>Use <code>component</code> to narrow output to the section relevant
-for your report.</li>
-<li>Use <code>standardized = TRUE</code> when comparing relative
-magnitudes.</li>
-</ul>
+<p>The simplest comparison uses the default <code>select = "ci"</code>,
+which shows estimates with confidence intervals.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">compared_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_model_estimates.html">compare_model_estimates</a></span><span class="op">(</span>CFA <span class="op">=</span> <span class="va">fit_cfa</span>, SEM <span class="op">=</span> <span class="va">fit_sem</span><span class="op">)</span></span>
+<span><span class="va">compared_default</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |         CFA          |         SEM         </span></span>
+<span><span class="co">#&gt; -----------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554 (0.358, 0.749) | 0.554 (0.358, 0.749)</span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729 (0.516, 0.943) | 0.729 (0.516, 0.943)</span></span>
+<span><span class="co">#&gt; textual =~ x4 | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113 (0.985, 1.241) | 1.113 (0.985, 1.241)</span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926 (0.817, 1.035) | 0.926 (0.817, 1.035)</span></span>
+<span><span class="co">#&gt; speed =~ x7   | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180 (0.857, 1.503) | 1.180 (0.857, 1.503)</span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082 (0.785, 1.378) | 1.082 (0.785, 1.378)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA |          SEM         </span></span>
+<span><span class="co">#&gt; ----------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     | 0.504 (0.322, 0.687) </span></span>
+<span><span class="co">#&gt; speed ~ visual   |     | 0.297 (0.144, 0.450) </span></span>
+<span><span class="co">#&gt; speed ~ textual  |     | 0.053 (-0.051, 0.158)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Correlation</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link              |         CFA          | SEM</span></span>
+<span><span class="co">#&gt; ----------------------------------------------</span></span>
+<span><span class="co">#&gt; visual ~~ textual | 0.408 (0.264, 0.552) |    </span></span>
+<span><span class="co">#&gt; visual ~~ speed   | 0.262 (0.152, 0.373) |    </span></span>
+<span><span class="co">#&gt; textual ~~ speed  | 0.173 (0.077, 0.270) |    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link               |         CFA          |         SEM         </span></span>
+<span><span class="co">#&gt; ----------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           | 0.549 (0.326, 0.772) | 0.549 (0.326, 0.772)</span></span>
+<span><span class="co">#&gt; x2 ~~ x2           | 1.134 (0.934, 1.333) | 1.134 (0.934, 1.333)</span></span>
+<span><span class="co">#&gt; x3 ~~ x3           | 0.844 (0.667, 1.022) | 0.844 (0.667, 1.022)</span></span>
+<span><span class="co">#&gt; x4 ~~ x4           | 0.371 (0.278, 0.465) | 0.371 (0.278, 0.465)</span></span>
+<span><span class="co">#&gt; x5 ~~ x5           | 0.446 (0.332, 0.561) | 0.446 (0.332, 0.561)</span></span>
+<span><span class="co">#&gt; x6 ~~ x6           | 0.356 (0.272, 0.441) | 0.356 (0.272, 0.441)</span></span>
+<span><span class="co">#&gt; x7 ~~ x7           | 0.799 (0.640, 0.959) | 0.799 (0.640, 0.959)</span></span>
+<span><span class="co">#&gt; x8 ~~ x8           | 0.488 (0.342, 0.633) | 0.488 (0.342, 0.633)</span></span>
+<span><span class="co">#&gt; x9 ~~ x9           | 0.566 (0.427, 0.705) | 0.566 (0.427, 0.705)</span></span>
+<span><span class="co">#&gt; visual ~~ visual   | 0.809 (0.524, 1.094) | 0.809 (0.524, 1.094)</span></span>
+<span><span class="co">#&gt; textual ~~ textual | 0.979 (0.760, 1.199) | 0.774 (0.582, 0.965)</span></span>
+<span><span class="co">#&gt; speed ~~ speed     | 0.384 (0.215, 0.553) | 0.297 (0.160, 0.433)</span></span></code></pre></div>
+<p>This is especially useful when one model contains parameters that do
+not exist in the other. In this example, the regression rows only appear
+for the SEM, while shared loadings still line up across both models.</p>
+</div>
+<div class="section level2">
+<h2 id="focus-the-comparison-on-selected-components">Focus the comparison on selected components<a class="anchor" aria-label="anchor" href="#focus-the-comparison-on-selected-components"></a>
+</h2>
+<p>As with <code><a href="../reference/model_estimates.html">model_estimates()</a></code>, you can restrict the
+comparison to a subset of components.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_model_estimates.html">compare_model_estimates</a></span><span class="op">(</span></span>
+<span>  CFA <span class="op">=</span> <span class="va">fit_cfa</span>,</span>
+<span>  SEM <span class="op">=</span> <span class="va">fit_sem</span>,</span>
+<span>  component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loading"</span>, <span class="st">"regression"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |         CFA          |         SEM         </span></span>
+<span><span class="co">#&gt; -----------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554 (0.358, 0.749) | 0.554 (0.358, 0.749)</span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729 (0.516, 0.943) | 0.729 (0.516, 0.943)</span></span>
+<span><span class="co">#&gt; textual =~ x4 | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113 (0.985, 1.241) | 1.113 (0.985, 1.241)</span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926 (0.817, 1.035) | 0.926 (0.817, 1.035)</span></span>
+<span><span class="co">#&gt; speed =~ x7   | 1.000 (1.000, 1.000) | 1.000 (1.000, 1.000)</span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180 (0.857, 1.503) | 1.180 (0.857, 1.503)</span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082 (0.785, 1.378) | 1.082 (0.785, 1.378)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA |          SEM         </span></span>
+<span><span class="co">#&gt; ----------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     | 0.504 (0.322, 0.687) </span></span>
+<span><span class="co">#&gt; speed ~ visual   |     | 0.297 (0.144, 0.450) </span></span>
+<span><span class="co">#&gt; speed ~ textual  |     | 0.053 (-0.051, 0.158)</span></span></code></pre></div>
+<p>Use this when you want a tighter table for a manuscript, report, or
+diagnostics pass.</p>
+</div>
+<div class="section level2">
+<h2 id="use-public-select-presets">Use public <code>select</code> presets<a class="anchor" aria-label="anchor" href="#use-public-select-presets"></a>
+</h2>
+<p>The public <code>select</code> argument controls which statistics are
+shown and how they are arranged by default for the object.</p>
+<p>For example, <code>select = "se_p"</code> shows estimates, standard
+errors, and significance stars in a compact single column per model.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">compared_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_model_estimates.html">compare_model_estimates</a></span><span class="op">(</span></span>
+<span>  CFA <span class="op">=</span> <span class="va">fit_cfa</span>,</span>
+<span>  SEM <span class="op">=</span> <span class="va">fit_sem</span>,</span>
+<span>  select <span class="op">=</span> <span class="st">"se_p"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">compared_se</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |       CFA        |       SEM       </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554*** (0.100) | 0.554*** (0.100)</span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729*** (0.109) | 0.729*** (0.109)</span></span>
+<span><span class="co">#&gt; textual =~ x4 |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113*** (0.065) | 1.113*** (0.065)</span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926*** (0.055) | 0.926*** (0.055)</span></span>
+<span><span class="co">#&gt; speed =~ x7   |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180*** (0.165) | 1.180*** (0.165)</span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082*** (0.151) | 1.082*** (0.151)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA |       SEM       </span></span>
+<span><span class="co">#&gt; -----------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     | 0.504*** (0.093)</span></span>
+<span><span class="co">#&gt; speed ~ visual   |     | 0.297*** (0.078)</span></span>
+<span><span class="co">#&gt; speed ~ textual  |     |  0.053 (0.053)  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Correlation</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link              |       CFA        | SEM</span></span>
+<span><span class="co">#&gt; ------------------------------------------</span></span>
+<span><span class="co">#&gt; visual ~~ textual | 0.408*** (0.074) |    </span></span>
+<span><span class="co">#&gt; visual ~~ speed   | 0.262*** (0.056) |    </span></span>
+<span><span class="co">#&gt; textual ~~ speed  | 0.173*** (0.049) |    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link               |       CFA        |       SEM       </span></span>
+<span><span class="co">#&gt; --------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           | 0.549*** (0.114) | 0.549*** (0.114)</span></span>
+<span><span class="co">#&gt; x2 ~~ x2           | 1.134*** (0.102) | 1.134*** (0.102)</span></span>
+<span><span class="co">#&gt; x3 ~~ x3           | 0.844*** (0.091) | 0.844*** (0.091)</span></span>
+<span><span class="co">#&gt; x4 ~~ x4           | 0.371*** (0.048) | 0.371*** (0.048)</span></span>
+<span><span class="co">#&gt; x5 ~~ x5           | 0.446*** (0.058) | 0.446*** (0.058)</span></span>
+<span><span class="co">#&gt; x6 ~~ x6           | 0.356*** (0.043) | 0.356*** (0.043)</span></span>
+<span><span class="co">#&gt; x7 ~~ x7           | 0.799*** (0.081) | 0.799*** (0.081)</span></span>
+<span><span class="co">#&gt; x8 ~~ x8           | 0.488*** (0.074) | 0.488*** (0.074)</span></span>
+<span><span class="co">#&gt; x9 ~~ x9           | 0.566*** (0.071) | 0.566*** (0.071)</span></span>
+<span><span class="co">#&gt; visual ~~ visual   | 0.809*** (0.145) | 0.809*** (0.145)</span></span>
+<span><span class="co">#&gt; textual ~~ textual | 0.979*** (0.112) | 0.774*** (0.097)</span></span>
+<span><span class="co">#&gt; speed ~~ speed     | 0.384*** (0.086) | 0.297*** (0.070)</span></span></code></pre></div>
+<p>If you prefer numeric p-values in a second column, use a two-column
+preset such as <code>"ci_p2"</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_model_estimates.html">compare_model_estimates</a></span><span class="op">(</span></span>
+<span>  CFA <span class="op">=</span> <span class="va">fit_cfa</span>,</span>
+<span>  SEM <span class="op">=</span> <span class="va">fit_sem</span>,</span>
+<span>  select <span class="op">=</span> <span class="st">"ci_p2"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |         CFA          | p (CFA) |         SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554 (0.358, 0.749) | &lt; .001  | 0.554 (0.358, 0.749) | &lt; .001 </span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729 (0.516, 0.943) | &lt; .001  | 0.729 (0.516, 0.943) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual =~ x4 | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113 (0.985, 1.241) | &lt; .001  | 1.113 (0.985, 1.241) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926 (0.817, 1.035) | &lt; .001  | 0.926 (0.817, 1.035) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed =~ x7   | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180 (0.857, 1.503) | &lt; .001  | 1.180 (0.857, 1.503) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082 (0.785, 1.378) | &lt; .001  | 1.082 (0.785, 1.378) | &lt; .001 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA | p (CFA) |          SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     |         | 0.504 (0.322, 0.687)  | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~ visual   |     |         | 0.297 (0.144, 0.450)  | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~ textual  |     |         | 0.053 (-0.051, 0.158) |  0.318 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Correlation</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link              |         CFA          | p (CFA) | SEM | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual ~~ textual | 0.408 (0.264, 0.552) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; visual ~~ speed   | 0.262 (0.152, 0.373) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; textual ~~ speed  | 0.173 (0.077, 0.270) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link               |         CFA          | p (CFA) |         SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           | 0.549 (0.326, 0.772) | &lt; .001  | 0.549 (0.326, 0.772) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x2 ~~ x2           | 1.134 (0.934, 1.333) | &lt; .001  | 1.134 (0.934, 1.333) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x3 ~~ x3           | 0.844 (0.667, 1.022) | &lt; .001  | 0.844 (0.667, 1.022) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x4 ~~ x4           | 0.371 (0.278, 0.465) | &lt; .001  | 0.371 (0.278, 0.465) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x5 ~~ x5           | 0.446 (0.332, 0.561) | &lt; .001  | 0.446 (0.332, 0.561) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x6 ~~ x6           | 0.356 (0.272, 0.441) | &lt; .001  | 0.356 (0.272, 0.441) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x7 ~~ x7           | 0.799 (0.640, 0.959) | &lt; .001  | 0.799 (0.640, 0.959) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x8 ~~ x8           | 0.488 (0.342, 0.633) | &lt; .001  | 0.488 (0.342, 0.633) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x9 ~~ x9           | 0.566 (0.427, 0.705) | &lt; .001  | 0.566 (0.427, 0.705) | &lt; .001 </span></span>
+<span><span class="co">#&gt; visual ~~ visual   | 0.809 (0.524, 1.094) | &lt; .001  | 0.809 (0.524, 1.094) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual ~~ textual | 0.979 (0.760, 1.199) | &lt; .001  | 0.774 (0.582, 0.965) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~~ speed     | 0.384 (0.215, 0.553) | &lt; .001  | 0.297 (0.160, 0.433) | &lt; .001</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="override-the-layout-for-a-specific-output">Override the layout for a specific output<a class="anchor" aria-label="anchor" href="#override-the-layout-for-a-specific-output"></a>
+</h2>
+<p>The <code>select</code> value stored in the object is the default
+layout. For one-off exports or alternate views, override it in
+<code><a href="../reference/format_results.html">format_results()</a></code> with <code>table_args</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span></span>
+<span>  <span class="va">compared_se</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"text"</span>,</span>
+<span>  table_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>select <span class="op">=</span> <span class="st">"{estimate} ({ci})|{p}"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |         CFA          | p (CFA) |         SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554 (0.358, 0.749) | &lt; .001  | 0.554 (0.358, 0.749) | &lt; .001 </span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729 (0.516, 0.943) | &lt; .001  | 0.729 (0.516, 0.943) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual =~ x4 | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113 (0.985, 1.241) | &lt; .001  | 1.113 (0.985, 1.241) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926 (0.817, 1.035) | &lt; .001  | 0.926 (0.817, 1.035) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed =~ x7   | 1.000 (1.000, 1.000) |         | 1.000 (1.000, 1.000) |        </span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180 (0.857, 1.503) | &lt; .001  | 1.180 (0.857, 1.503) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082 (0.785, 1.378) | &lt; .001  | 1.082 (0.785, 1.378) | &lt; .001 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA | p (CFA) |          SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     |         | 0.504 (0.322, 0.687)  | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~ visual   |     |         | 0.297 (0.144, 0.450)  | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~ textual  |     |         | 0.053 (-0.051, 0.158) |  0.318 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Correlation</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link              |         CFA          | p (CFA) | SEM | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual ~~ textual | 0.408 (0.264, 0.552) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; visual ~~ speed   | 0.262 (0.152, 0.373) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; textual ~~ speed  | 0.173 (0.077, 0.270) | &lt; .001  |     |        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link               |         CFA          | p (CFA) |         SEM          | p (SEM)</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           | 0.549 (0.326, 0.772) | &lt; .001  | 0.549 (0.326, 0.772) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x2 ~~ x2           | 1.134 (0.934, 1.333) | &lt; .001  | 1.134 (0.934, 1.333) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x3 ~~ x3           | 0.844 (0.667, 1.022) | &lt; .001  | 0.844 (0.667, 1.022) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x4 ~~ x4           | 0.371 (0.278, 0.465) | &lt; .001  | 0.371 (0.278, 0.465) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x5 ~~ x5           | 0.446 (0.332, 0.561) | &lt; .001  | 0.446 (0.332, 0.561) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x6 ~~ x6           | 0.356 (0.272, 0.441) | &lt; .001  | 0.356 (0.272, 0.441) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x7 ~~ x7           | 0.799 (0.640, 0.959) | &lt; .001  | 0.799 (0.640, 0.959) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x8 ~~ x8           | 0.488 (0.342, 0.633) | &lt; .001  | 0.488 (0.342, 0.633) | &lt; .001 </span></span>
+<span><span class="co">#&gt; x9 ~~ x9           | 0.566 (0.427, 0.705) | &lt; .001  | 0.566 (0.427, 0.705) | &lt; .001 </span></span>
+<span><span class="co">#&gt; visual ~~ visual   | 0.809 (0.524, 1.094) | &lt; .001  | 0.809 (0.524, 1.094) | &lt; .001 </span></span>
+<span><span class="co">#&gt; textual ~~ textual | 0.979 (0.760, 1.199) | &lt; .001  | 0.774 (0.582, 0.965) | &lt; .001 </span></span>
+<span><span class="co">#&gt; speed ~~ speed     | 0.384 (0.215, 0.553) | &lt; .001  | 0.297 (0.160, 0.433) | &lt; .001</span></span></code></pre></div>
+<p>You can also use custom templates that keep everything in one
+cell.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span></span>
+<span>  <span class="va">compared_se</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"text"</span>,</span>
+<span>  table_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>select <span class="op">=</span> <span class="st">"{estimate}{stars} ({se})"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          |       CFA        |       SEM       </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------</span></span>
+<span><span class="co">#&gt; visual =~ x1  |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; visual =~ x2  | 0.554*** (0.100) | 0.554*** (0.100)</span></span>
+<span><span class="co">#&gt; visual =~ x3  | 0.729*** (0.109) | 0.729*** (0.109)</span></span>
+<span><span class="co">#&gt; textual =~ x4 |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; textual =~ x5 | 1.113*** (0.065) | 1.113*** (0.065)</span></span>
+<span><span class="co">#&gt; textual =~ x6 | 0.926*** (0.055) | 0.926*** (0.055)</span></span>
+<span><span class="co">#&gt; speed =~ x7   |  1.000 (0.000)   |  1.000 (0.000)  </span></span>
+<span><span class="co">#&gt; speed =~ x8   | 1.180*** (0.165) | 1.180*** (0.165)</span></span>
+<span><span class="co">#&gt; speed =~ x9   | 1.082*** (0.151) | 1.082*** (0.151)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link             | CFA |       SEM       </span></span>
+<span><span class="co">#&gt; -----------------------------------------</span></span>
+<span><span class="co">#&gt; textual ~ visual |     | 0.504*** (0.093)</span></span>
+<span><span class="co">#&gt; speed ~ visual   |     | 0.297*** (0.078)</span></span>
+<span><span class="co">#&gt; speed ~ textual  |     |  0.053 (0.053)  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Correlation</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link              |       CFA        | SEM</span></span>
+<span><span class="co">#&gt; ------------------------------------------</span></span>
+<span><span class="co">#&gt; visual ~~ textual | 0.408*** (0.074) |    </span></span>
+<span><span class="co">#&gt; visual ~~ speed   | 0.262*** (0.056) |    </span></span>
+<span><span class="co">#&gt; textual ~~ speed  | 0.173*** (0.049) |    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link               |       CFA        |       SEM       </span></span>
+<span><span class="co">#&gt; --------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1           | 0.549*** (0.114) | 0.549*** (0.114)</span></span>
+<span><span class="co">#&gt; x2 ~~ x2           | 1.134*** (0.102) | 1.134*** (0.102)</span></span>
+<span><span class="co">#&gt; x3 ~~ x3           | 0.844*** (0.091) | 0.844*** (0.091)</span></span>
+<span><span class="co">#&gt; x4 ~~ x4           | 0.371*** (0.048) | 0.371*** (0.048)</span></span>
+<span><span class="co">#&gt; x5 ~~ x5           | 0.446*** (0.058) | 0.446*** (0.058)</span></span>
+<span><span class="co">#&gt; x6 ~~ x6           | 0.356*** (0.043) | 0.356*** (0.043)</span></span>
+<span><span class="co">#&gt; x7 ~~ x7           | 0.799*** (0.081) | 0.799*** (0.081)</span></span>
+<span><span class="co">#&gt; x8 ~~ x8           | 0.488*** (0.074) | 0.488*** (0.074)</span></span>
+<span><span class="co">#&gt; x9 ~~ x9           | 0.566*** (0.071) | 0.566*** (0.071)</span></span>
+<span><span class="co">#&gt; visual ~~ visual   | 0.809*** (0.145) | 0.809*** (0.145)</span></span>
+<span><span class="co">#&gt; textual ~~ textual | 0.979*** (0.112) | 0.774*** (0.097)</span></span>
+<span><span class="co">#&gt; speed ~~ speed     | 0.384*** (0.086) | 0.297*** (0.070)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="when-to-use-each-layer">When to use each layer<a class="anchor" aria-label="anchor" href="#when-to-use-each-layer"></a>
+</h2>
+<p>Use <code>compare_model_estimates(select = ...)</code> when you want
+the object itself to carry a default presentation.</p>
+<p>Use <code>format_results(..., table_args = list(select = ...))</code>
+when you want a temporary view for a particular report, export, or
+presentation without changing the object’s default layout.</p>
 </div>
 <div class="section level2">
 <h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>

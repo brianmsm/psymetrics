@@ -26,7 +26,8 @@ save_table(
 - table_data:
 
   A data frame containing the table data to be exported. Objects like
-  `model_fit`, `compare_model_fit`, and `model_estimates` are supported.
+  `model_fit`, `compare_model_fit`, `compare_model_estimates`, and
+  `model_estimates` are supported.
 
 - path:
 
@@ -114,7 +115,7 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   message("Please install 'lavaan' to run this example.")
 }
 #> Table successfully saved as a Word document at
-#> /tmp/Rtmp7DjYce/file1a194d2dff8a.docx.
+#> /tmp/RtmpOyTQbH/file1a37505a0e19.docx.
 #> Table successfully saved as a Word document at
-#> /tmp/Rtmp7DjYce/file1a194d2dff8a.docx.
+#> /tmp/RtmpOyTQbH/file1a37505a0e19.docx.
 ```

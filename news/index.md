@@ -1,6 +1,36 @@
 # Changelog
 
-## psymetrics 0.3.0
+## psymetrics 0.4.0
+
+### New Features
+
+- **Estimate Comparison**: Added
+  [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+  for side-by-side comparison of `lavaan` parameter estimates across two
+  or more fitted models.
+- **Formatting**: Added `prepare_table.compare_model_estimates()`,
+  `format_results.compare_model_estimates()`, and
+  [`print.compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_estimates.md)
+  with component-block output and `select`-based cell layouts.
+- **Layout Customization**:
+  [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+  now exposes a public `select` argument for default estimate layouts,
+  while `format_results(..., table_args = list(select = ...))` and
+  `save_table(..., table_args = list(select = ...))` remain available
+  for per-output overrides.
+- **Exporting**:
+  [`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md)
+  now supports `compare_model_estimates` objects through the existing
+  DOCX block export pipeline.
+
+### Robustness & Testing
+
+- **Alignment**: Parameter comparison aligns rows by structural identity
+  (`Group`, `Level`, `Component`, `To`, `Operator`, `From`) so shared
+  and model-specific parameters can be compared safely.
+- **Testing**: Added dedicated tests for comparison alignment,
+  multigroup support, non-converged fits, `select` validation,
+  formatting outputs, and DOCX export. \# psymetrics 0.3.0
 
 ### New Features
 

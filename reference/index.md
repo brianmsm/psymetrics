@@ -15,6 +15,8 @@
   : Generic Function to Extract Model Parameter Estimates
 - [`model_estimates(`*`<lavaan>`*`)`](https://brianmsm.github.io/psymetrics/reference/model_estimates.lavaan.md)
   : Extract Parameter Estimates from a lavaan Model
+- [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+  : Compare Parameter Estimates Across Multiple Models
 
 ## Reporting And Tables
 
@@ -38,5 +40,7 @@
   : Print Method for Model Fit Indices
 - [`print(`*`<compare_model_fit>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_fit.md)
   : Print Method for compare_model_fit Objects
+- [`print(`*`<compare_model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_estimates.md)
+  : Print Method for compare_model_estimates Objects
 - [`print(`*`<model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.model_estimates.md)
   : Print Method for model_estimates Objects
