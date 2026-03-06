@@ -69,7 +69,9 @@ reference:
     contents:
       - print.model_fit
       - print.compare_model_fit
+      - print.compare_model_estimates
       - print.model_estimates
+
 
 
 
