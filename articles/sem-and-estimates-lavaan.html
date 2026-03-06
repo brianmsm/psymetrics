@@ -6,11 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>SEM and parameter estimates with lavaan • psymetrics</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="SEM and parameter estimates with lavaan">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="SEM and parameter estimates with lavaan">
 <meta name="description" content="Fit a SEM model with lavaan, inspect model fit, and extract parameter blocks with model_estimates() in psymetrics.
 ">
 <meta property="og:description" content="Fit a SEM model with lavaan, inspect model fit, and extract parameter blocks with model_estimates() in psymetrics.
@@ -20,7 +21,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">psymetrics</a>
 
@@ -33,13 +34,12 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/get-started-fit-indices.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Core Workflows</h6></li>
-    <li><a class="dropdown-item" href="../articles/get-started-fit-indices.html">Get started with fit indices</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Core Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/sem-and-estimates-lavaan.html">SEM and parameter estimates with lavaan</a></li>
     <li><a class="dropdown-item" href="../articles/reporting-and-visualization.html">Reporting and visualization</a></li>
   </ul>
@@ -51,6 +51,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/brianmsm/psymetrics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -150,14 +158,79 @@
 </h2>
 <p>All parameter blocks:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span><span class="va">fit_sem_mlr</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span><span class="va">fit_sem_mlr</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link        | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; ind60 =~ x1 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; ind60 =~ x2 |    2.182    | 0.144 | [1.899, 2.464] | 15.133 | &lt; .001</span></span>
+<span><span class="co">#&gt; ind60 =~ x3 |    1.819    | 0.140 | [1.544, 2.093] | 12.979 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y1 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; dem60 =~ y2 |    1.354    | 0.158 | [1.045, 1.663] | 8.596  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y3 |    1.044    | 0.127 | [0.796, 1.292] | 8.246  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y4 |    1.300    | 0.132 | [1.041, 1.558] | 9.853  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y5 |    1.000    | 0.000 | [1.000, 1.000] |        |       </span></span>
+<span><span class="co">#&gt; dem65 =~ y6 |    1.258    | 0.198 | [0.870, 1.647] | 6.344  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y7 |    1.282    | 0.160 | [0.969, 1.596] | 8.015  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y8 |    1.310    | 0.186 | [0.946, 1.673] | 7.059  | &lt; .001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; ----------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; dem60 ~ ind60 |    1.474    | 0.331 | [0.824, 2.123] | 4.449  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 ~ ind60 |    0.453    | 0.213 | [0.035, 0.872] | 2.123  | 0.034 </span></span>
+<span><span class="co">#&gt; dem65 ~ dem60 |    0.864    | 0.086 | [0.696, 1.033] | 10.032 | &lt; .001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link           | Coefficient |  SE   |       CI        |   z   |   p   </span></span>
+<span><span class="co">#&gt; -----------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; x1 ~~ x1       |    0.082    | 0.018 | [ 0.046, 0.118] | 4.427 | &lt; .001</span></span>
+<span><span class="co">#&gt; x2 ~~ x2       |    0.118    | 0.072 | [-0.024, 0.260] | 1.635 | 0.102 </span></span>
+<span><span class="co">#&gt; x3 ~~ x3       |    0.467    | 0.083 | [ 0.304, 0.630] | 5.624 | &lt; .001</span></span>
+<span><span class="co">#&gt; y1 ~~ y1       |    1.942    | 0.400 | [ 1.158, 2.725] | 4.858 | &lt; .001</span></span>
+<span><span class="co">#&gt; y2 ~~ y2       |    6.490    | 1.353 | [ 3.838, 9.141] | 4.798 | &lt; .001</span></span>
+<span><span class="co">#&gt; y3 ~~ y3       |    5.340    | 1.091 | [ 3.201, 7.479] | 4.893 | &lt; .001</span></span>
+<span><span class="co">#&gt; y4 ~~ y4       |    2.887    | 0.626 | [ 1.660, 4.115] | 4.610 | &lt; .001</span></span>
+<span><span class="co">#&gt; y5 ~~ y5       |    2.390    | 0.566 | [ 1.280, 3.500] | 4.220 | &lt; .001</span></span>
+<span><span class="co">#&gt; y6 ~~ y6       |    4.343    | 0.865 | [ 2.647, 6.039] | 5.020 | &lt; .001</span></span>
+<span><span class="co">#&gt; y7 ~~ y7       |    3.510    | 0.586 | [ 2.361, 4.658] | 5.990 | &lt; .001</span></span>
+<span><span class="co">#&gt; y8 ~~ y8       |    2.940    | 0.803 | [ 1.367, 4.514] | 3.663 | &lt; .001</span></span>
+<span><span class="co">#&gt; ind60 ~~ ind60 |    0.448    | 0.073 | [ 0.305, 0.591] | 6.148 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 ~~ dem60 |    3.872    | 0.836 | [ 2.232, 5.511] | 4.629 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 ~~ dem65 |    0.115    | 0.215 | [-0.307, 0.537] | 0.534 | 0.594</span></span></code></pre></div>
 <p>Only selected components:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/model_estimates.html">model_estimates</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit_sem_mlr</span>,</span>
 <span>  component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loading"</span>, <span class="st">"regression"</span><span class="op">)</span>,</span>
 <span>  standardized <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Loading</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link        | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; ind60 =~ x1 |    0.920    | 0.022 | [0.876, 0.963] | 41.336 | &lt; .001</span></span>
+<span><span class="co">#&gt; ind60 =~ x2 |    0.973    | 0.016 | [0.941, 1.005] | 59.590 | &lt; .001</span></span>
+<span><span class="co">#&gt; ind60 =~ x3 |    0.872    | 0.029 | [0.815, 0.929] | 30.097 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y1 |    0.845    | 0.039 | [0.768, 0.922] | 21.555 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y2 |    0.760    | 0.057 | [0.648, 0.872] | 13.329 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y3 |    0.705    | 0.071 | [0.566, 0.844] | 9.924  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem60 =~ y4 |    0.860    | 0.037 | [0.787, 0.933] | 23.020 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y5 |    0.803    | 0.057 | [0.692, 0.914] | 14.185 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y6 |    0.783    | 0.052 | [0.682, 0.884] | 15.139 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y7 |    0.819    | 0.035 | [0.750, 0.888] | 23.359 | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 =~ y8 |    0.847    | 0.048 | [0.752, 0.942] | 17.499 | &lt; .001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # Regression</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Link          | Coefficient |  SE   |       CI       |   z    |   p   </span></span>
+<span><span class="co">#&gt; ----------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; dem60 ~ ind60 |    0.448    | 0.107 | [0.238, 0.658] | 4.179  | &lt; .001</span></span>
+<span><span class="co">#&gt; dem65 ~ ind60 |    0.146    | 0.064 | [0.020, 0.271] | 2.267  | 0.023 </span></span>
+<span><span class="co">#&gt; dem65 ~ dem60 |    0.913    | 0.046 | [0.822, 1.004] | 19.672 | &lt; .001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="practical-notes">Practical notes<a class="anchor" aria-label="anchor" href="#practical-notes"></a>
