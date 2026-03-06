@@ -42,124 +42,98 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Development Roadmap &amp; Versioning Plan</h1>
-      <small class="dont-index">Source: <a href="https://github.com/brianmsm/psymetrics/blob/v0.4.0/ROADMAP.md" class="external-link"><code>ROADMAP.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/brianmsm/psymetrics/blob/master/ROADMAP.md" class="external-link"><code>ROADMAP.md</code></a></small>
     </div>
 
 <div id="development-roadmap--versioning-plan" class="section level1">
 
-<p>This document outlines the development plan and versioning strategy for the <code>psymetrics</code> package. It serves as a portable, high-level guide for development priorities.</p>
-<p>While this file contains the overall plan, day-to-day discussion and detailed technical specifications for each task live in the linked GitHub Issues.</p>
+<p>This document is the high-level roadmap for <code>psymetrics</code>. It is meant to answer two questions quickly:</p>
+<ol style="list-style-type: decimal"><li>What is already done?</li>
+<li>What is the next milestone?</li>
+</ol><p>Detailed technical discussion for each milestone lives in the linked GitHub Issues.</p>
 <div class="section level2">
-<h2 id="current-status--progress"><strong>Current Status &amp; Progress</strong><a class="anchor" aria-label="anchor" href="#current-status--progress"></a></h2>
-<ul><li>
-<p>🚧 In Progress: <code>v0.4.0</code> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code></p>
-<p>Current milestone work is focused on parameter-level comparisons across fitted models.</p>
-<ul><li>
-<strong>Goal:</strong>
-<ul><li>Add <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code> for comparing parameter estimates across two or more models.</li>
-<li>Provide output compatible with existing formatting and export workflows (<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="reference/format_results.html">format_results()</a></code>, and <code><a href="reference/save_table.html">save_table()</a></code>).</li>
-<li>Complete acceptance criteria tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/18" class="external-link">Issue #18</a></strong>.</li>
+<h2 id="status-at-a-glance">Status at a glance<a class="anchor" aria-label="anchor" href="#status-at-a-glance"></a></h2>
+<ul><li>✅ Latest completed milestone: <code>v0.4.0</code> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code>
+<ul><li>Added parameter-level comparison for fitted <code>lavaan</code> models.</li>
+<li>Integrated with <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="reference/format_results.html">format_results()</a></code>, and <code><a href="reference/save_table.html">save_table()</a></code>.</li>
+<li>Expanded tests and pkgdown-facing documentation.</li>
+<li>Tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/18" class="external-link">Issue #18</a></strong>.</li>
 </ul></li>
+<li>⏭ Next planned milestone: <code>v0.5.0</code> - Implement <code>plot_model_fit()</code>
+<ul><li>Goal: add a visual workflow for fit indices.</li>
+<li>Tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/19" class="external-link">Issue #19</a></strong>.</li>
 </ul></li>
-<li>
-<p>✅ Completed: <code>v0.3.0</code> - Implement <code><a href="reference/model_estimates.html">model_estimates()</a></code></p>
-<ul><li>Added <code><a href="reference/model_estimates.html">model_estimates()</a></code> support for <code>lavaan</code> CFA/SEM workflows.</li>
-<li>Integrated <code>model_estimates</code> with formatting and DOCX export pipelines.</li>
-<li>Expanded tests and documentation for extraction, formatting, and export behavior.</li>
-<li>Completed milestone acceptance criteria tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/17" class="external-link">Issue #17</a></strong> (implemented via <strong><a href="https://github.com/brianmsm/psymetrics/pull/44" class="external-link">PR #44</a></strong>, merged on February 25, 2026).</li>
-</ul></li>
-<li>
-<p>✅ Completed: <code>v0.2.0</code> - Extend Existing Functions for SEM</p>
-<ul><li>Officially validated and documented SEM support for fitted <code>lavaan</code> objects in <code><a href="reference/model_fit.html">model_fit()</a></code>, <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code>, and <code><a href="reference/plot_factor_loadings.html">plot_factor_loadings()</a></code>.</li>
-<li>Expanded SEM coverage for structural models, growth models, multigroup/multilevel contexts, categorical estimators, missing-data handling, and non-converged/path-only edge cases.</li>
-<li>Completed milestone acceptance criteria tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/25" class="external-link">Issue #25</a></strong>.</li>
-</ul></li>
-<li>
-<p>✅ Completed: <code>v0.1.9.x</code> - Stability &amp; Documentation Polish</p>
-<ul><li>Expanded <code>testthat</code> coverage for core workflows and edge cases.</li>
-<li>Improved formatting/messaging behavior and aligned documentation with current implementation.</li>
-</ul></li>
-<li>
-<p>✅ Completed: <code>v0.1.5</code> - Stability &amp; Testing Release</p>
-<ul><li>Added an initial <code>testthat</code> suite covering <code>model_fit</code>, <code>compare_model_fit</code>, plotting, and <code>save_table</code>.</li>
-</ul></li>
-</ul><hr></div>
+</ul></div>
 <div class="section level2">
-<h2 id="future-roadmap"><strong>Future Roadmap</strong><a class="anchor" aria-label="anchor" href="#future-roadmap"></a></h2>
+<h2 id="recently-completed-milestones">Recently completed milestones<a class="anchor" aria-label="anchor" href="#recently-completed-milestones"></a></h2>
+<ul><li>✅ <strong><code>v0.4.0</code></strong> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code> <em>(completed March 6, 2026)</em>
+</li>
+<li>✅ <strong><code>v0.3.0</code></strong> - Implement <code><a href="reference/model_estimates.html">model_estimates()</a></code> <em>(completed February 25, 2026)</em>
+</li>
+<li>✅ <strong><code>v0.2.0</code></strong> - Extend SEM support across existing workflows <em>(completed February 8, 2026)</em>
+</li>
+</ul><p>Earlier stabilization milestones (<code>v0.1.9.x</code>, <code>v0.1.5</code>) focused on testing, messaging, and documentation polish.</p>
+<hr></div>
+<div class="section level2">
+<h2 id="roadmap-by-phase">Roadmap by phase<a class="anchor" aria-label="anchor" href="#roadmap-by-phase"></a></h2>
 <div class="section level3">
-<h3 id="phase-1-complete-and-consolidate-lavaan-workflow-cfa--sem"><strong>Phase 1: Complete and Consolidate <code>lavaan</code> Workflow (CFA &amp; SEM)</strong><a class="anchor" aria-label="anchor" href="#phase-1-complete-and-consolidate-lavaan-workflow-cfa--sem"></a></h3>
-<p>The focus of this phase is to build a robust and feature-complete workflow for models fitted with <code>lavaan</code>, covering both Confirmatory Factor Analysis (CFA) and general Structural Equation Models (SEM).</p>
+<h3 id="phase-1-complete-and-consolidate-the-lavaan-workflow">Phase 1: Complete and consolidate the <code>lavaan</code> workflow<a class="anchor" aria-label="anchor" href="#phase-1-complete-and-consolidate-the-lavaan-workflow"></a></h3>
+<p>The goal of this phase is a robust, end-to-end CFA/SEM workflow for models fitted with <code>lavaan</code>.</p>
 <ul class="task-list"><li>
-<p><label><input type="checkbox" checked><strong><code>v0.2.0</code></strong>: <strong>Extend Existing Functions for SEM.</strong> <em>(Completed on February 8, 2026)</em></label></p>
-<ul><li>
-<em>Goal</em>: Officially support SEM in <code>model_fit</code>, <code>compare_model_fit</code>, and <code>plot_factor_loadings</code>.</li>
-<li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/25" class="external-link">Issue #25</a></strong>
+<label><input type="checkbox" checked><strong><code>v0.2.0</code></strong>: Extend existing functions for SEM</label>
+<ul><li>Officially support SEM in <code><a href="reference/model_fit.html">model_fit()</a></code>, <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code>, and <code><a href="reference/plot_factor_loadings.html">plot_factor_loadings()</a></code>.</li>
+<li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/25" class="external-link">Issue #25</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox" checked><strong><code>v0.3.0</code></strong>: Implement <code><a href="reference/model_estimates.html">model_estimates()</a></code> for parameter extraction. <em>(Completed on February 25, 2026)</em></label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/17" class="external-link">Issue #17</a></strong>
+<label><input type="checkbox" checked><strong><code>v0.3.0</code></strong>: Implement <code><a href="reference/model_estimates.html">model_estimates()</a></code></label>
+<ul><li>Add parameter extraction for <code>lavaan</code> CFA/SEM workflows.</li>
+<li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/17" class="external-link">Issue #17</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox"><strong><code>v0.4.0</code></strong>: Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code> for parameter comparison.</label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/18" class="external-link">Issue #18</a></strong>
+<label><input type="checkbox" checked><strong><code>v0.4.0</code></strong>: Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code></label>
+<ul><li>Add parameter comparison across two or more fitted models.</li>
+<li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/18" class="external-link">Issue #18</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox"><strong><code>v0.5.0</code></strong>: Implement <code>plot_model_fit()</code> for visualizing fit indices.</label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/19" class="external-link">Issue #19</a></strong>
+<label><input type="checkbox"><strong><code>v0.5.0</code></strong>: Implement <code>plot_model_fit()</code></label>
+<ul><li>Add visual summaries for fit indices.</li>
+<li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/19" class="external-link">Issue #19</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox"><strong><code>v0.6.0</code></strong>: Enhance <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> for Measurement Invariance (MG-CFA).</label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/20" class="external-link">Issue #20</a></strong>
+<label><input type="checkbox"><strong><code>v0.6.0</code></strong>: Enhance <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> for measurement invariance (MG-CFA)</label>
+<ul><li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/20" class="external-link">Issue #20</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox"><strong><code>v0.7.0</code></strong>: Create a helper function for specifying invariance models.</label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/21" class="external-link">Issue #21</a></strong>
+<label><input type="checkbox"><strong><code>v0.7.0</code></strong>: Create a helper for specifying invariance models</label>
+<ul><li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/21" class="external-link">Issue #21</a></strong>
 </li>
 </ul></li>
 <li>
-<p><label><input type="checkbox"><strong><code>v0.8.0</code></strong>: Add Excel (<code>.xlsx</code>) export functionality to <code><a href="reference/save_table.html">save_table()</a></code>.</label></p>
-<ul><li>
-<em>Details</em>: <strong><a href="https://github.com/brianmsm/psymetrics/issues/22" class="external-link">Issue #22</a></strong>
+<label><input type="checkbox"><strong><code>v0.8.0</code></strong>: Add Excel (<code>.xlsx</code>) export support to <code><a href="reference/save_table.html">save_table()</a></code></label>
+<ul><li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/22" class="external-link">Issue #22</a></strong>
 </li>
 </ul></li>
 </ul></div>
 <div class="section level3">
-<h3 id="phase-2-expansion-to-other-models--packages"><strong>Phase 2: Expansion to Other Models &amp; Packages</strong><a class="anchor" aria-label="anchor" href="#phase-2-expansion-to-other-models--packages"></a></h3>
-<p>This phase will commence after the core <code>lavaan</code> functionality is stable and complete.</p>
-<ul class="task-list"><li>
-<p><label><input type="checkbox"><strong><code>v0.9.0</code></strong>: <strong>Add full support for <code>lavaan</code> EFA models.</strong></label></p>
-<ul><li>
-<em>Goal</em>: Extend all relevant functions to be compatible with Exploratory Factor Analysis models fitted with <code>lavaan</code>.</li>
-</ul></li>
-<li>
-<p><label><input type="checkbox"><strong><code>v0.10.0</code></strong>: <strong>Add full support for <code>mirt</code> objects.</strong></label></p>
-<ul><li>
-<em>Goal</em>: Extend all functions to be compatible with models from the <code>mirt</code> package.</li>
-</ul></li>
-<li>
-<p><label><input type="checkbox"><strong><code>v0.11.0</code></strong>: <strong>Add full support for <code>psych</code> EFA objects.</strong></label></p>
-<ul><li>
-<em>Goal</em>: Extend all functions to be compatible with EFA models from the <code>psych</code> package.</li>
-</ul></li>
+<h3 id="phase-2-expand-support-to-other-model-classes">Phase 2: Expand support to other model classes<a class="anchor" aria-label="anchor" href="#phase-2-expand-support-to-other-model-classes"></a></h3>
+<p>This phase starts after the core <code>lavaan</code> workflow is stable.</p>
+<ul class="task-list"><li><label><input type="checkbox"><strong><code>v0.9.0</code></strong>: Add full support for <code>lavaan</code> EFA models</label></li>
+<li><label><input type="checkbox"><strong><code>v0.10.0</code></strong>: Add full support for <code>mirt</code> objects</label></li>
+<li><label><input type="checkbox"><strong><code>v0.11.0</code></strong>: Add full support for <code>psych</code> EFA objects</label></li>
 </ul></div>
 </div>
 <div class="section level2">
-<h2 id="final-milestone-stable-release"><strong>Final Milestone: Stable Release</strong><a class="anchor" aria-label="anchor" href="#final-milestone-stable-release"></a></h2>
+<h2 id="final-milestone">Final milestone<a class="anchor" aria-label="anchor" href="#final-milestone"></a></h2>
 <ul class="task-list"><li>
-<p><label><input type="checkbox"><strong><code>v1.0.0</code></strong>: <strong>Stable &amp; Complete Release.</strong></label></p>
-<ul><li>
-<em>Goal</em>: All features are implemented, documented, and thoroughly tested. The package API is considered reliable and stable. Comprehensive documentation, including tutorials (vignettes), is complete.</li>
+<label><input type="checkbox"><strong><code>v1.0.0</code></strong>: Stable and complete release</label>
+<ul><li>All planned core features are implemented, documented, and thoroughly tested.</li>
+<li>The package API is considered reliable and stable.</li>
+<li>Tutorials and long-form documentation are complete.</li>
 </ul></li>
 </ul></div>
 </div>

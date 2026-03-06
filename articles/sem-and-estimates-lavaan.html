@@ -75,7 +75,7 @@
       <h1>SEM, parameter estimates, and comparisons with lavaan</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/brianmsm/psymetrics/blob/v0.4.0/vignettes/sem-and-estimates-lavaan.Rmd" class="external-link"><code>vignettes/sem-and-estimates-lavaan.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/brianmsm/psymetrics/blob/master/vignettes/sem-and-estimates-lavaan.Rmd" class="external-link"><code>vignettes/sem-and-estimates-lavaan.Rmd</code></a></small>
       <div class="d-none name"><code>sem-and-estimates-lavaan.Rmd</code></div>
     </div>
 
@@ -450,11 +450,17 @@ preset such as <code>"ci_p2"</code>.</p>
 <span><span class="co">#&gt; speed ~~ speed     | 0.384 (0.215, 0.553) | &lt; .001  | 0.297 (0.160, 0.433) | &lt; .001</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="override-the-layout-for-a-specific-output">Override the layout for a specific output<a class="anchor" aria-label="anchor" href="#override-the-layout-for-a-specific-output"></a>
+<h2 id="render-the-same-comparison-in-another-layout">Render the same comparison in another layout<a class="anchor" aria-label="anchor" href="#render-the-same-comparison-in-another-layout"></a>
 </h2>
-<p>The <code>select</code> value stored in the object is the default
-layout. For one-off exports or alternate views, override it in
-<code><a href="../reference/format_results.html">format_results()</a></code> with <code>table_args</code>.</p>
+<p>In most cases, prefer setting <code>select</code> directly in
+<code><a href="../reference/compare_model_estimates.html">compare_model_estimates()</a></code>. That keeps the default
+presentation close to where the comparison is created.</p>
+<p><code>format_results(..., table_args = list(select = ...))</code> is
+useful when you already have a comparison object and want to render the
+same aligned estimates in a different way for a specific output. This
+works because the <code><a href="../reference/compare_model_estimates.html">compare_model_estimates()</a></code> result keeps
+the underlying estimate, standard error, confidence interval, and
+p-value columns needed to rebuild the display later.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span></span>
 <span>  <span class="va">compared_se</span>,</span>
@@ -565,11 +571,14 @@ cell.</p>
 <div class="section level2">
 <h2 id="when-to-use-each-layer">When to use each layer<a class="anchor" aria-label="anchor" href="#when-to-use-each-layer"></a>
 </h2>
-<p>Use <code>compare_model_estimates(select = ...)</code> when you want
-the object itself to carry a default presentation.</p>
+<p>Start with <code>compare_model_estimates(select = ...)</code> when
+you know the layout you want most of the time.</p>
 <p>Use <code>format_results(..., table_args = list(select = ...))</code>
-when you want a temporary view for a particular report, export, or
-presentation without changing the object’s default layout.</p>
+when you want an alternate console view, export, or manuscript-ready
+layout from the same stored comparison object without recomputing the
+comparison.</p>
+<p>If you do not need that flexibility, staying with <code>select</code>
+inside <code><a href="../reference/compare_model_estimates.html">compare_model_estimates()</a></code> is the simpler option.</p>
 </div>
 <div class="section level2">
 <h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>

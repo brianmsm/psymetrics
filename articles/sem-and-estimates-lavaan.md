@@ -379,12 +379,20 @@ compare_model_estimates(
 #> speed ~~ speed     | 0.384 (0.215, 0.553) | < .001  | 0.297 (0.160, 0.433) | < .001
 ```
 
-## Override the layout for a specific output
+## Render the same comparison in another layout
 
-The `select` value stored in the object is the default layout. For
-one-off exports or alternate views, override it in
-[`format_results()`](https://brianmsm.github.io/psymetrics/reference/format_results.md)
-with `table_args`.
+In most cases, prefer setting `select` directly in
+[`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md).
+That keeps the default presentation close to where the comparison is
+created.
+
+`format_results(..., table_args = list(select = ...))` is useful when
+you already have a comparison object and want to render the same aligned
+estimates in a different way for a specific output. This works because
+the
+[`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+result keeps the underlying estimate, standard error, confidence
+interval, and p-value columns needed to rebuild the display later.
 
 ``` r
 format_results(
@@ -498,12 +506,16 @@ format_results(
 
 ## When to use each layer
 
-Use `compare_model_estimates(select = ...)` when you want the object
-itself to carry a default presentation.
+Start with `compare_model_estimates(select = ...)` when you know the
+layout you want most of the time.
 
 Use `format_results(..., table_args = list(select = ...))` when you want
-a temporary view for a particular report, export, or presentation
-without changing the object’s default layout.
+an alternate console view, export, or manuscript-ready layout from the
+same stored comparison object without recomputing the comparison.
+
+If you do not need that flexibility, staying with `select` inside
+[`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+is the simpler option.
 
 ## Next steps
 

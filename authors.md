@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/brianmsm/psymetrics/blob/v0.4.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/brianmsm/psymetrics/blob/master/inst/CITATION)
 
 Peña Calero, B. (2026). psymetrics: Unified Tools for Psychometric Model
 Analysis (R package version 0.1.7).

@@ -1,154 +1,117 @@
 # Development Roadmap & Versioning Plan
 
-This document outlines the development plan and versioning strategy for
-the `psymetrics` package. It serves as a portable, high-level guide for
-development priorities.
+This document is the high-level roadmap for `psymetrics`. It is meant to
+answer two questions quickly:
 
-While this file contains the overall plan, day-to-day discussion and
-detailed technical specifications for each task live in the linked
+1.  What is already done?
+2.  What is the next milestone?
+
+Detailed technical discussion for each milestone lives in the linked
 GitHub Issues.
 
-## **Current Status & Progress**
+## Status at a glance
 
-- 🚧 In Progress: `v0.4.0` - Implement
+- ✅ Latest completed milestone: `v0.4.0` - Implement
   [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
-
-  Current milestone work is focused on parameter-level comparisons
-  across fitted models.
-
-  - **Goal:**
-    - Add
-      [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
-      for comparing parameter estimates across two or more models.
-    - Provide output compatible with existing formatting and export
-      workflows ([`print()`](https://rdrr.io/r/base/print.html),
-      [`format_results()`](https://brianmsm.github.io/psymetrics/reference/format_results.md),
-      and
-      [`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md)).
-    - Complete acceptance criteria tracked in **[Issue
-      \#18](https://github.com/brianmsm/psymetrics/issues/18)**.
-
-- ✅ Completed: `v0.3.0` - Implement
-  [`model_estimates()`](https://brianmsm.github.io/psymetrics/reference/model_estimates.md)
-
-  - Added
-    [`model_estimates()`](https://brianmsm.github.io/psymetrics/reference/model_estimates.md)
-    support for `lavaan` CFA/SEM workflows.
-  - Integrated `model_estimates` with formatting and DOCX export
-    pipelines.
-  - Expanded tests and documentation for extraction, formatting, and
-    export behavior.
-  - Completed milestone acceptance criteria tracked in **[Issue
-    \#17](https://github.com/brianmsm/psymetrics/issues/17)**
-    (implemented via **[PR
-    \#44](https://github.com/brianmsm/psymetrics/pull/44)**, merged on
-    February 25, 2026).
-
-- ✅ Completed: `v0.2.0` - Extend Existing Functions for SEM
-
-  - Officially validated and documented SEM support for fitted `lavaan`
-    objects in
-    [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md),
-    [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md),
+  - Added parameter-level comparison for fitted `lavaan` models.
+  - Integrated with [`print()`](https://rdrr.io/r/base/print.html),
+    [`format_results()`](https://brianmsm.github.io/psymetrics/reference/format_results.md),
     and
-    [`plot_factor_loadings()`](https://brianmsm.github.io/psymetrics/reference/plot_factor_loadings.md).
-  - Expanded SEM coverage for structural models, growth models,
-    multigroup/multilevel contexts, categorical estimators, missing-data
-    handling, and non-converged/path-only edge cases.
-  - Completed milestone acceptance criteria tracked in **[Issue
-    \#25](https://github.com/brianmsm/psymetrics/issues/25)**.
+    [`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md).
+  - Expanded tests and pkgdown-facing documentation.
+  - Tracked in **[Issue
+    \#18](https://github.com/brianmsm/psymetrics/issues/18)**.
+- ⏭ Next planned milestone: `v0.5.0` - Implement `plot_model_fit()`
+  - Goal: add a visual workflow for fit indices.
+  - Tracked in **[Issue
+    \#19](https://github.com/brianmsm/psymetrics/issues/19)**.
 
-- ✅ Completed: `v0.1.9.x` - Stability & Documentation Polish
+## Recently completed milestones
 
-  - Expanded `testthat` coverage for core workflows and edge cases.
-  - Improved formatting/messaging behavior and aligned documentation
-    with current implementation.
+- ✅ **`v0.4.0`** - Implement
+  [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
+  *(completed March 6, 2026)*
+- ✅ **`v0.3.0`** - Implement
+  [`model_estimates()`](https://brianmsm.github.io/psymetrics/reference/model_estimates.md)
+  *(completed February 25, 2026)*
+- ✅ **`v0.2.0`** - Extend SEM support across existing workflows
+  *(completed February 8, 2026)*
 
-- ✅ Completed: `v0.1.5` - Stability & Testing Release
-
-  - Added an initial `testthat` suite covering `model_fit`,
-    `compare_model_fit`, plotting, and `save_table`.
+Earlier stabilization milestones (`v0.1.9.x`, `v0.1.5`) focused on
+testing, messaging, and documentation polish.
 
 ------------------------------------------------------------------------
 
-## **Future Roadmap**
+## Roadmap by phase
 
-### **Phase 1: Complete and Consolidate `lavaan` Workflow (CFA & SEM)**
+### Phase 1: Complete and consolidate the `lavaan` workflow
 
-The focus of this phase is to build a robust and feature-complete
-workflow for models fitted with `lavaan`, covering both Confirmatory
-Factor Analysis (CFA) and general Structural Equation Models (SEM).
+The goal of this phase is a robust, end-to-end CFA/SEM workflow for
+models fitted with `lavaan`.
 
-**`v0.2.0`**: **Extend Existing Functions for SEM.** *(Completed on
-February 8, 2026)*
+**`v0.2.0`**: Extend existing functions for SEM
 
-- *Goal*: Officially support SEM in `model_fit`, `compare_model_fit`,
-  and `plot_factor_loadings`.
-- *Details*: **[Issue
+- Officially support SEM in
+  [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md),
+  [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md),
+  and
+  [`plot_factor_loadings()`](https://brianmsm.github.io/psymetrics/reference/plot_factor_loadings.md).
+- Details: **[Issue
   \#25](https://github.com/brianmsm/psymetrics/issues/25)**
 
 **`v0.3.0`**: Implement
 [`model_estimates()`](https://brianmsm.github.io/psymetrics/reference/model_estimates.md)
-for parameter extraction. *(Completed on February 25, 2026)*
 
-- *Details*: **[Issue
+- Add parameter extraction for `lavaan` CFA/SEM workflows.
+- Details: **[Issue
   \#17](https://github.com/brianmsm/psymetrics/issues/17)**
 
 **`v0.4.0`**: Implement
 [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
-for parameter comparison.
 
-- *Details*: **[Issue
+- Add parameter comparison across two or more fitted models.
+- Details: **[Issue
   \#18](https://github.com/brianmsm/psymetrics/issues/18)**
 
-**`v0.5.0`**: Implement `plot_model_fit()` for visualizing fit indices.
+**`v0.5.0`**: Implement `plot_model_fit()`
 
-- *Details*: **[Issue
+- Add visual summaries for fit indices.
+- Details: **[Issue
   \#19](https://github.com/brianmsm/psymetrics/issues/19)**
 
 **`v0.6.0`**: Enhance
 [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
-for Measurement Invariance (MG-CFA).
+for measurement invariance (MG-CFA)
 
-- *Details*: **[Issue
+- Details: **[Issue
   \#20](https://github.com/brianmsm/psymetrics/issues/20)**
 
-**`v0.7.0`**: Create a helper function for specifying invariance models.
+**`v0.7.0`**: Create a helper for specifying invariance models
 
-- *Details*: **[Issue
+- Details: **[Issue
   \#21](https://github.com/brianmsm/psymetrics/issues/21)**
 
-**`v0.8.0`**: Add Excel (`.xlsx`) export functionality to
-[`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md).
+**`v0.8.0`**: Add Excel (`.xlsx`) export support to
+[`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md)
 
-- *Details*: **[Issue
+- Details: **[Issue
   \#22](https://github.com/brianmsm/psymetrics/issues/22)**
 
-### **Phase 2: Expansion to Other Models & Packages**
+### Phase 2: Expand support to other model classes
 
-This phase will commence after the core `lavaan` functionality is stable
-and complete.
+This phase starts after the core `lavaan` workflow is stable.
 
-**`v0.9.0`**: **Add full support for `lavaan` EFA models.**
+**`v0.9.0`**: Add full support for `lavaan` EFA models
 
-- *Goal*: Extend all relevant functions to be compatible with
-  Exploratory Factor Analysis models fitted with `lavaan`.
+**`v0.10.0`**: Add full support for `mirt` objects
 
-**`v0.10.0`**: **Add full support for `mirt` objects.**
+**`v0.11.0`**: Add full support for `psych` EFA objects
 
-- *Goal*: Extend all functions to be compatible with models from the
-  `mirt` package.
+## Final milestone
 
-**`v0.11.0`**: **Add full support for `psych` EFA objects.**
+**`v1.0.0`**: Stable and complete release
 
-- *Goal*: Extend all functions to be compatible with EFA models from the
-  `psych` package.
-
-## **Final Milestone: Stable Release**
-
-**`v1.0.0`**: **Stable & Complete Release.**
-
-- *Goal*: All features are implemented, documented, and thoroughly
-  tested. The package API is considered reliable and stable.
-  Comprehensive documentation, including tutorials (vignettes), is
-  complete.
+- All planned core features are implemented, documented, and thoroughly
+  tested.
+- The package API is considered reliable and stable.
+- Tutorials and long-form documentation are complete.
