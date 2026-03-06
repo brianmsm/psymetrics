@@ -23,12 +23,23 @@ home:
 
 navbar:
   structure:
-    left: [intro, reference, articles, news]
+    left: [get-started, reference, articles, news]
     right: [search, github, lightswitch]
+  components:
+    get-started:
+      text: Get started
+      href: articles/get-started-fit-indices.html
+    articles:
+      text: Articles
+      menu:
+      - text: Core Workflows
+      - text: SEM and parameter estimates with lavaan
+        href: articles/sem-and-estimates-lavaan.html
+      - text: Reporting and visualization
+        href: articles/reporting-and-visualization.html
 
 articles:
   - title: Core Workflows
-    navbar: Core Workflows
     contents:
       - get-started-fit-indices
       - sem-and-estimates-lavaan
@@ -58,3 +69,7 @@ reference:
       - print.model_fit
       - print.compare_model_fit
       - print.model_estimates
+
+
+
+
