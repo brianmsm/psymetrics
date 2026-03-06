@@ -25,3 +25,5 @@ ExecPlan*
 ^index\.md$
 ^docs$
 ^\.github$
+.playwright-cli/
+output/
