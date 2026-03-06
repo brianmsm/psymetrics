@@ -155,8 +155,10 @@ mark,
 
 mark,
 .mark {
-  background: linear-gradient(-100deg, rgba(17, 135, 221, 0.1), rgba(24, 188, 156, 0.24) 92%, rgba(17, 135, 221, 0.06));
-  border-radius: 0.2rem;
+  background: linear-gradient(100deg, rgba(117, 220, 255, 0.55), rgba(73, 205, 239, 0.66) 58%, rgba(73, 205, 239, 0.26) 84%, rgba(73, 205, 239, 0.08) 100%);
+  color: #04131d;
+  border-radius: 0.18rem;
+  box-shadow: inset 0 -1px 0 rgba(18, 119, 157, 0.24);
 }
 
 .template-home .page-header h1 {
@@ -473,7 +475,9 @@ mark,
 
 [data-bs-theme="dark"] mark,
 [data-bs-theme="dark"] .mark {
-  background: linear-gradient(-100deg, rgba(125, 201, 255, 0.16), rgba(112, 219, 198, 0.24) 92%, rgba(125, 201, 255, 0.1));
+  background: linear-gradient(100deg, rgba(100, 222, 255, 0.64), rgba(56, 205, 236, 0.74) 58%, rgba(56, 205, 236, 0.34) 84%, rgba(56, 205, 236, 0.1) 100%);
+  color: #021019;
+  box-shadow: inset 0 -1px 0 rgba(108, 230, 255, 0.28);
 }
 
 [data-bs-theme="dark"] .template-home .page-header .home-brand {
@@ -561,6 +565,8 @@ mark,
     backdrop-filter: blur(12px);
   }
 }
+
+
 
 
 
