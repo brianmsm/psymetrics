@@ -70,6 +70,60 @@ test_that("compare_model_estimates supports named and unnamed model labels", {
 })
 
 
+test_that("compare_model_estimates stores public select and uses it by default", {
+  skip_if_not_installed("lavaan")
+
+  fit1 <- suppressWarnings(
+    lavaan::cfa(hs_cfa_model, data = lavaan::HolzingerSwineford1939)
+  )
+  fit2 <- suppressWarnings(
+    lavaan::sem(hs_sem_model, data = lavaan::HolzingerSwineford1939)
+  )
+
+  out <- suppressMessages(
+    psymetrics::compare_model_estimates(CFA = fit1, SEM = fit2, select = "ci_p2", verbose = FALSE)
+  )
+  text_out <- psymetrics::format_results(out, output = "text")
+  printed <- capture.output(print(out))
+
+  expect_equal(attr(out, "select"), "ci_p2")
+  expect_match(text_out, "p \\(CFA\\)")
+  expect_match(text_out, "p \\(SEM\\)")
+  expect_true(any(grepl("p \\(CFA\\)", printed)))
+})
+
+
+test_that("compare_model_estimates table_args select overrides stored and missing attr falls back to ci", {
+  skip_if_not_installed("lavaan")
+
+  fit1 <- suppressWarnings(
+    lavaan::cfa(hs_cfa_model, data = lavaan::HolzingerSwineford1939)
+  )
+  fit2 <- suppressWarnings(
+    lavaan::sem(hs_sem_model, data = lavaan::HolzingerSwineford1939)
+  )
+
+  out <- suppressMessages(
+    psymetrics::compare_model_estimates(CFA = fit1, SEM = fit2, select = "se", verbose = FALSE)
+  )
+  default_blocks <- psymetrics:::prepare_table.compare_model_estimates(out)
+  se_blocks <- psymetrics:::prepare_table.compare_model_estimates(out, select = "se")
+  override_text <- psymetrics::format_results(
+    out,
+    output = "text",
+    table_args = list(select = "ci_p2")
+  )
+
+  attr(out, "select") <- NULL
+  fallback_blocks <- psymetrics:::prepare_table.compare_model_estimates(out)
+  ci_blocks <- psymetrics:::prepare_table.compare_model_estimates(out, select = "ci")
+
+  expect_identical(default_blocks[[1]], se_blocks[[1]])
+  expect_match(override_text, "p \\(CFA\\)")
+  expect_identical(fallback_blocks[[1]], ci_blocks[[1]])
+})
+
+
 test_that("compare_model_estimates protects display columns from label collisions", {
   skip_if_not_installed("lavaan")
 
@@ -197,6 +251,10 @@ test_that("compare_model_estimates validates select templates", {
   )
 
   expect_error(
+    psymetrics::compare_model_estimates(fit1, fit2, select = "{estimate} {foo}", verbose = FALSE),
+    "Unknown tokens"
+  )
+  expect_error(
     psymetrics:::prepare_table.compare_model_estimates(out, select = "{estimate}|{p}|{se}"),
     "at most one `\\|`"
   )
@@ -308,7 +366,7 @@ test_that("compare_model_estimates save_table supports docx export", {
   )
 
   out <- suppressMessages(
-    psymetrics::compare_model_estimates(CFA = fit1, SEM = fit2, verbose = FALSE)
+    psymetrics::compare_model_estimates(CFA = fit1, SEM = fit2, select = "se", verbose = FALSE)
   )
   output_path <- tempfile(fileext = ".docx")
 
@@ -327,6 +385,7 @@ test_that("compare_model_estimates save_table supports docx export", {
   expect_match(xml_text, "Regression")
   expect_match(xml_text, "CFA")
   expect_match(xml_text, "SEM")
+  expect_match(xml_text, "p \\(CFA\\)")
 })
 
 
