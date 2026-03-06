@@ -2,7 +2,7 @@
 title: "psymetrics: Psychometric Model Fit and Reporting Tools"
 ---
 
-# <span class="home-brand">psymetrics</span>: Psychometric Model Fit and Reporting Tools
+# <span class="home-brand">psymetrics:</span> Psychometric Model Fit and Reporting Tools
 
 <img src="reference/figures/hexlogo.png" alt="psymetrics hex logo" align="right" width="180" class="home-logo" />
 
@@ -55,3 +55,4 @@ Issues and feature requests are welcome:
 - Feature requests: include the target workflow and expected output.
 
 GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
+
