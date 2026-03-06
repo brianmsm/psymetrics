@@ -18,6 +18,12 @@
 #'   `(0, 1)`.
 #' @param component Character vector indicating which parameter components to
 #'   keep. Use `"all"` (default) to keep all available components.
+#' @param select String indicating which statistics to show and how they should
+#'   be arranged in the output table. Presets include `"ci"`, `"se"`,
+#'   `"ci_p"`, `"se_p"`, `"ci_p2"`, and `"se_p2"`. Custom templates may
+#'   use tokens like `{estimate}`, `{se}`, `{ci}`, `{ci_low}`, `{ci_high}`,
+#'   `{p}`, and `{stars}`. This argument only controls visible statistics and
+#'   layout; it does not filter parameter rows.
 #' @param verbose Logical; if `TRUE`, prints informative messages emitted by
 #'   the underlying extraction methods.
 #'
@@ -51,9 +57,9 @@
 #'   fit1 <- cfa(hs_cfa_model, data = HolzingerSwineford1939)
 #'   fit2 <- sem(hs_sem_model, data = HolzingerSwineford1939)
 #'
-#'   compared <- compare_model_estimates(CFA = fit1, SEM = fit2)
+#'   compared <- compare_model_estimates(CFA = fit1, SEM = fit2, select = "se_p")
 #'   compared
-#'   format_results(compared, table_args = list(select = "ci_p2"))
+#'   format_results(compared, table_args = list(select = "{estimate} ({ci})|{p}"))
 #' } else {
 #'   message("Please install 'lavaan' to run this example.")
 #' }
@@ -61,6 +67,7 @@ compare_model_estimates <- function(...,
                                     standardized = FALSE,
                                     ci = 0.95,
                                     component = "all",
+                                    select = "ci",
                                     verbose = TRUE) {
   fits <- list(...)
 
@@ -80,6 +87,7 @@ compare_model_estimates <- function(...,
     model_names <- deparsed_names
   }
   model_names <- compare_model_estimates_unique_names(model_names, verbose = verbose)
+  select <- compare_model_estimates_validate_select_value(select)
 
   estimates_list <- Map(
     function(fit, model_name) {
@@ -106,6 +114,7 @@ compare_model_estimates <- function(...,
   attr(compared, "ci") <- ci
   attr(compared, "standardized") <- standardized
   attr(compared, "model_names") <- model_names
+  attr(compared, "select") <- select
   compared
 }
 
@@ -127,6 +136,11 @@ compare_model_estimates_unique_names <- function(model_names, verbose = TRUE) {
   }
 
   unique_names
+}
+
+compare_model_estimates_validate_select_value <- function(select) {
+  compare_model_estimates_normalize_select(select)
+  trimws(select)
 }
 
 compare_model_estimates_validate_keys <- function(estimates, model_name) {

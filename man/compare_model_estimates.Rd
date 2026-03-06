@@ -9,6 +9,7 @@ compare_model_estimates(
   standardized = FALSE,
   ci = 0.95,
   component = "all",
+  select = "ci",
   verbose = TRUE
 )
 }
@@ -24,6 +25,13 @@ compare_model_estimates(
 
 \item{component}{Character vector indicating which parameter components to
 keep. Use \code{"all"} (default) to keep all available components.}
+
+\item{select}{String indicating which statistics to show and how they should
+be arranged in the output table. Presets include \code{"ci"}, \code{"se"},
+\code{"ci_p"}, \code{"se_p"}, \code{"ci_p2"}, and \code{"se_p2"}. Custom templates may
+use tokens like \code{{estimate}}, \code{{se}}, \code{{ci}}, \code{{ci_low}}, \code{{ci_high}},
+\code{{p}}, and \code{{stars}}. This argument only controls visible statistics and
+layout; it does not filter parameter rows.}
 
 \item{verbose}{Logical; if \code{TRUE}, prints informative messages emitted by
 the underlying extraction methods.}
@@ -67,9 +75,9 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   fit1 <- cfa(hs_cfa_model, data = HolzingerSwineford1939)
   fit2 <- sem(hs_sem_model, data = HolzingerSwineford1939)
 
-  compared <- compare_model_estimates(CFA = fit1, SEM = fit2)
+  compared <- compare_model_estimates(CFA = fit1, SEM = fit2, select = "se_p")
   compared
-  format_results(compared, table_args = list(select = "ci_p2"))
+  format_results(compared, table_args = list(select = "{estimate} ({ci})|{p}"))
 } else {
   message("Please install 'lavaan' to run this example.")
 }

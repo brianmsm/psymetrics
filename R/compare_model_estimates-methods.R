@@ -1,7 +1,7 @@
 #' @keywords internal
 #' @noRd
 prepare_table.compare_model_estimates <- function(x, digits = 3, ci_digits = digits,
-                                                  p_digits = 3, select = "ci", ...) {
+                                                  p_digits = 3, select = NULL, ...) {
   if (!"Component" %in% names(x)) {
     x$Component <- "Other"
   }
@@ -12,6 +12,7 @@ prepare_table.compare_model_estimates <- function(x, digits = 3, ci_digits = dig
     from = x$From
   )
 
+  select <- compare_model_estimates_resolve_object_select(x, select)
   select_spec <- compare_model_estimates_normalize_select(select)
   model_names <- attr(x, "model_names")
   if (is.null(model_names) || length(model_names) == 0L) {
@@ -208,11 +209,8 @@ compare_model_estimates_build_display_block <- function(block, model_names, iden
     block[, 0, drop = FALSE]
   }
 
-  display_block <- as.data.frame(
-    lapply(block[, identity_cols, drop = FALSE], compare_model_estimates_clean_identity_column),
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
+  display_block <- block[, identity_cols, drop = FALSE]
+  display_block[] <- lapply(display_block, compare_model_estimates_clean_identity_column)
 
   for (model_name in model_names) {
     parts <- compare_model_estimates_render_parts(
@@ -284,6 +282,17 @@ compare_model_estimates_component_sequence <- function(component) {
 
 compare_model_estimates_default_display_cols <- function(display_name_map) {
   unlist(unname(display_name_map), use.names = FALSE)
+}
+
+compare_model_estimates_resolve_object_select <- function(x, select = NULL) {
+  if (is.null(select)) {
+    select <- attr(x, "select", exact = TRUE)
+  }
+  if (is.null(select)) {
+    select <- "ci"
+  }
+
+  compare_model_estimates_validate_select_value(select)
 }
 
 compare_model_estimates_infer_model_names <- function(x) {
