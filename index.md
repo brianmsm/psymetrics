@@ -18,6 +18,7 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
   - Fit extraction with `model_fit()`
   - Fit comparison with `compare_model_fit()`
   - Parameter extraction with `model_estimates()`
+  - Parameter comparison with `compare_model_estimates()`
   - Reporting with `format_results()` and `save_table()`
   - Loading visualization with `plot_factor_loadings()`
 - In development:
@@ -28,7 +29,7 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
 
 ```r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.3.0")
+pak::pak("brianmsm/psymetrics@v0.4.0")
 ```
 
 ## Recommended path
@@ -55,4 +56,6 @@ Issues and feature requests are welcome:
 - Feature requests: include the target workflow and expected output.
 
 GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
+
+
 
