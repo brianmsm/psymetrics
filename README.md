@@ -72,9 +72,12 @@ sem_model <- '
 '
 
 fit_sem <- sem(sem_model, data = HolzingerSwineford1939)
-compared_estimates <- compare_model_estimates(CFA = fit_mlr, SEM = fit_sem, select = "se_p")
+compared_estimates <- compare_model_estimates(
+  CFA = fit_mlr,
+  SEM = fit_sem,
+  select = "se_p"
+)
 compared_estimates
-format_results(compared_estimates, table_args = list(select = "{estimate} ({ci})|{p}"))
 ```
 
 ## Learn more
@@ -87,3 +90,5 @@ format_results(compared_estimates, table_args = list(select = "{estimate} ({ci})
 - Reporting + visualization article:
   <https://brianmsm.github.io/psymetrics/articles/reporting-and-visualization.html>
 - Development roadmap: [ROADMAP.md](ROADMAP.md)
+
+
