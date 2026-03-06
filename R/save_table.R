@@ -9,7 +9,7 @@
 #'
 #' @param table_data A data frame containing the table data
 #'   to be exported. Objects like `model_fit`,
-#'   `compare_model_fit`, and `model_estimates` are supported.
+#'   `compare_model_fit`, `compare_model_estimates`, and `model_estimates` are supported.
 #' @param path A string specifying the file path where the
 #'   table should be saved. The file extension determines
 #'   the format (currently only .docx is supported).
