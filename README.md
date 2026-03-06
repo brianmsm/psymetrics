@@ -18,8 +18,8 @@ Install the development version from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.3.0")
-#remotes::install_github("brianmsm/psymetrics@v0.3.0")
+pak::pak("brianmsm/psymetrics@v0.4.0")
+#remotes::install_github("brianmsm/psymetrics@v0.4.0")
 ```
 
 ## Quick examples
@@ -58,6 +58,23 @@ model_estimates(
   component = c("loading", "regression"),
   standardized = TRUE
 )
+```
+
+Compare parameter estimates:
+
+``` r
+sem_model <- '
+  visual  =~ x1 + x2 + x3
+  textual =~ x4 + x5 + x6
+  speed   =~ x7 + x8 + x9
+  textual ~ visual
+  speed ~ visual + textual
+'
+
+fit_sem <- sem(sem_model, data = HolzingerSwineford1939)
+compared_estimates <- compare_model_estimates(CFA = fit_mlr, SEM = fit_sem, select = "se_p")
+compared_estimates
+format_results(compared_estimates, table_args = list(select = "{estimate} ({ci})|{p}"))
 ```
 
 ## Learn more
