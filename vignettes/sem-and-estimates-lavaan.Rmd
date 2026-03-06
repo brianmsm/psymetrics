@@ -75,13 +75,13 @@ compare_model_fit(MLR = fit_sem_mlr, ML = fit_sem_ml)
 
 All parameter blocks:
 
-```{r, eval=FALSE}
+```{r}
 model_estimates(fit_sem_mlr)
 ```
 
 Only selected components:
 
-```{r, eval=FALSE}
+```{r}
 model_estimates(
   fit_sem_mlr,
   component = c("loading", "regression"),

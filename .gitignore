@@ -6,3 +6,5 @@
 /.quarto/
 .vscode
 docs/
+.playwright-cli/
+output/
