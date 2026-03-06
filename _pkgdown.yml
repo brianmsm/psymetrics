@@ -33,7 +33,7 @@ navbar:
       text: Articles
       menu:
       - text: Core Workflows
-      - text: SEM and parameter estimates with lavaan
+      - text: SEM, parameter estimates, and comparisons with lavaan
         href: articles/sem-and-estimates-lavaan.html
       - text: Reporting and visualization
         href: articles/reporting-and-visualization.html
@@ -55,6 +55,7 @@ reference:
     contents:
       - model_estimates
       - model_estimates.lavaan
+      - compare_model_estimates
   - title: Reporting And Tables
     contents:
       - format_results
