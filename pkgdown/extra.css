@@ -491,6 +491,18 @@ mark,
   filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.28));
 }
 
+[data-bs-theme="dark"] img.r-plt,
+[data-bs-theme="dark"] pre .r-plt.img img,
+[data-bs-theme="dark"] .cell-output-display img,
+[data-bs-theme="dark"] .html-widget,
+[data-bs-theme="dark"] .no-invert-dark-mode img.r-plt,
+[data-bs-theme="dark"] .no-invert-dark-mode pre .r-plt.img img,
+[data-bs-theme="dark"] .no-invert-dark-mode .cell-output-display img,
+[data-bs-theme="dark"] .no-invert-dark-mode .html-widget {
+  filter: none !important;
+  opacity: 1;
+}
+
 [data-bs-theme="dark"] .template-home .links ul li > a,
 [data-bs-theme="dark"] .template-home .license ul li > a,
 [data-bs-theme="dark"] .template-home .citation ul li > a,
@@ -549,5 +561,6 @@ mark,
     backdrop-filter: blur(12px);
   }
 }
+
 
 
