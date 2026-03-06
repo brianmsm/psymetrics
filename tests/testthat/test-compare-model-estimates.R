@@ -86,10 +86,30 @@ test_that("compare_model_estimates stores public select and uses it by default",
   text_out <- psymetrics::format_results(out, output = "text")
   printed <- capture.output(print(out))
 
-  expect_equal(attr(out, "select"), "ci_p2")
+  expect_equal(attr(out, "select"), "{estimate} ({ci})|{p}")
   expect_match(text_out, "p \\(CFA\\)")
   expect_match(text_out, "p \\(SEM\\)")
   expect_true(any(grepl("p \\(CFA\\)", printed)))
+})
+
+
+test_that("compare_model_estimates normalizes explicit NULL select to ci", {
+  skip_if_not_installed("lavaan")
+
+  fit1 <- suppressWarnings(
+    lavaan::cfa(hs_cfa_model, data = lavaan::HolzingerSwineford1939)
+  )
+  fit2 <- suppressWarnings(
+    lavaan::sem(hs_sem_model, data = lavaan::HolzingerSwineford1939)
+  )
+
+  out <- suppressMessages(
+    psymetrics::compare_model_estimates(CFA = fit1, SEM = fit2, select = NULL, verbose = FALSE)
+  )
+  text_out <- psymetrics::format_results(out, output = "text")
+
+  expect_equal(attr(out, "select"), "{estimate} ({ci})")
+  expect_false(grepl("p \\(CFA\\)", text_out))
 })
 
 

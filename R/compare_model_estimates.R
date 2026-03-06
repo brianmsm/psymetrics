@@ -139,8 +139,8 @@ compare_model_estimates_unique_names <- function(model_names, verbose = TRUE) {
 }
 
 compare_model_estimates_validate_select_value <- function(select) {
-  compare_model_estimates_normalize_select(select)
-  trimws(select)
+  normalized <- compare_model_estimates_normalize_select(select)
+  trimws(normalized$template)
 }
 
 compare_model_estimates_validate_keys <- function(estimates, model_name) {
