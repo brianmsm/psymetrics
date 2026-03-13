@@ -6,10 +6,12 @@
 -   **Automatic defaults**: `type = "default"` now resolves to a single-fit bullet chart for `model_fit` objects and a threshold-aware dot plot for `compare_model_fit` objects.
 -   **Multiple styles**: Added `bullet`, `dots`, `bars`, and `heatmap` plot styles for the approved `v0.5.0` workflows.
 -   **Fit intervals**: RMSEA confidence intervals are now visualized automatically in styles that support them.
+-   **Multi-row plotting**: `plot_model_fit()` now supports `model_fit` and `compare_model_fit` objects with multiple test rows per model via `test_mode`, and defaults to `dots` whenever a single-model summary expands beyond one plotted row.
 
 ## Robustness, Testing & Docs
 
--   **Validation**: Plotting now validates supported classes, metrics, and style/class combinations with clear errors.
+-   **Validation**: Plotting now validates supported classes, metrics, `test_mode`, and raw fitted-model inputs with clearer guidance.
+-   **Multi-test handling**: `bullet` is now reserved for single-row summaries, while `dots`, `bars`, and `heatmap` can visualize multiple tests or standard/non-standard variants from the same fit object.
 -   **Testing**: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.
 -   **Documentation**: Added `plot_model_fit()` reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow.
 # psymetrics 0.4.0
