@@ -20,6 +20,67 @@ textual =~ x4 + x5 + x6"
   )
 }
 
+local_plot_model_fit_multirow_objects <- function() {
+  single <- data.frame(
+    ESTIMATOR = c("ML", "MLR", "MLR"),
+    TEST = c("standard", "satorra.bentler", "mean.var.adjusted"),
+    CFI = c(0.901, 0.925, 0.919),
+    TLI = c(0.892, 0.914, 0.909),
+    RMSEA = c(0.081, 0.067, 0.072),
+    RMSEA_CI_low = c(0.071, 0.055, 0.060),
+    RMSEA_CI_high = c(0.091, 0.079, 0.084),
+    SRMR = c(0.061, 0.054, 0.056),
+    converged = c(TRUE, TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  class(single) <- c("model_fit", "data.frame")
+
+  compare <- data.frame(
+    MODEL = c("MLR", "MLR", "ULSM", "ULSM"),
+    ESTIMATOR = c("ML", "MLR", "ULS", "ULSM"),
+    TEST = c("standard", "satorra.bentler", "standard", "mean.var.adjusted"),
+    CFI = c(0.901, 0.925, 0.907, 0.931),
+    TLI = c(0.892, 0.914, 0.899, 0.921),
+    RMSEA = c(0.081, 0.067, 0.077, 0.059),
+    RMSEA_CI_low = c(0.071, 0.055, 0.065, 0.049),
+    RMSEA_CI_high = c(0.091, 0.079, 0.089, 0.071),
+    SRMR = c(0.061, 0.054, 0.063, 0.050),
+    converged = c(TRUE, TRUE, TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  class(compare) <- c("compare_model_fit", "model_fit", "data.frame")
+
+  estimator_only <- data.frame(
+    MODEL = c("M1", "M1"),
+    ESTIMATOR = c("ML", "MLR"),
+    CFI = c(0.90, 0.93),
+    TLI = c(0.89, 0.92),
+    RMSEA = c(0.08, 0.06),
+    RMSEA_CI_low = c(0.07, 0.05),
+    RMSEA_CI_high = c(0.09, 0.07),
+    SRMR = c(0.06, 0.05),
+    converged = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  class(estimator_only) <- c("compare_model_fit", "model_fit", "data.frame")
+
+  duplicate_estimator <- data.frame(
+    MODEL = c("M1", "M1"),
+    ESTIMATOR = c("MLR", "MLR"),
+    CFI = c(0.90, 0.91),
+    TLI = c(0.89, 0.90),
+    RMSEA = c(0.08, 0.07),
+    RMSEA_CI_low = c(0.07, 0.06),
+    RMSEA_CI_high = c(0.09, 0.08),
+    SRMR = c(0.06, 0.05),
+    converged = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  class(duplicate_estimator) <- c("compare_model_fit", "model_fit", "data.frame")
+
+  list(single = single, compare = compare, estimator_only = estimator_only, duplicate_estimator = duplicate_estimator)
+}
+
 test_that("plot_model_fit defaults work for model_fit and build successfully", {
   objects <- local_plot_model_fit_objects()
 
@@ -38,30 +99,28 @@ test_that("plot_model_fit defaults work for compare_model_fit and preserve model
   expect_s3_class(plot_compare, "ggplot")
   expect_no_error(ggplot2::ggplot_build(plot_compare))
   expect_equal(plot_compare$labels$subtitle, "Threshold-aware dot plot")
-  expect_equal(unique(plot_compare$data$MODEL), objects$compare$MODEL)
+
+  compare_df <- psymetrics:::plot_model_fit_prepare_data(
+    objects$compare,
+    c("CFI", "TLI", "RMSEA", "SRMR"),
+    "compare_model_fit",
+    "all"
+  )
+  expect_equal(unique(compare_df$MODEL_BASE), unique(objects$compare$MODEL))
 })
 
-test_that("plot_model_fit supports all valid types for their classes", {
+test_that("plot_model_fit supports all valid types and bullet only for single-row summaries", {
   objects <- local_plot_model_fit_objects()
+  multi <- local_plot_model_fit_multirow_objects()
 
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(objects$single, type = "bullet")))
+  expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(objects$single, type = "dots")))
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(objects$compare, type = "dots")))
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(objects$compare, type = "bars")))
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(objects$compare, type = "heatmap")))
-})
-
-
-
-test_that("plot_model_fit rejects invalid type and class combinations clearly", {
-  objects <- local_plot_model_fit_objects()
-
   expect_error(
-    psymetrics::plot_model_fit(objects$single, type = "dots"),
-    "Unsupported `type = 'dots'`"
-  )
-  expect_error(
-    psymetrics::plot_model_fit(objects$compare, type = "bullet"),
-    "Unsupported `type = 'bullet'`"
+    psymetrics::plot_model_fit(multi$compare, type = "bullet"),
+    "requires a single-row fit summary"
   )
 })
 
@@ -110,6 +169,7 @@ test_that("plot_model_fit errors on unsupported metric names", {
 
 test_that("plot_model_fit uses RMSEA confidence intervals when available", {
   objects <- local_plot_model_fit_objects()
+  multi <- local_plot_model_fit_multirow_objects()
 
   single_with_ci <- psymetrics::plot_model_fit(objects$single, metrics = "RMSEA")
   single_without_object <- objects$single
@@ -123,8 +183,11 @@ test_that("plot_model_fit uses RMSEA confidence intervals when available", {
   compare_without_object$RMSEA_CI_high <- NULL
   compare_without_ci <- psymetrics::plot_model_fit(compare_without_object, metrics = "RMSEA")
 
-  grouped_with_ci <- psymetrics::plot_model_fit(objects$compare, type = "bars", metrics = c("RMSEA", "SRMR"))
-  grouped_without_ci <- psymetrics::plot_model_fit(compare_without_object, type = "bars", metrics = c("RMSEA", "SRMR"))
+  grouped_with_ci <- psymetrics::plot_model_fit(multi$compare, type = "bars", metrics = c("RMSEA", "SRMR"))
+  grouped_without_object <- multi$compare
+  grouped_without_object$RMSEA_CI_low <- NULL
+  grouped_without_object$RMSEA_CI_high <- NULL
+  grouped_without_ci <- psymetrics::plot_model_fit(grouped_without_object, type = "bars", metrics = c("RMSEA", "SRMR"))
 
   expect_gt(length(single_with_ci$layers), length(single_without_ci$layers))
   expect_gt(length(compare_with_ci$layers), length(compare_without_ci$layers))
@@ -164,22 +227,84 @@ test_that("plot_model_fit does not crash on non-converged fit objects when metri
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(fake_compare)))
 })
 
-test_that("plot_model_fit errors for unsupported multi-row summaries and duplicated model rows", {
-  objects <- local_plot_model_fit_objects()
+test_that("plot_model_fit handles multi-row objects through test_mode and default type", {
+  multi <- local_plot_model_fit_multirow_objects()
 
-  multirow_single <- rbind(objects$single, objects$single)
-  class(multirow_single) <- class(objects$single)
+  plot_single_all <- psymetrics::plot_model_fit(multi$single)
+  plot_single_primary <- psymetrics::plot_model_fit(multi$single, test_mode = "primary")
+  plot_compare_all <- psymetrics::plot_model_fit(multi$compare)
 
-  duplicate_compare <- objects$compare[c(1, 1), ]
-  class(duplicate_compare) <- class(objects$compare)
+  expect_equal(plot_single_all$labels$subtitle, "Threshold-aware dot plot")
+  expect_equal(plot_single_primary$labels$subtitle, "Single-fit bullet chart")
+  expect_equal(plot_compare_all$labels$subtitle, "Threshold-aware dot plot")
+
+  single_all_df <- psymetrics:::plot_model_fit_prepare_data(multi$single, c("CFI", "TLI", "RMSEA", "SRMR"), "model_fit", "all")
+  compare_all_df <- psymetrics:::plot_model_fit_prepare_data(multi$compare, c("CFI", "TLI", "RMSEA", "SRMR"), "compare_model_fit", "all")
+  expect_true(all(single_all_df$PLOT_ID != single_all_df$MODEL_BASE))
+  expect_true(all(compare_all_df$PLOT_ID != compare_all_df$MODEL_BASE))
+})
+
+test_that("plot_model_fit test_mode filters rows as intended", {
+  multi <- local_plot_model_fit_multirow_objects()
+  metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
+
+  all_df <- psymetrics:::plot_model_fit_prepare_data(multi$single, metrics, "model_fit", "all")
+  non_standard_df <- psymetrics:::plot_model_fit_prepare_data(multi$single, metrics, "model_fit", "non_standard")
+  standard_df <- psymetrics:::plot_model_fit_prepare_data(multi$single, metrics, "model_fit", "standard_only")
+  primary_df <- psymetrics:::plot_model_fit_prepare_data(multi$single, metrics, "model_fit", "primary")
+
+  expect_equal(nrow(all_df), 3)
+  expect_equal(non_standard_df$TEST, c("satorra.bentler", "mean.var.adjusted"))
+  expect_equal(standard_df$TEST, "standard")
+  expect_equal(primary_df$TEST, "satorra.bentler")
+})
+
+test_that("plot_model_fit derives variant labels from TEST, ESTIMATOR, or row fallback", {
+  multi <- local_plot_model_fit_multirow_objects()
+  metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
+
+  compare_df <- psymetrics:::plot_model_fit_prepare_data(multi$compare, metrics, "compare_model_fit", "all")
+  estimator_df <- psymetrics:::plot_model_fit_prepare_data(multi$estimator_only, metrics, "compare_model_fit", "all")
+  duplicate_df <- psymetrics:::plot_model_fit_prepare_data(multi$duplicate_estimator, metrics, "compare_model_fit", "all")
+
+  expect_true(all(compare_df$VARIANT %in% c("standard", "satorra.bentler", "mean.var.adjusted")))
+  expect_equal(estimator_df$VARIANT, c("ML", "MLR"))
+  expect_true(all(grepl("Row", duplicate_df$VARIANT)))
+})
+
+test_that("plot_model_fit dots uses color by model and shape by variant when needed", {
+  multi <- local_plot_model_fit_multirow_objects()
+
+  plot_compare <- psymetrics::plot_model_fit(multi$compare, type = "dots")
+  expect_equal(plot_compare$labels$colour, "Model")
+  expect_equal(plot_compare$labels$shape, "Variant")
+  expect_no_error(ggplot2::ggplot_build(plot_compare))
+})
+
+test_that("plot_model_fit bars and heatmap build cleanly for multi-row compare objects", {
+  multi <- local_plot_model_fit_multirow_objects()
+
+  expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(multi$compare, type = "bars")))
+  expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(multi$compare, type = "heatmap")))
+})
+
+test_that("plot_model_fit surfaces guided errors for raw fits and invalid test_mode results", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  multi <- local_plot_model_fit_multirow_objects()
 
   expect_error(
-    psymetrics::plot_model_fit(multirow_single),
-    "one-row `model_fit` objects only"
+    psymetrics::plot_model_fit(fit),
+    "requires a `model_fit` or `compare_model_fit` object, not a raw fitted model"
   )
+  expect_no_error(
+    psymetrics::plot_model_fit(multi$single, test_mode = "standard_only", type = "bars", metrics = c("CFI"), verbose = FALSE)
+  )
+
+  only_non_standard <- multi$single[multi$single$TEST != "standard", , drop = FALSE]
+  class(only_non_standard) <- class(multi$single)
   expect_error(
-    psymetrics::plot_model_fit(duplicate_compare),
-    "one row per model"
+    psymetrics::plot_model_fit(only_non_standard, test_mode = "standard_only"),
+    "left no rows available to plot"
   )
 })
 
@@ -195,6 +320,3 @@ test_that("plot_model_fit surfaces a clear message when ggplot2 is unavailable",
     "ggplot2 is required"
   )
 })
-
-
-
