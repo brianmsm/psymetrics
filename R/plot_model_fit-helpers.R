@@ -47,6 +47,95 @@ plot_model_fit_variant_shapes <- function(n_variants) {
   rep(base_shapes, length.out = n_variants)
 }
 
+plot_model_fit_density_scale <- function(n_items, reference, min_scale = 0.85, max_scale = 1.15) {
+  if (!is.numeric(n_items) || length(n_items) != 1L || is.na(n_items) || n_items <= 0) {
+    return(1)
+  }
+  scale <- reference / n_items
+  min(max(scale, min_scale), max_scale)
+}
+
+plot_model_fit_pt <- function(points) {
+  points / ggplot2::.pt
+}
+
+plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
+  style <- match.arg(style, c("bullet", "dots", "bars", "heatmap"))
+  metric_scale <- plot_model_fit_density_scale(n_metrics, reference = 4, min_scale = 0.92, max_scale = 1.10)
+  row_scale <- plot_model_fit_density_scale(n_rows, reference = 3, min_scale = 0.85, max_scale = 1.10)
+  compact_scale <- min(metric_scale, row_scale)
+
+  common <- list(
+    metric_scale = metric_scale,
+    row_scale = row_scale,
+    compact_scale = compact_scale
+  )
+
+  utils::modifyList(
+    common,
+    switch(
+      style,
+      bullet = list(
+        base = 15,
+        title = 20,
+        subtitle = 14.5,
+        strip = 17,
+        value_pt = 10.2 * compact_scale,
+        tick_pt = 8.6 * metric_scale,
+        cutoff_pt = 9.2 * metric_scale,
+        tick_y = 0.72,
+        plain_label_y = 1.205 + 0.02 * metric_scale,
+        curve_yend = 1.145 + 0.02 * metric_scale,
+        band_padding = 0.02 * metric_scale
+      ),
+      dots = list(
+        base = 14.5,
+        title = 19,
+        subtitle = 14,
+        strip = 13.8,
+        axis_y = 11.8 * row_scale,
+        value_pt = 9.4 * compact_scale,
+        tick_pt = 8.8 * metric_scale,
+        cutoff_pt = 9.3 * metric_scale,
+        legend_pt = 11.2,
+        data_ymin = 0.72,
+        data_ymax_pad = 0.42 * row_scale,
+        y_lower = 0.18,
+        y_upper_pad = 0.72 * row_scale,
+        plain_label_offset = 0.16 + 0.06 * row_scale,
+        callout_label_offset = 0.22 + 0.08 * row_scale,
+        callout_curve_offset = 0.14 + 0.07 * row_scale,
+        tick_y = 0.34
+      ),
+      bars = list(
+        base = 14.5,
+        title = 19,
+        subtitle = 14,
+        strip = 13.5,
+        axis_y = 11.4,
+        value_pt = 10.0 * compact_scale,
+        threshold_pt = 9.9 * metric_scale,
+        metric_pt = 10.2,
+        legend_pt = 11.2,
+        upper_label_offset = 0.007 + 0.003 * compact_scale,
+        lower_label_offset = 0.006 + 0.003 * compact_scale,
+        threshold_panel_offset = 0.003 + 0.0015 * compact_scale,
+        threshold_stack_offset = 0.002 + 0.0010 * compact_scale,
+        axis_panel_offset = 0.010 + 0.003 * compact_scale
+      ),
+      heatmap = list(
+        base = 14.5,
+        title = 20,
+        subtitle = 14.5,
+        axis_pt = 14.5 * metric_scale,
+        cell_pt = 11.5 * compact_scale,
+        legend_title_pt = 12.2,
+        legend_text_pt = 11.2
+      )
+    )
+  )
+}
+
 plot_model_fit_validate_input <- function(x) {
   if (inherits(x, "compare_model_fit")) {
     if (!"MODEL" %in% names(x)) {
@@ -525,5 +614,32 @@ plot_model_fit_build_model_spec <- function(model_names) {
     Fill = plot_model_fit_model_palette(n_models),
     Offset = offsets,
     stringsAsFactors = FALSE
+  )
+}
+
+
+
+
+plot_model_fit_group_bar_layout <- function(n_groups) {
+  if (!is.numeric(n_groups) || length(n_groups) != 1L || is.na(n_groups) || n_groups <= 1L) {
+    return(list(offsets = 0, half_width = 0.09))
+  }
+
+  center_span <- if (n_groups == 2L) {
+    0.24
+  } else if (n_groups == 3L) {
+    0.36
+  } else if (n_groups == 4L) {
+    0.46
+  } else {
+    min(0.58, 0.12 * (n_groups - 1L))
+  }
+
+  offsets <- seq(-center_span / 2, center_span / 2, length.out = n_groups)
+  width <- min(0.18, max(0.11, (center_span / (n_groups - 1L)) * 0.72))
+
+  list(
+    offsets = offsets,
+    half_width = width / 2
   )
 }

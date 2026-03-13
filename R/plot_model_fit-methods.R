@@ -38,6 +38,7 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
   }
 
   metrics <- metric_spec$Metric
+  size_spec <- plot_model_fit_size_spec("bullet", n_metrics = length(metrics), n_rows = 1L)
   band_spec <- plot_model_fit_single_band_spec(metrics)
   cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
   tick_spec <- plot_model_fit_tick_spec(metrics)
@@ -70,9 +71,9 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     point_y = 1.00,
     band_ymin = 0.80,
     band_ymax = 1.20,
-    tick_y = 0.71,
-    plain_label_y = 1.225,
-    curve_yend = 1.16,
+    tick_y = size_spec$tick_y,
+    plain_label_y = size_spec$plain_label_y,
+    curve_yend = size_spec$curve_yend,
     proximity_threshold = 0.035,
     callout_x_offset = 0.05,
     callout_xend_offset = 0.010
@@ -154,25 +155,25 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
       data = plain_df,
       ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel),
       color = "#1f1f1f",
-      size = 4.6 / ggplot2::.pt
+      size = plot_model_fit_pt(size_spec$value_pt)
     ) +
     ggplot2::geom_text(
       data = callout_df,
       ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust),
       color = "#1f1f1f",
-      size = 4.6 / ggplot2::.pt
+      size = plot_model_fit_pt(size_spec$value_pt)
     ) +
     ggplot2::geom_text(
       data = tick_spec[!tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       color = "#5a5a5a",
-      size = 3.9 / ggplot2::.pt
+      size = plot_model_fit_pt(size_spec$tick_pt)
     ) +
     ggplot2::geom_text(
       data = tick_spec[tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       color = "#4b4b4b",
-      size = 4.1 / ggplot2::.pt,
+      size = plot_model_fit_pt(size_spec$cutoff_pt),
       fontface = "bold"
     ) +
     ggplot2::geom_blank(data = axis_df, ggplot2::aes(x = .data$x, y = .data$y)) +
@@ -181,7 +182,7 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     ggplot2::scale_fill_manual(values = c(band_fill, status_fill), guide = "none") +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(title = "Model fit indices", subtitle = "Single-fit bullet chart", x = NULL, y = NULL) +
-    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
       axis.text.y = ggplot2::element_blank(),
@@ -191,7 +192,9 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
       plot.title.position = "plot",
       strip.placement = "outside",
       strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold", size = 15),
+      strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
+      plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
+      plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
       plot.margin = ggplot2::margin(18, 24, 14, 18)
     )
 
@@ -221,13 +224,7 @@ plot_model_fit_single_callout_layout <- function(value_df, cutoff_df, layout) {
     ifelse(default_side == "left" & left_near & !right_near, "right", default_side)
   )
 
-  out$use_callout <- label_side != default_side | mapply(function(metric, value) {
-    cutoffs <- cutoff_df$cutoff[cutoff_df$Metric == metric]
-    if (length(cutoffs) == 0L || is.na(value)) {
-      return(FALSE)
-    }
-    min(abs(value - cutoffs)) <= (out$AxisMax[out$Metric == metric][1] - out$AxisMin[out$Metric == metric][1]) * layout$proximity_threshold
-  }, as.character(out$Metric), out$Value)
+  out$use_callout <- is.finite(out$Value)
   out$label_x <- ifelse(label_side == "right", right_x, left_x)
   out$label_y <- layout$plain_label_y
   out$curve_xend <- ifelse(label_side == "right", out$label_x - range_width * layout$callout_xend_offset, out$label_x + range_width * layout$callout_xend_offset)
@@ -240,6 +237,7 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
   model_levels <- unique(fit_df$MODEL_BASE)
   plot_levels <- unique(fit_df$PLOT_ID)
+  size_spec <- plot_model_fit_size_spec("dots", n_metrics = length(metrics), n_rows = length(plot_levels))
   row_y_values <- rev(seq_along(plot_levels))
   names(row_y_values) <- plot_levels
   show_variant_shape <- any(duplicated(fit_df$MODEL_BASE))
@@ -273,13 +271,13 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
   tick_spec <- plot_model_fit_tick_spec(metrics)
 
   layout <- list(
-    data_ymin = 0.72,
-    data_ymax = length(plot_levels) + 0.38,
-    tick_y = 0.34,
-    y_limits = c(0.20, length(plot_levels) + 0.70),
-    plain_label_offset = 0.18,
-    callout_label_offset = 0.24,
-    callout_curve_offset = 0.17,
+    data_ymin = size_spec$data_ymin,
+    data_ymax = length(plot_levels) + size_spec$data_ymax_pad,
+    tick_y = size_spec$tick_y,
+    y_limits = c(size_spec$y_lower, length(plot_levels) + size_spec$y_upper_pad),
+    plain_label_offset = size_spec$plain_label_offset,
+    callout_label_offset = size_spec$callout_label_offset,
+    callout_curve_offset = size_spec$callout_curve_offset,
     callout_point_offset = 0.02,
     proximity_threshold = 0.035,
     callout_x_offset = 0.05,
@@ -386,14 +384,14 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       data = plain_df,
       ggplot2::aes(x = .data$Value, y = .data$label_y, label = .data$ValueLabel, color = .data$MODEL_BASE),
       inherit.aes = FALSE,
-      size = 3.2 / ggplot2::.pt,
+      size = plot_model_fit_pt(size_spec$value_pt),
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
       data = callout_df,
       ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust, color = .data$MODEL_BASE),
       inherit.aes = FALSE,
-      size = 3.2 / ggplot2::.pt,
+      size = plot_model_fit_pt(size_spec$value_pt),
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
@@ -401,14 +399,14 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       inherit.aes = FALSE,
       color = "#636363",
-      size = 3.7 / ggplot2::.pt
+      size = plot_model_fit_pt(size_spec$tick_pt)
     ) +
     ggplot2::geom_text(
       data = tick_spec[tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       inherit.aes = FALSE,
       color = "#4d4d4d",
-      size = 3.9 / ggplot2::.pt,
+      size = plot_model_fit_pt(size_spec$cutoff_pt),
       fontface = "bold"
     ) +
     ggplot2::geom_blank(data = axis_min_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
@@ -422,13 +420,25 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     ) +
     ggplot2::facet_wrap(~Metric, scales = "free_x", ncol = min(2L, length(metrics))) +
     ggplot2::coord_cartesian(clip = "off") +
-    ggplot2::labs(title = "Model fit comparison", subtitle = "Threshold-aware dot plot", x = NULL, y = NULL, color = "Model", shape = if (show_variant_shape) "Variant" else NULL) +
-    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::labs(
+      title = "Model fit comparison",
+      subtitle = "Threshold-aware dot plot",
+      x = NULL,
+      y = NULL,
+      color = "Model",
+      shape = if (show_variant_shape) "Variant" else NULL
+    ) +
+    ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "bottom",
       plot.title.position = "plot",
-      strip.text = ggplot2::element_text(face = "bold"),
+      strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
+      plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
+      plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_y),
+      legend.text = ggplot2::element_text(size = size_spec$legend_pt),
+      legend.title = ggplot2::element_text(size = size_spec$legend_pt + 0.5),
       axis.text.x = ggplot2::element_blank(),
       axis.ticks.x = ggplot2::element_blank()
     )
@@ -480,9 +490,10 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
   model_levels <- unique(fit_df$MODEL_BASE)
   plot_levels <- unique(fit_df$PLOT_ID)
+  size_spec <- plot_model_fit_size_spec("bars", n_metrics = length(metrics), n_rows = length(plot_levels))
   model_spec <- plot_model_fit_build_model_spec(model_levels)
-  plot_offsets <- if (length(plot_levels) == 1L) 0 else seq(-0.28, 0.28, length.out = length(plot_levels))
-  plot_spec <- data.frame(PLOT_ID = plot_levels, PlotOffset = plot_offsets, stringsAsFactors = FALSE)
+  group_layout <- plot_model_fit_group_bar_layout(length(plot_levels))
+  plot_spec <- data.frame(PLOT_ID = plot_levels, PlotOffset = group_layout$offsets, stringsAsFactors = FALSE)
 
   metric_panel <- metric_spec[, c("Metric", "Panel", "Primary", "Direction", "ShowInterval", "IntervalLowCol", "IntervalHighCol"), drop = FALSE]
   metric_panel$metric_id <- ave(seq_len(nrow(metric_panel)), metric_panel$Panel, FUN = seq_along)
@@ -510,15 +521,16 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       stringsAsFactors = FALSE
     )
   }))
-  bar_df$Panel <- factor(bar_df$Panel, levels = unique(metric_panel$Panel))
+  panel_levels <- c("Incremental fit (CFI & TLI)", "Approximation error (RMSEA & SRMR)")
+  bar_df$Panel <- factor(bar_df$Panel, levels = panel_levels)
   bar_df$Metric <- factor(bar_df$Metric, levels = metrics)
   bar_df <- merge(bar_df, model_spec, by = "MODEL_BASE", all.x = TRUE, sort = FALSE)
   bar_df <- merge(bar_df, plot_spec, by = "PLOT_ID", all.x = TRUE, sort = FALSE)
   bar_df$MODEL_BASE <- factor(bar_df$MODEL_BASE, levels = model_levels)
   bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
   bar_df$x <- bar_df$metric_id + bar_df$PlotOffset
-  bar_df$xmin <- bar_df$x - 0.10
-  bar_df$xmax <- bar_df$x + 0.10
+  bar_df$xmin <- bar_df$x - group_layout$half_width
+  bar_df$xmax <- bar_df$x + group_layout$half_width
   bar_df$ValueLabel <- ifelse(is.na(bar_df$Value), "", sprintf("%.3f", bar_df$Value))
   if (any(duplicated(fit_df$MODEL_BASE))) {
     bar_df$ValueLabel <- ifelse(
@@ -534,19 +546,23 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     Panel = factor(panel_levels, levels = panel_levels),
     ymin = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin, 0.00),
     ymax = ifelse(panel_levels == "Incremental fit (CFI & TLI)", 1.00, 0.12),
-    axis_label_y = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin - 0.015, -0.010),
+    axis_label_y = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin - (size_spec$axis_panel_offset + 0.004), -size_spec$axis_panel_offset),
     stringsAsFactors = FALSE
   )
 
   bar_df <- merge(bar_df, axis_df, by = "Panel", all.x = TRUE, sort = FALSE)
   bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
-  bar_df$label_y <- bar_df$Value + ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", 0.0080, 0.0065)
+  bar_df$label_y <- bar_df$Value + ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", size_spec$upper_label_offset, size_spec$lower_label_offset)
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
   threshold_df <- threshold_df[order(threshold_df$Panel, threshold_df$metric_id), ]
   metric_counts <- stats::setNames(as.integer(tapply(metric_panel$metric_id, metric_panel$Panel, max)), unique(metric_panel$Panel))
   threshold_df$label_x <- unname(metric_counts[as.character(threshold_df$Panel)]) + 0.49
-  threshold_df$label_y <- threshold_df$Threshold + ifelse(duplicated(threshold_df$Panel), -ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", 0.0040, 0.0030), ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", 0.0040, 0.0030))
+  threshold_df$label_y <- threshold_df$Threshold + ifelse(
+    duplicated(threshold_df$Panel),
+    -ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", size_spec$threshold_panel_offset, size_spec$threshold_stack_offset),
+    ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", size_spec$threshold_panel_offset, size_spec$threshold_stack_offset)
+  )
   threshold_df$hjust <- 1
   threshold_df$vjust <- ifelse(duplicated(threshold_df$Panel), 1, 0)
 
@@ -596,9 +612,9 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       color = "#202020",
       fill = "#f7f7f7",
       linewidth = 0,
-      label.padding = grid::unit(0.012, "lines"),
-      label.r = grid::unit(0.02, "lines"),
-      size = 3.1 / ggplot2::.pt,
+      label.padding = grid::unit(0.008, "lines"),
+      label.r = grid::unit(0.018, "lines"),
+      size = plot_model_fit_pt(size_spec$value_pt),
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
@@ -608,27 +624,32 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       color = "#4a4a4a",
       hjust = threshold_df$hjust,
       vjust = threshold_df$vjust,
-      size = 3.3 / ggplot2::.pt,
+      size = plot_model_fit_pt(size_spec$threshold_pt),
       fontface = "bold"
     ) +
     ggplot2::geom_text(
       data = axis_label_df,
       ggplot2::aes(x = .data$x, y = .data$axis_label_y, label = .data$label),
       inherit.aes = FALSE,
-      size = 3.5 / ggplot2::.pt
+      size = plot_model_fit_pt(size_spec$metric_pt)
     ) +
     ggplot2::geom_blank(data = axis_min_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
     ggplot2::geom_blank(data = axis_max_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
-    ggplot2::facet_wrap(~Panel, ncol = 1, scales = "free_y") +
+    ggplot2::facet_wrap(~Panel, ncol = 1, scales = "free_y", as.table = FALSE) +
     ggplot2::scale_fill_manual(values = stats::setNames(model_spec$Fill, model_levels)) +
     ggplot2::scale_x_continuous(breaks = NULL, labels = NULL, expand = ggplot2::expansion(mult = c(0.08, 0.03))) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(title = "Model fit comparison", subtitle = "Grouped threshold bars", x = NULL, y = "Index value", fill = "Model") +
-    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       plot.title.position = "plot",
       panel.grid.minor = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold"),
+      strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
+      plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
+      plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_y),
+      legend.text = ggplot2::element_text(size = size_spec$legend_pt),
+      legend.title = ggplot2::element_text(size = size_spec$legend_pt + 0.5),
       legend.position = "right",
       axis.text.x = ggplot2::element_blank(),
       axis.ticks.x = ggplot2::element_blank()
@@ -640,6 +661,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
 plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
   plot_levels <- unique(fit_df$PLOT_ID)
+  size_spec <- plot_model_fit_size_spec("heatmap", n_metrics = length(metrics), n_rows = length(plot_levels))
   long_df <- do.call(rbind, lapply(seq_len(nrow(metric_spec)), function(i) {
     row <- metric_spec[i, ]
     values <- fit_df[[row$Metric]]
@@ -675,7 +697,12 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
 
   ggplot2::ggplot(long_df, ggplot2::aes(x = .data$Metric, y = .data$PLOT_ID, fill = .data$Score)) +
     ggplot2::geom_tile(color = "#f4f4f4", linewidth = 2.2, width = 0.99, height = 0.99) +
-    ggplot2::geom_text(ggplot2::aes(label = .data$ValueLabel), size = 6.2 / ggplot2::.pt, fontface = "bold", color = "#1f1f1f") +
+    ggplot2::geom_text(
+      ggplot2::aes(label = .data$ValueLabel),
+      size = plot_model_fit_pt(size_spec$cell_pt),
+      fontface = "bold",
+      color = "#1f1f1f"
+    ) +
     ggplot2::scale_fill_gradientn(
       colours = plot_layout$palette,
       values = plot_model_fit_rescale(plot_layout$palette_values),
@@ -693,17 +720,25 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       )
     ) +
     ggplot2::labs(title = "Model fit comparison", subtitle = "Heatmap scorecard", x = NULL, y = NULL) +
-    ggplot2::theme_minimal(base_size = 13) +
+    ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       plot.title.position = "plot",
+      plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
+      plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
       panel.grid = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(size = 15, face = "plain"),
-      axis.text.y = ggplot2::element_text(size = 15, face = "plain"),
+      axis.text.x = ggplot2::element_text(size = size_spec$axis_pt, face = "plain"),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_pt, face = "plain"),
       legend.position = "bottom",
       legend.direction = "horizontal",
-      legend.title = ggplot2::element_text(size = 12, hjust = 0.5),
-      legend.text = ggplot2::element_text(size = 10.5),
+      legend.title = ggplot2::element_text(size = size_spec$legend_title_pt, hjust = 0.5),
+      legend.text = ggplot2::element_text(size = size_spec$legend_text_pt),
       legend.box.margin = ggplot2::margin(t = 6, r = 0, b = 0, l = 0),
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
+
+
+
+
+
+
