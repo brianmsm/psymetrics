@@ -551,8 +551,25 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   )
 
   bar_df <- merge(bar_df, axis_df, by = "Panel", all.x = TRUE, sort = FALSE)
+
+  interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
+  if (!is.null(interval_df) && nrow(interval_df) > 0L) {
+    bar_df <- merge(bar_df, interval_df[, c("PLOT_ID", "Metric", "CI_low", "CI_high")], by = c("PLOT_ID", "Metric"), all.x = TRUE, sort = FALSE)
+  } else {
+    bar_df$CI_low <- NA_real_
+    bar_df$CI_high <- NA_real_
+  }
+
   bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
-  bar_df$label_y <- bar_df$Value + ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", size_spec$upper_label_offset, size_spec$lower_label_offset)
+  bar_df$label_anchor <- bar_df$Value
+  bar_df$label_y <- mapply(
+    plot_model_fit_bar_label_y,
+    anchor = bar_df$label_anchor,
+    ymin = bar_df$ymin,
+    ymax = bar_df$ymax,
+    threshold = bar_df$Threshold,
+    min_offset = ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", size_spec$upper_label_offset, size_spec$lower_label_offset)
+  )
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
   threshold_df <- threshold_df[order(threshold_df$Panel, threshold_df$metric_id), ]
@@ -570,9 +587,8 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   names(axis_label_df)[names(axis_label_df) == "metric_id"] <- "x"
   names(axis_label_df)[names(axis_label_df) == "Metric"] <- "label"
 
-  interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
-  if (!is.null(interval_df) && nrow(interval_df) > 0L) {
-    interval_df <- merge(interval_df, bar_df[c("PLOT_ID", "Metric", "Panel", "x")], by = c("PLOT_ID", "Metric"), all.x = TRUE, sort = FALSE)
+  interval_df <- bar_df[is.finite(bar_df$CI_low) & is.finite(bar_df$CI_high), c("PLOT_ID", "Metric", "Panel", "x", "CI_low", "CI_high"), drop = FALSE]
+  if (nrow(interval_df) > 0L) {
     interval_df$Panel <- factor(interval_df$Panel, levels = panel_levels)
   }
 
@@ -612,9 +628,10 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       color = "#202020",
       fill = "#f7f7f7",
       linewidth = 0,
-      label.padding = grid::unit(0.008, "lines"),
-      label.r = grid::unit(0.018, "lines"),
+      label.padding = grid::unit(size_spec$label_padding, "lines"),
+      label.r = grid::unit(size_spec$label_radius, "lines"),
       size = plot_model_fit_pt(size_spec$value_pt),
+      vjust = 0,
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
@@ -637,7 +654,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     ggplot2::geom_blank(data = axis_max_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
     ggplot2::facet_wrap(~Panel, ncol = 1, scales = "free_y", as.table = FALSE) +
     ggplot2::scale_fill_manual(values = stats::setNames(model_spec$Fill, model_levels)) +
-    ggplot2::scale_x_continuous(breaks = NULL, labels = NULL, expand = ggplot2::expansion(mult = c(0.08, 0.03))) +
+    ggplot2::scale_x_continuous(breaks = NULL, labels = NULL, expand = plot_model_fit_bar_expand(max(metric_counts))) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(title = "Model fit comparison", subtitle = "Grouped threshold bars", x = NULL, y = "Index value", fill = "Model") +
     ggplot2::theme_minimal(base_size = size_spec$base) +
@@ -736,6 +753,10 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
+
+
+
+
 
 
 

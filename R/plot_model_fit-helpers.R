@@ -117,11 +117,13 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         threshold_pt = 9.9 * metric_scale,
         metric_pt = 10.2,
         legend_pt = 11.2,
-        upper_label_offset = 0.007 + 0.003 * compact_scale,
-        lower_label_offset = 0.006 + 0.003 * compact_scale,
+        upper_label_offset = 0.009 + 0.0035 * compact_scale,
+        lower_label_offset = 0.007 + 0.0030 * compact_scale,
+        label_padding = 0.0055 + 0.0015 * compact_scale,
+        label_radius = 0.015,
         threshold_panel_offset = 0.003 + 0.0015 * compact_scale,
         threshold_stack_offset = 0.002 + 0.0010 * compact_scale,
-        axis_panel_offset = 0.010 + 0.003 * compact_scale
+        axis_panel_offset = 0.014 + 0.004 * compact_scale
       ),
       heatmap = list(
         base = 14.5,
@@ -643,3 +645,29 @@ plot_model_fit_group_bar_layout <- function(n_groups) {
     half_width = width / 2
   )
 }
+
+plot_model_fit_bar_expand <- function(n_metrics) {
+  if (!is.numeric(n_metrics) || length(n_metrics) != 1L || is.na(n_metrics) || n_metrics <= 2L) {
+    return(ggplot2::expansion(mult = c(0.025, 0.015)))
+  }
+  if (n_metrics == 3L) {
+    return(ggplot2::expansion(mult = c(0.04, 0.025)))
+  }
+  ggplot2::expansion(mult = c(0.05, 0.03))
+}
+
+plot_model_fit_bar_label_y <- function(anchor, ymin, ymax, threshold, min_offset, proximity = 0.025, threshold_bonus = 0.008) {
+  panel_span <- ymax - ymin
+  if (!is.finite(anchor) || !is.finite(panel_span) || panel_span <= 0) {
+    return(anchor)
+  }
+
+  base_offset <- max(min_offset, panel_span * 0.015)
+  candidate_y <- anchor + base_offset
+  near_threshold <- is.finite(threshold) && abs(candidate_y - threshold) <= panel_span * proximity
+  total_offset <- base_offset + if (near_threshold) panel_span * threshold_bonus else 0
+  anchor + total_offset
+}
+
+
+
