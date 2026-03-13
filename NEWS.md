@@ -1,3 +1,17 @@
+# psymetrics 0.5.0
+
+## New Features
+
+-   **Fit plotting**: Added `plot_model_fit()` as a public plotting entrypoint for `model_fit` and `compare_model_fit` objects.
+-   **Automatic defaults**: `type = "default"` now resolves to a single-fit bullet chart for `model_fit` objects and a threshold-aware dot plot for `compare_model_fit` objects.
+-   **Multiple styles**: Added `bullet`, `dots`, `bars`, and `heatmap` plot styles for the approved `v0.5.0` workflows.
+-   **Fit intervals**: RMSEA confidence intervals are now visualized automatically in styles that support them.
+
+## Robustness, Testing & Docs
+
+-   **Validation**: Plotting now validates supported classes, metrics, and style/class combinations with clear errors.
+-   **Testing**: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.
+-   **Documentation**: Added `plot_model_fit()` reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow.
 # psymetrics 0.4.0
 
 ## New Features
@@ -219,3 +233,8 @@
 
 -   The `NAMESPACE` file is now automatically managed using `roxygen2` to export the appropriate functions and maintain dependency order.
 -   Added a check in the examples to verify if `lavaan` is installed before running them.
+
+
+
+
+
