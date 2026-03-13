@@ -1,24 +1,15 @@
-#' @export
-plot_model_fit.model_fit <- function(x, type = "default", metrics = NULL, verbose = TRUE, ...) {
+plot_model_fit_dispatch <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE) {
   rlang::check_installed("ggplot2", reason = "to create model fit plots.")
   input_class <- plot_model_fit_validate_input(x)
-  plot_model_fit_resolve_type(type, input_class)
   resolved_metrics <- plot_model_fit_resolve_metrics(x, metrics = metrics, verbose = verbose)
-  fit_df <- plot_model_fit_prepare_data(x, resolved_metrics, input_class)
+  resolved_test_mode <- plot_model_fit_resolve_test_mode(test_mode)
+  fit_df <- plot_model_fit_prepare_data(x, resolved_metrics, input_class, resolved_test_mode)
+  resolved_type <- plot_model_fit_resolve_type(type, input_class, nrow(fit_df))
   metric_spec <- plot_model_fit_metric_spec(resolved_metrics)
 
-  plot_model_fit_single_bullet(fit_df, metric_spec)
-}
-
-#' @export
-plot_model_fit.compare_model_fit <- function(x, type = "default", metrics = NULL, verbose = TRUE, ...) {
-  rlang::check_installed("ggplot2", reason = "to create model fit plots.")
-  input_class <- plot_model_fit_validate_input(x)
-  resolved_type <- plot_model_fit_resolve_type(type, input_class)
-  resolved_metrics <- plot_model_fit_resolve_metrics(x, metrics = metrics, verbose = verbose)
-  fit_df <- plot_model_fit_prepare_data(x, resolved_metrics, input_class)
-  metric_spec <- plot_model_fit_metric_spec(resolved_metrics)
-
+  if (identical(resolved_type, "bullet")) {
+    return(plot_model_fit_single_bullet(fit_df, metric_spec))
+  }
   if (identical(resolved_type, "dots")) {
     return(plot_model_fit_threshold_dots(fit_df, metric_spec))
   }
@@ -28,7 +19,24 @@ plot_model_fit.compare_model_fit <- function(x, type = "default", metrics = NULL
   plot_model_fit_heatmap_scorecard(fit_df, metric_spec)
 }
 
+#' @export
+plot_model_fit.model_fit <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE, ...) {
+  plot_model_fit_dispatch(x, type = type, metrics = metrics, test_mode = test_mode, verbose = verbose)
+}
+
+#' @export
+plot_model_fit.compare_model_fit <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE, ...) {
+  plot_model_fit_dispatch(x, type = type, metrics = metrics, test_mode = test_mode, verbose = verbose)
+}
+
 plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
+  if (nrow(fit_df) != 1L) {
+    cli::cli_abort(c(
+      "`type = 'bullet'` requires a single-row fit summary after applying `test_mode`.",
+      "Use `type = 'dots'` to visualize multiple tests or test variants."
+    ))
+  }
+
   metrics <- metric_spec$Metric
   band_spec <- plot_model_fit_single_band_spec(metrics)
   cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
@@ -230,15 +238,18 @@ plot_model_fit_single_callout_layout <- function(value_df, cutoff_df, layout) {
 
 plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
-  model_levels <- fit_df$MODEL
-  n_models <- length(model_levels)
-  model_y_values <- rev(seq_len(n_models))
-  names(model_y_values) <- model_levels
+  model_levels <- unique(fit_df$MODEL_BASE)
+  plot_levels <- unique(fit_df$PLOT_ID)
+  row_y_values <- rev(seq_along(plot_levels))
+  names(row_y_values) <- plot_levels
+  show_variant_shape <- any(duplicated(fit_df$MODEL_BASE))
 
   long_df <- do.call(rbind, lapply(seq_len(nrow(metric_spec)), function(i) {
     row <- metric_spec[i, ]
     data.frame(
-      MODEL = fit_df$MODEL,
+      MODEL_BASE = fit_df$MODEL_BASE,
+      PLOT_ID = fit_df$PLOT_ID,
+      VARIANT = fit_df$VARIANT,
       Metric = row$Metric,
       Value = fit_df[[row$Metric]],
       AxisMin = row$AxisMin,
@@ -247,12 +258,12 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     )
   }))
   long_df$Metric <- factor(long_df$Metric, levels = metrics)
-  long_df$MODEL_y <- unname(model_y_values[long_df$MODEL])
+  long_df$MODEL_y <- unname(row_y_values[long_df$PLOT_ID])
   long_df$ValueLabel <- ifelse(is.na(long_df$Value), "", sprintf("%.3f", long_df$Value))
 
   interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
   if (!is.null(interval_df) && nrow(interval_df) > 0L) {
-    interval_df$MODEL_y <- unname(model_y_values[interval_df$MODEL])
+    interval_df$MODEL_y <- unname(row_y_values[interval_df$PLOT_ID])
     interval_df$Metric <- factor(interval_df$Metric, levels = metrics)
   }
 
@@ -263,9 +274,9 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
 
   layout <- list(
     data_ymin = 0.72,
-    data_ymax = n_models + 0.38,
+    data_ymax = length(plot_levels) + 0.38,
     tick_y = 0.34,
-    y_limits = c(0.20, n_models + 0.70),
+    y_limits = c(0.20, length(plot_levels) + 0.70),
     plain_label_offset = 0.18,
     callout_label_offset = 0.24,
     callout_curve_offset = 0.17,
@@ -290,8 +301,9 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     "Acceptable" = "#f4e7a6",
     "Near limit" = "#f3f3f3"
   )
+  shape_values <- stats::setNames(plot_model_fit_variant_shapes(length(unique(point_df$VARIANT))), unique(point_df$VARIANT))
 
-  p <- ggplot2::ggplot(point_df, ggplot2::aes(x = .data$Value, y = .data$MODEL_y, color = .data$MODEL)) +
+  p <- ggplot2::ggplot() +
     ggplot2::geom_rect(
       data = active_band_spec,
       ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = layout$data_ymin, ymax = layout$data_ymax, fill = .data$band),
@@ -310,35 +322,76 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
   if (!is.null(interval_df) && nrow(interval_df) > 0L) {
     p <- p + ggplot2::geom_segment(
       data = interval_df,
-      ggplot2::aes(x = .data$CI_low, xend = .data$CI_high, y = .data$MODEL_y, yend = .data$MODEL_y, color = .data$MODEL),
+      ggplot2::aes(x = .data$CI_low, xend = .data$CI_high, y = .data$MODEL_y, yend = .data$MODEL_y, color = .data$MODEL_BASE),
       inherit.aes = FALSE,
       linewidth = 1.1,
       show.legend = FALSE
     )
   }
 
+  if (show_variant_shape) {
+    p <- p +
+      ggplot2::geom_curve(
+        data = callout_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y + layout$callout_point_offset, xend = .data$curve_xend, yend = .data$curve_yend, color = .data$MODEL_BASE),
+        inherit.aes = FALSE,
+        curvature = 0.18,
+        linewidth = 0.82,
+        arrow = grid::arrow(length = grid::unit(0.045, "inches"), type = "closed"),
+        show.legend = FALSE
+      ) +
+      ggplot2::geom_point(
+        data = point_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y, shape = .data$VARIANT),
+        inherit.aes = FALSE,
+        size = 5.1,
+        color = "white",
+        show.legend = FALSE
+      ) +
+      ggplot2::geom_point(
+        data = point_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y, color = .data$MODEL_BASE, shape = .data$VARIANT),
+        inherit.aes = FALSE,
+        size = 3.8
+      )
+  } else {
+    p <- p +
+      ggplot2::geom_curve(
+        data = callout_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y + layout$callout_point_offset, xend = .data$curve_xend, yend = .data$curve_yend, color = .data$MODEL_BASE),
+        inherit.aes = FALSE,
+        curvature = 0.18,
+        linewidth = 0.82,
+        arrow = grid::arrow(length = grid::unit(0.045, "inches"), type = "closed"),
+        show.legend = FALSE
+      ) +
+      ggplot2::geom_point(
+        data = point_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y),
+        inherit.aes = FALSE,
+        size = 5.1,
+        color = "white",
+        show.legend = FALSE
+      ) +
+      ggplot2::geom_point(
+        data = point_df,
+        ggplot2::aes(x = .data$Value, y = .data$MODEL_y, color = .data$MODEL_BASE),
+        inherit.aes = FALSE,
+        size = 3.8
+      )
+  }
+
   p <- p +
-    ggplot2::geom_curve(
-      data = callout_df,
-      ggplot2::aes(x = .data$Value, y = .data$MODEL_y + layout$callout_point_offset, xend = .data$curve_xend, yend = .data$curve_yend, color = .data$MODEL),
-      inherit.aes = FALSE,
-      curvature = 0.18,
-      linewidth = 0.82,
-      arrow = grid::arrow(length = grid::unit(0.045, "inches"), type = "closed"),
-      show.legend = FALSE
-    ) +
-    ggplot2::geom_point(size = 5.1, color = "white", show.legend = FALSE) +
-    ggplot2::geom_point(size = 3.8) +
     ggplot2::geom_text(
       data = plain_df,
-      ggplot2::aes(x = .data$Value, y = .data$label_y, label = .data$ValueLabel, color = .data$MODEL),
+      ggplot2::aes(x = .data$Value, y = .data$label_y, label = .data$ValueLabel, color = .data$MODEL_BASE),
       inherit.aes = FALSE,
       size = 3.2 / ggplot2::.pt,
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
       data = callout_df,
-      ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust, color = .data$MODEL),
+      ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust, color = .data$MODEL_BASE),
       inherit.aes = FALSE,
       size = 3.2 / ggplot2::.pt,
       show.legend = FALSE
@@ -363,13 +416,13 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     ggplot2::scale_color_manual(values = point_palette) +
     ggplot2::scale_fill_manual(values = band_fill, guide = "none") +
     ggplot2::scale_y_continuous(
-      breaks = model_y_values,
-      labels = names(model_y_values),
+      breaks = row_y_values,
+      labels = names(row_y_values),
       limits = layout$y_limits
     ) +
     ggplot2::facet_wrap(~Metric, scales = "free_x", ncol = min(2L, length(metrics))) +
     ggplot2::coord_cartesian(clip = "off") +
-    ggplot2::labs(title = "Model fit comparison", subtitle = "Threshold-aware dot plot", x = NULL, y = NULL, color = "Model") +
+    ggplot2::labs(title = "Model fit comparison", subtitle = "Threshold-aware dot plot", x = NULL, y = NULL, color = "Model", shape = if (show_variant_shape) "Variant" else NULL) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(
       panel.grid.minor = ggplot2::element_blank(),
@@ -379,6 +432,10 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       axis.text.x = ggplot2::element_blank(),
       axis.ticks.x = ggplot2::element_blank()
     )
+
+  if (show_variant_shape) {
+    p <- p + ggplot2::scale_shape_manual(values = shape_values)
+  }
 
   p
 }
@@ -421,8 +478,11 @@ plot_model_fit_multi_callout_layout <- function(df, cutoff_df, layout) {
 
 plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
-  model_levels <- fit_df$MODEL
+  model_levels <- unique(fit_df$MODEL_BASE)
+  plot_levels <- unique(fit_df$PLOT_ID)
   model_spec <- plot_model_fit_build_model_spec(model_levels)
+  plot_offsets <- if (length(plot_levels) == 1L) 0 else seq(-0.28, 0.28, length.out = length(plot_levels))
+  plot_spec <- data.frame(PLOT_ID = plot_levels, PlotOffset = plot_offsets, stringsAsFactors = FALSE)
 
   metric_panel <- metric_spec[, c("Metric", "Panel", "Primary", "Direction", "ShowInterval", "IntervalLowCol", "IntervalHighCol"), drop = FALSE]
   metric_panel$metric_id <- ave(seq_len(nrow(metric_panel)), metric_panel$Panel, FUN = seq_along)
@@ -435,7 +495,9 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   bar_df <- do.call(rbind, lapply(seq_len(nrow(metric_panel)), function(i) {
     row <- metric_panel[i, ]
     data.frame(
-      MODEL = fit_df$MODEL,
+      MODEL_BASE = fit_df$MODEL_BASE,
+      PLOT_ID = fit_df$PLOT_ID,
+      VARIANT = fit_df$VARIANT,
       Metric = row$Metric,
       Panel = row$Panel,
       Threshold = row$Primary,
@@ -450,13 +512,21 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   }))
   bar_df$Panel <- factor(bar_df$Panel, levels = unique(metric_panel$Panel))
   bar_df$Metric <- factor(bar_df$Metric, levels = metrics)
-  bar_df <- merge(bar_df, model_spec, by = "MODEL", all.x = TRUE, sort = FALSE)
-  bar_df$MODEL <- factor(bar_df$MODEL, levels = model_levels)
-  bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$MODEL), ]
-  bar_df$x <- bar_df$metric_id + bar_df$Offset
+  bar_df <- merge(bar_df, model_spec, by = "MODEL_BASE", all.x = TRUE, sort = FALSE)
+  bar_df <- merge(bar_df, plot_spec, by = "PLOT_ID", all.x = TRUE, sort = FALSE)
+  bar_df$MODEL_BASE <- factor(bar_df$MODEL_BASE, levels = model_levels)
+  bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
+  bar_df$x <- bar_df$metric_id + bar_df$PlotOffset
   bar_df$xmin <- bar_df$x - 0.10
   bar_df$xmax <- bar_df$x + 0.10
   bar_df$ValueLabel <- ifelse(is.na(bar_df$Value), "", sprintf("%.3f", bar_df$Value))
+  if (any(duplicated(fit_df$MODEL_BASE))) {
+    bar_df$ValueLabel <- ifelse(
+      bar_df$ValueLabel == "",
+      "",
+      paste0(bar_df$PLOT_ID, "\n", bar_df$ValueLabel)
+    )
+  }
 
   panel_levels <- levels(bar_df$Panel)
   incremental_ymin <- plot_model_fit_choose_incremental_ymin(bar_df$Value[bar_df$Panel == "Incremental fit (CFI & TLI)"])
@@ -469,7 +539,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   )
 
   bar_df <- merge(bar_df, axis_df, by = "Panel", all.x = TRUE, sort = FALSE)
-  bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$MODEL), ]
+  bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
   bar_df$label_y <- bar_df$Value + ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", 0.0080, 0.0065)
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
@@ -486,7 +556,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
 
   interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
   if (!is.null(interval_df) && nrow(interval_df) > 0L) {
-    interval_df <- merge(interval_df, bar_df[c("MODEL", "Metric", "Panel", "x")], by = c("MODEL", "Metric"), all.x = TRUE, sort = FALSE)
+    interval_df <- merge(interval_df, bar_df[c("PLOT_ID", "Metric", "Panel", "x")], by = c("PLOT_ID", "Metric"), all.x = TRUE, sort = FALSE)
     interval_df$Panel <- factor(interval_df$Panel, levels = panel_levels)
   }
 
@@ -496,7 +566,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   p <- ggplot2::ggplot() +
     ggplot2::geom_rect(
       data = bar_df[is.finite(bar_df$Value), , drop = FALSE],
-      ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$Value, fill = .data$MODEL),
+      ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$Value, fill = .data$MODEL_BASE),
       color = "#4f4f4f",
       linewidth = 0.35
     ) +
@@ -569,7 +639,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
 
 plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
   metrics <- metric_spec$Metric
-  model_levels <- fit_df$MODEL
+  plot_levels <- unique(fit_df$PLOT_ID)
   long_df <- do.call(rbind, lapply(seq_len(nrow(metric_spec)), function(i) {
     row <- metric_spec[i, ]
     values <- fit_df[[row$Metric]]
@@ -583,14 +653,14 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       ideal = row$Ideal
     )
     data.frame(
-      MODEL = fit_df$MODEL,
+      PLOT_ID = fit_df$PLOT_ID,
       Metric = row$Metric,
       Score = scores,
       ValueLabel = ifelse(is.na(values), "", sprintf("%.3f", values)),
       stringsAsFactors = FALSE
     )
   }))
-  long_df$MODEL <- factor(long_df$MODEL, levels = rev(model_levels))
+  long_df$PLOT_ID <- factor(long_df$PLOT_ID, levels = rev(plot_levels))
   long_df$Metric <- factor(long_df$Metric, levels = metrics)
 
   plot_layout <- list(
@@ -603,7 +673,7 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
     legend_barheight = grid::unit(0.55, "cm")
   )
 
-  ggplot2::ggplot(long_df, ggplot2::aes(x = .data$Metric, y = .data$MODEL, fill = .data$Score)) +
+  ggplot2::ggplot(long_df, ggplot2::aes(x = .data$Metric, y = .data$PLOT_ID, fill = .data$Score)) +
     ggplot2::geom_tile(color = "#f4f4f4", linewidth = 2.2, width = 0.99, height = 0.99) +
     ggplot2::geom_text(ggplot2::aes(label = .data$ValueLabel), size = 6.2 / ggplot2::.pt, fontface = "bold", color = "#1f1f1f") +
     ggplot2::scale_fill_gradientn(
@@ -637,4 +707,3 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
-

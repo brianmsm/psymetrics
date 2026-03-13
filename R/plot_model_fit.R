@@ -4,22 +4,26 @@
 #' `plot_model_fit()` is the public plotting entrypoint for fit-index
 #' objects created by [model_fit()] and [compare_model_fit()].
 #' In `v0.5.0`, it supports exactly two classes:
-#' - `model_fit` for a single fitted model
-#' - `compare_model_fit` for two or more fitted models
+#' - `model_fit` for one fitted model, including multi-row test summaries
+#' - `compare_model_fit` for two or more fitted models, including multi-row test summaries
 #'
-#' The default plot style is chosen automatically from the input class.
-#' For `model_fit`, the default is a single-fit bullet chart. For
-#' `compare_model_fit`, the default is a threshold-aware dot plot.
+#' The default plot style is chosen automatically after applying `test_mode`.
+#' For `model_fit`, the default is a single-fit bullet chart when one row
+#' remains, and a threshold-aware dot plot otherwise. For `compare_model_fit`,
+#' the default is always the threshold-aware dot plot.
 #'
 #' @param x A `model_fit` or `compare_model_fit` object.
 #' @param type Character string indicating the plot style.
-#'   Supported values depend on the input class:
-#'   - `model_fit`: `"default"`, `"bullet"`
-#'   - `compare_model_fit`: `"default"`, `"dots"`, `"bars"`, `"heatmap"`
+#'   Supported values are `"default"`, `"bullet"`, `"dots"`, `"bars"`,
+#'   and `"heatmap"`.
 #' @param metrics Optional character vector selecting which fit indices to plot.
 #'   Supported metrics are `"CFI"`, `"TLI"`, `"RMSEA"`, and `"SRMR"`.
 #'   Defaults to `NULL`, which uses those metrics in canonical order when they
 #'   are present in the object.
+#' @param test_mode Character string controlling which test rows are plotted when
+#'   the input contains multiple rows per model. Supported values are `"all"`,
+#'   `"non_standard"`, `"standard_only"`, and `"primary"`.
+#'   Defaults to `"all"`.
 #' @param verbose Logical. If `TRUE`, non-fatal informational messages are shown
 #'   when requested metrics are unavailable and dropped.
 #' @param ... Reserved for future extensions. Currently ignored.
@@ -48,12 +52,11 @@
 #'   plot_model_fit(compared_fits)
 #'   plot_model_fit(compared_fits, type = "bars")
 #' }
-plot_model_fit <- function(x, type = "default", metrics = NULL, verbose = TRUE, ...) {
+plot_model_fit <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE, ...) {
   UseMethod("plot_model_fit")
 }
 
 #' @export
-plot_model_fit.default <- function(x, type = "default", metrics = NULL, verbose = TRUE, ...) {
+plot_model_fit.default <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE, ...) {
   plot_model_fit_validate_input(x)
 }
-

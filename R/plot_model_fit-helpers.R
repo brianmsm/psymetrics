@@ -39,27 +39,23 @@ plot_model_fit_model_palette <- function(n_models) {
   grDevices::hcl.colors(n_models, palette = "Dynamic")
 }
 
+plot_model_fit_variant_shapes <- function(n_variants) {
+  base_shapes <- c(16, 17, 15, 18, 8, 3, 7, 9)
+  if (n_variants <= length(base_shapes)) {
+    return(base_shapes[seq_len(n_variants)])
+  }
+  rep(base_shapes, length.out = n_variants)
+}
+
 plot_model_fit_validate_input <- function(x) {
   if (inherits(x, "compare_model_fit")) {
     if (!"MODEL" %in% names(x)) {
       cli::cli_abort("`compare_model_fit` objects must contain a `MODEL` column.")
     }
-    if (anyDuplicated(x$MODEL)) {
-      cli::cli_abort(c(
-        "`plot_model_fit()` currently supports one row per model in `compare_model_fit` objects.",
-        "Objects with duplicated `MODEL` values usually come from extra test rows and are not yet supported for plotting."
-      ))
-    }
     return("compare_model_fit")
   }
 
   if (inherits(x, "model_fit")) {
-    if (nrow(x) != 1L) {
-      cli::cli_abort(c(
-        "`plot_model_fit()` currently supports one-row `model_fit` objects only.",
-        "Objects with multiple rows usually come from multiple test summaries; subset or recompute a single-row fit table first."
-      ))
-    }
     return("model_fit")
   }
 
@@ -77,12 +73,26 @@ plot_model_fit_validate_input <- function(x) {
   ))
 }
 
-plot_model_fit_resolve_type <- function(type, input_class) {
-  supported <- switch(
-    input_class,
-    model_fit = c("default", "bullet"),
-    compare_model_fit = c("default", "dots", "bars", "heatmap")
-  )
+plot_model_fit_resolve_test_mode <- function(test_mode) {
+  supported <- c("all", "non_standard", "standard_only", "primary")
+
+  if (!is.character(test_mode) || length(test_mode) != 1L || is.na(test_mode)) {
+    cli::cli_abort("`test_mode` must be a single character string.")
+  }
+
+  test_mode <- trimws(test_mode)
+  if (!test_mode %in% supported) {
+    cli::cli_abort(c(
+      sprintf("Unsupported `test_mode = '%s'`.", test_mode),
+      sprintf("Supported values: %s.", paste(supported, collapse = ", "))
+    ))
+  }
+
+  test_mode
+}
+
+plot_model_fit_resolve_type <- function(type, input_class, n_rows) {
+  supported <- c("default", "bullet", "dots", "bars", "heatmap")
 
   if (!is.character(type) || length(type) != 1L || is.na(type)) {
     cli::cli_abort("`type` must be a single character string.")
@@ -98,7 +108,10 @@ plot_model_fit_resolve_type <- function(type, input_class) {
   }
 
   if (type == "default") {
-    return(if (identical(input_class, "model_fit")) "bullet" else "dots")
+    if (identical(input_class, "model_fit") && n_rows == 1L) {
+      return("bullet")
+    }
+    return("dots")
   }
 
   type
@@ -149,10 +162,10 @@ plot_model_fit_resolve_metrics <- function(x, metrics = NULL, verbose = TRUE) {
 }
 
 plot_model_fit_prepare_single_df <- function(x, metrics) {
-  keep <- unique(c(metrics, "RMSEA_CI_low", "RMSEA_CI_high"))
+  keep <- unique(c(metrics, "RMSEA_CI_low", "RMSEA_CI_high", "TEST", "ESTIMATOR"))
   keep <- keep[keep %in% names(x)]
   data.frame(
-    MODEL = "Model",
+    MODEL_BASE = "Model",
     x[, keep, drop = FALSE],
     check.names = FALSE,
     stringsAsFactors = FALSE
@@ -160,18 +173,156 @@ plot_model_fit_prepare_single_df <- function(x, metrics) {
 }
 
 plot_model_fit_prepare_compare_df <- function(x, metrics) {
-  keep <- unique(c("MODEL", metrics, "RMSEA_CI_low", "RMSEA_CI_high"))
+  keep <- unique(c("MODEL", metrics, "RMSEA_CI_low", "RMSEA_CI_high", "TEST", "ESTIMATOR"))
   keep <- keep[keep %in% names(x)]
   out <- x[, keep, drop = FALSE]
-  out$MODEL <- as.character(out$MODEL)
+  out$MODEL_BASE <- as.character(out$MODEL)
+  out$MODEL <- NULL
   out
 }
 
-plot_model_fit_prepare_data <- function(x, metrics, input_class) {
-  if (identical(input_class, "model_fit")) {
-    return(plot_model_fit_prepare_single_df(x, metrics))
+plot_model_fit_is_standard_row <- function(df) {
+  out <- rep(FALSE, nrow(df))
+  if (nrow(df) == 0L) {
+    return(out)
   }
-  plot_model_fit_prepare_compare_df(x, metrics)
+
+  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+
+  for (idx in rows_by_model) {
+    model_df <- df[idx, , drop = FALSE]
+
+    if ("TEST" %in% names(model_df)) {
+      test_label <- trimws(as.character(model_df$TEST))
+      test_label[test_label == ""] <- NA_character_
+      if (any(!is.na(test_label))) {
+        out[idx] <- test_label %in% c("standard", "default", "none")
+        next
+      }
+    }
+
+    if ("ESTIMATOR" %in% names(model_df) && nrow(model_df) > 1L) {
+      estimator_label <- trimws(as.character(model_df$ESTIMATOR))
+      estimator_label[estimator_label == ""] <- NA_character_
+      if (length(unique(stats::na.omit(estimator_label))) > 1L &&
+          !is.na(estimator_label[1]) &&
+          !estimator_label[1] %in% estimator_label[-1]) {
+        out[idx[1]] <- TRUE
+      }
+    }
+  }
+
+  out
+}
+
+plot_model_fit_variant_labels <- function(df) {
+  n <- nrow(df)
+  if (n == 0L) {
+    return(character(0))
+  }
+
+  variant <- rep(NA_character_, n)
+  if ("TEST" %in% names(df)) {
+    variant <- trimws(as.character(df$TEST))
+    variant[variant == ""] <- NA_character_
+  }
+
+  estimator_label <- rep(NA_character_, n)
+  if ("ESTIMATOR" %in% names(df)) {
+    estimator_label <- trimws(as.character(df$ESTIMATOR))
+    estimator_label[estimator_label == ""] <- NA_character_
+  }
+
+  need_estimator <- is.na(variant)
+  variant[need_estimator] <- estimator_label[need_estimator]
+
+  row_fallback <- paste0("Row ", seq_len(n))
+  variant[is.na(variant)] <- row_fallback[is.na(variant)]
+
+  duplicated_variant <- duplicated(variant) | duplicated(variant, fromLast = TRUE)
+  if (any(duplicated_variant)) {
+    dup_index <- ave(seq_len(n), variant, FUN = seq_along)
+    variant[duplicated_variant] <- paste0(variant[duplicated_variant], " (Row ", dup_index[duplicated_variant], ")")
+  }
+
+  variant
+}
+
+plot_model_fit_apply_test_mode <- function(df, test_mode) {
+  if (nrow(df) == 0L) {
+    return(df)
+  }
+
+  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+  keep_idx <- integer(0)
+
+  for (idx in rows_by_model) {
+    model_df <- df[idx, , drop = FALSE]
+    standard_idx <- which(model_df$IS_STANDARD)
+    non_standard_idx <- setdiff(seq_len(nrow(model_df)), standard_idx)
+
+    selected_idx <- switch(
+      test_mode,
+      all = seq_len(nrow(model_df)),
+      non_standard = if (length(non_standard_idx) > 0L) non_standard_idx else seq_len(nrow(model_df)),
+      standard_only = standard_idx,
+      primary = if (length(non_standard_idx) > 0L) non_standard_idx[1] else 1L
+    )
+
+    if (length(selected_idx) > 0L) {
+      keep_idx <- c(keep_idx, idx[selected_idx])
+    }
+  }
+
+  df[keep_idx, , drop = FALSE]
+}
+
+plot_model_fit_finalize_plot_rows <- function(df) {
+  if (nrow(df) == 0L) {
+    return(df)
+  }
+
+  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+  variant <- character(nrow(df))
+  plot_id <- character(nrow(df))
+
+  for (idx in rows_by_model) {
+    model_df <- df[idx, , drop = FALSE]
+    model_variant <- plot_model_fit_variant_labels(model_df)
+    variant[idx] <- model_variant
+    if (length(idx) == 1L) {
+      plot_id[idx] <- model_df$MODEL_BASE[1]
+    } else {
+      plot_id[idx] <- paste0(model_df$MODEL_BASE, " • ", model_variant)
+    }
+  }
+
+  df$VARIANT <- variant
+  df$PLOT_ID <- plot_id
+  df$PLOT_ORDER <- seq_len(nrow(df))
+  df
+}
+
+plot_model_fit_prepare_data <- function(x, metrics, input_class, test_mode) {
+  out <- if (identical(input_class, "model_fit")) {
+    plot_model_fit_prepare_single_df(x, metrics)
+  } else {
+    plot_model_fit_prepare_compare_df(x, metrics)
+  }
+
+  out$MODEL_BASE <- as.character(out$MODEL_BASE)
+  out$IS_STANDARD <- plot_model_fit_is_standard_row(out)
+  out$ROW_IN_MODEL <- ave(seq_len(nrow(out)), out$MODEL_BASE, FUN = seq_along)
+  out <- plot_model_fit_apply_test_mode(out, test_mode)
+
+  if (nrow(out) == 0L) {
+    cli::cli_abort(c(
+      sprintf("`test_mode = '%s'` left no rows available to plot.", test_mode),
+      "Choose a different `test_mode` or create a fit table with compatible test rows."
+    ))
+  }
+
+  plot_model_fit_finalize_plot_rows(out)
 }
 
 plot_model_fit_extract_interval_df <- function(fit_df, metric_spec) {
@@ -191,7 +342,9 @@ plot_model_fit_extract_interval_df <- function(fit_df, metric_spec) {
       return(NULL)
     }
     data.frame(
-      MODEL = fit_df$MODEL,
+      MODEL_BASE = fit_df$MODEL_BASE,
+      PLOT_ID = fit_df$PLOT_ID,
+      VARIANT = fit_df$VARIANT,
       Metric = row$Metric,
       CI_low = ci_low,
       CI_high = ci_high,
@@ -368,14 +521,9 @@ plot_model_fit_build_model_spec <- function(model_names) {
   n_models <- length(model_names)
   offsets <- if (n_models == 1L) 0 else seq(-0.24, 0.24, length.out = n_models)
   data.frame(
-    MODEL = model_names,
+    MODEL_BASE = model_names,
     Fill = plot_model_fit_model_palette(n_models),
     Offset = offsets,
     stringsAsFactors = FALSE
   )
 }
-
-
-
-
-

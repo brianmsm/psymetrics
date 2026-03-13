@@ -4,22 +4,31 @@
 \alias{plot_model_fit}
 \title{Plot fit indices from \code{psymetrics} fit objects}
 \usage{
-plot_model_fit(x, type = "default", metrics = NULL, verbose = TRUE, ...)
+plot_model_fit(
+  x,
+  type = "default",
+  metrics = NULL,
+  test_mode = "all",
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{model_fit} or \code{compare_model_fit} object.}
 
 \item{type}{Character string indicating the plot style.
-Supported values depend on the input class:
-\itemize{
-\item \code{model_fit}: \code{"default"}, \code{"bullet"}
-\item \code{compare_model_fit}: \code{"default"}, \code{"dots"}, \code{"bars"}, \code{"heatmap"}
-}}
+Supported values are \code{"default"}, \code{"bullet"}, \code{"dots"}, \code{"bars"},
+and \code{"heatmap"}.}
 
 \item{metrics}{Optional character vector selecting which fit indices to plot.
 Supported metrics are \code{"CFI"}, \code{"TLI"}, \code{"RMSEA"}, and \code{"SRMR"}.
 Defaults to \code{NULL}, which uses those metrics in canonical order when they
 are present in the object.}
+
+\item{test_mode}{Character string controlling which test rows are plotted when
+the input contains multiple rows per model. Supported values are \code{"all"},
+\code{"non_standard"}, \code{"standard_only"}, and \code{"primary"}.
+Defaults to \code{"all"}.}
 
 \item{verbose}{Logical. If \code{TRUE}, non-fatal informational messages are shown
 when requested metrics are unavailable and dropped.}
@@ -34,13 +43,14 @@ A \code{ggplot} object.
 objects created by \code{\link[=model_fit]{model_fit()}} and \code{\link[=compare_model_fit]{compare_model_fit()}}.
 In \code{v0.5.0}, it supports exactly two classes:
 \itemize{
-\item \code{model_fit} for a single fitted model
-\item \code{compare_model_fit} for two or more fitted models
+\item \code{model_fit} for one fitted model, including multi-row test summaries
+\item \code{compare_model_fit} for two or more fitted models, including multi-row test summaries
 }
 
-The default plot style is chosen automatically from the input class.
-For \code{model_fit}, the default is a single-fit bullet chart. For
-\code{compare_model_fit}, the default is a threshold-aware dot plot.
+The default plot style is chosen automatically after applying \code{test_mode}.
+For \code{model_fit}, the default is a single-fit bullet chart when one row
+remains, and a threshold-aware dot plot otherwise. For \code{compare_model_fit},
+the default is always the threshold-aware dot plot.
 }
 \examples{
 if (requireNamespace("lavaan", quietly = TRUE) &&
