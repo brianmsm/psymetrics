@@ -494,6 +494,12 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   model_spec <- plot_model_fit_build_model_spec(model_levels)
   group_layout <- plot_model_fit_group_bar_layout(length(plot_levels))
   plot_spec <- data.frame(PLOT_ID = plot_levels, PlotOffset = group_layout$offsets, stringsAsFactors = FALSE)
+  show_variant_shape <- any(duplicated(fit_df$MODEL_BASE))
+  shape_values <- NULL
+  if (show_variant_shape) {
+    variant_levels <- unique(fit_df$VARIANT)
+    shape_values <- stats::setNames(plot_model_fit_variant_shapes(length(variant_levels)), variant_levels)
+  }
 
   metric_panel <- metric_spec[, c("Metric", "Panel", "Primary", "Direction", "ShowInterval", "IntervalLowCol", "IntervalHighCol"), drop = FALSE]
   metric_panel$metric_id <- ave(seq_len(nrow(metric_panel)), metric_panel$Panel, FUN = seq_along)
@@ -532,13 +538,6 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   bar_df$xmin <- bar_df$x - group_layout$half_width
   bar_df$xmax <- bar_df$x + group_layout$half_width
   bar_df$ValueLabel <- ifelse(is.na(bar_df$Value), "", sprintf("%.3f", bar_df$Value))
-  if (any(duplicated(fit_df$MODEL_BASE))) {
-    bar_df$ValueLabel <- ifelse(
-      bar_df$ValueLabel == "",
-      "",
-      paste0(bar_df$PLOT_ID, "\n", bar_df$ValueLabel)
-    )
-  }
 
   panel_levels <- levels(bar_df$Panel)
   incremental_ymin <- plot_model_fit_choose_incremental_ymin(bar_df$Value[bar_df$Panel == "Incremental fit (CFI & TLI)"])
@@ -570,9 +569,15 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     threshold = bar_df$Threshold,
     min_offset = ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", size_spec$upper_label_offset, size_spec$lower_label_offset)
   )
+  marker_df <- NULL
+  if (isTRUE(show_variant_shape)) {
+    marker_df <- bar_df[is.finite(bar_df$Value), c('PLOT_ID', 'MODEL_BASE', 'VARIANT', 'Metric', 'Panel', 'x', 'Value', 'label_y', 'ymin', 'ymax', 'CI_high'), drop = FALSE]
+    marker_df$shape_code <- unname(shape_values[marker_df$VARIANT])
+    marker_df$marker_x <- ifelse(marker_df$Metric == 'RMSEA' & is.finite(marker_df$CI_high), marker_df$x + group_layout$half_width * 0.38, marker_df$x)
+  }
+
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
-  threshold_df <- threshold_df[order(threshold_df$Panel, threshold_df$metric_id), ]
   metric_counts <- stats::setNames(as.integer(tapply(metric_panel$metric_id, metric_panel$Panel, max)), unique(metric_panel$Panel))
   threshold_df$label_x <- unname(metric_counts[as.character(threshold_df$Panel)]) + 0.49
   threshold_df$label_y <- threshold_df$Threshold + ifelse(
@@ -621,6 +626,29 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     )
   }
 
+  if (isTRUE(show_variant_shape) && !is.null(marker_df) && nrow(marker_df) > 0L) {
+    p <- p + plot_model_fit_geom_bar_marker(
+      data = marker_df,
+      ggplot2::aes(x = .data$marker_x, y = .data$Value, shape_code = .data$shape_code),
+      inherit.aes = FALSE,
+      size = size_spec$variant_marker_size,
+      stroke = size_spec$variant_marker_stroke,
+      colour = '#202020',
+      fill = '#202020',
+      show.legend = FALSE
+    ) +
+      ggplot2::geom_point(
+        data = marker_df,
+        ggplot2::aes(x = .data$marker_x, y = .data$Value, shape = .data$VARIANT),
+        inherit.aes = FALSE,
+        alpha = 0,
+        size = size_spec$variant_marker_size,
+        stroke = size_spec$variant_marker_stroke,
+        color = '#202020',
+        show.legend = TRUE
+      )
+  }
+
   p <- p +
     ggplot2::geom_label(
       data = bar_df[is.finite(bar_df$Value), , drop = FALSE],
@@ -656,7 +684,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     ggplot2::scale_fill_manual(values = stats::setNames(model_spec$Fill, model_levels)) +
     ggplot2::scale_x_continuous(breaks = NULL, labels = NULL, expand = plot_model_fit_bar_expand(max(metric_counts))) +
     ggplot2::coord_cartesian(clip = "off") +
-    ggplot2::labs(title = "Model fit comparison", subtitle = "Grouped threshold bars", x = NULL, y = "Index value", fill = "Model") +
+    ggplot2::labs(title = "Model fit comparison", subtitle = "Grouped threshold bars", x = NULL, y = "Index value", fill = "Model", shape = if (show_variant_shape) "Variant" else NULL) +
     ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       plot.title.position = "plot",
@@ -671,6 +699,11 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       axis.text.x = ggplot2::element_blank(),
       axis.ticks.x = ggplot2::element_blank()
     )
+
+  if (isTRUE(show_variant_shape) && !is.null(marker_df) && nrow(marker_df) > 0L) {
+    p <- p + ggplot2::scale_shape_manual(values = shape_values) +
+      ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(alpha = 1, size = size_spec$variant_marker_size, colour = '#202020')))
+  }
 
   p
 }
@@ -753,6 +786,9 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
+
+
+
 
 
 
