@@ -59,6 +59,57 @@ plot_model_fit_pt <- function(points) {
   points / ggplot2::.pt
 }
 
+GeomPlotModelFitBarMarker <- ggplot2::ggproto(
+  'GeomPlotModelFitBarMarker',
+  ggplot2::Geom,
+  required_aes = c('x', 'y', 'shape_code'),
+  default_aes = ggplot2::aes(alpha = 1),
+  draw_key = ggplot2::draw_key_blank,
+  draw_panel = function(data, panel_params, coord, size = 2.8, stroke = 0.7, colour = '#202020', fill = '#202020', gap_mm = 0.9, tall_gap_mm = 0.35) {
+    if (nrow(data) == 0L) {
+      return(grid::nullGrob())
+    }
+
+    coords <- coord$transform(data, panel_params)
+    tall_shape <- is.finite(coords$shape_code) & coords$shape_code %in% c(17, 24, 25)
+    gap_vec <- gap_mm + ifelse(tall_shape, tall_gap_mm, 0)
+
+    grid::pointsGrob(
+      x = grid::unit(coords$x, 'npc'),
+      y = grid::unit(coords$y, 'npc') - grid::unit(gap_vec + size / 2, 'mm'),
+      pch = coords$shape_code,
+      size = grid::unit(rep(size, nrow(coords)), 'mm'),
+      gp = grid::gpar(
+        col = colour,
+        fill = fill,
+        lwd = stroke * get('.stroke', envir = asNamespace('ggplot2'))
+      )
+    )
+  }
+)
+
+plot_model_fit_geom_bar_marker <- function(mapping = NULL, data = NULL, ..., size = 2.8, stroke = 0.7, colour = '#202020', fill = '#202020', gap_mm = 0.9, tall_gap_mm = 0.35, na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
+  ggplot2::layer(
+    geom = GeomPlotModelFitBarMarker,
+    mapping = mapping,
+    data = data,
+    stat = 'identity',
+    position = 'identity',
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(
+      size = size,
+      stroke = stroke,
+      colour = colour,
+      fill = fill,
+      gap_mm = gap_mm,
+      tall_gap_mm = tall_gap_mm,
+      na.rm = na.rm,
+      ...
+    )
+  )
+}
+
 plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
   style <- match.arg(style, c("bullet", "dots", "bars", "heatmap"))
   metric_scale <- plot_model_fit_density_scale(n_metrics, reference = 4, min_scale = 0.92, max_scale = 1.10)
@@ -113,14 +164,16 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         subtitle = 14,
         strip = 13.5,
         axis_y = 11.4,
-        value_pt = 10.0 * compact_scale,
+        value_pt = 10.8 * compact_scale,
         threshold_pt = 9.9 * metric_scale,
         metric_pt = 10.2,
         legend_pt = 11.2,
-        upper_label_offset = 0.009 + 0.0035 * compact_scale,
-        lower_label_offset = 0.007 + 0.0030 * compact_scale,
+        upper_label_offset = 0.0018 + 0.0008 * compact_scale,
+        lower_label_offset = 0.0014 + 0.0006 * compact_scale,
         label_padding = 0.0055 + 0.0015 * compact_scale,
         label_radius = 0.015,
+        variant_marker_size = 2.7 + 0.25 * compact_scale,
+        variant_marker_stroke = 0.7,
         threshold_panel_offset = 0.003 + 0.0015 * compact_scale,
         threshold_stack_offset = 0.002 + 0.0010 * compact_scale,
         axis_panel_offset = 0.014 + 0.004 * compact_scale
@@ -384,7 +437,7 @@ plot_model_fit_finalize_plot_rows <- function(df) {
     if (length(idx) == 1L) {
       plot_id[idx] <- model_df$MODEL_BASE[1]
     } else {
-      plot_id[idx] <- paste0(model_df$MODEL_BASE, " • ", model_variant)
+      plot_id[idx] <- paste0(model_df$MODEL_BASE, " | ", model_variant)
     }
   }
 
@@ -656,18 +709,45 @@ plot_model_fit_bar_expand <- function(n_metrics) {
   ggplot2::expansion(mult = c(0.05, 0.03))
 }
 
-plot_model_fit_bar_label_y <- function(anchor, ymin, ymax, threshold, min_offset, proximity = 0.025, threshold_bonus = 0.008) {
+plot_model_fit_bar_label_y <- function(anchor, ymin, ymax, threshold, min_offset, proximity = 0.02, threshold_bonus = 0.0012) {
   panel_span <- ymax - ymin
   if (!is.finite(anchor) || !is.finite(panel_span) || panel_span <= 0) {
     return(anchor)
   }
 
-  base_offset <- max(min_offset, panel_span * 0.015)
+  base_offset <- max(min_offset, panel_span * 0.004)
   candidate_y <- anchor + base_offset
   near_threshold <- is.finite(threshold) && abs(candidate_y - threshold) <= panel_span * proximity
   total_offset <- base_offset + if (near_threshold) panel_span * threshold_bonus else 0
   anchor + total_offset
 }
+
+plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code = NA_integer_) {
+  panel_span <- ymax - ymin
+  visible_height <- value - ymin
+  if (!is.finite(value) || !is.finite(visible_height) || !is.finite(panel_span) || panel_span <= 0 || visible_height <= 0) {
+    return(value)
+  }
+
+  tall_shape <- is.finite(shape_code) && shape_code %in% c(17, 24, 25)
+  depth_fraction <- 0.09 + if (tall_shape) 0.012 else 0
+  marker_y <- value - visible_height * depth_fraction
+
+  pmax(ymin + visible_height * 0.10, marker_y)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
