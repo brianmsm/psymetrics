@@ -276,6 +276,7 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     tick_y = size_spec$tick_y,
     y_limits = c(size_spec$y_lower, length(plot_levels) + size_spec$y_upper_pad),
     plain_label_offset = size_spec$plain_label_offset,
+    plain_label_vjust = size_spec$plain_label_vjust,
     callout_label_offset = size_spec$callout_label_offset,
     callout_curve_offset = size_spec$callout_curve_offset,
     callout_point_offset = 0.02,
@@ -398,14 +399,14 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       data = tick_spec[!tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       inherit.aes = FALSE,
-      color = "#636363",
+      color = "#5e5e5e",
       size = plot_model_fit_pt(size_spec$tick_pt)
     ) +
     ggplot2::geom_text(
       data = tick_spec[tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
       inherit.aes = FALSE,
-      color = "#4d4d4d",
+      color = "#4a4a4a",
       size = plot_model_fit_pt(size_spec$cutoff_pt),
       fontface = "bold"
     ) +
@@ -436,7 +437,7 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
       plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
       plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
-      axis.text.y = ggplot2::element_text(size = size_spec$axis_y),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_y, color = "#4a4a4a"),
       legend.text = ggplot2::element_text(size = size_spec$legend_pt),
       legend.title = ggplot2::element_text(size = size_spec$legend_pt + 0.5),
       axis.text.x = ggplot2::element_blank(),
@@ -692,7 +693,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
       strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
       plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
       plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
-      axis.text.y = ggplot2::element_text(size = size_spec$axis_y),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_y, color = "#4a4a4a"),
       legend.text = ggplot2::element_text(size = size_spec$legend_pt),
       legend.title = ggplot2::element_text(size = size_spec$legend_pt + 0.5),
       legend.position = "right",
@@ -786,6 +787,8 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
+
+
 
 
 

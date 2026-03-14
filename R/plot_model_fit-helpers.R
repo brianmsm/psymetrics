@@ -144,16 +144,17 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         title = 19,
         subtitle = 14,
         strip = 13.8,
-        axis_y = 11.8 * row_scale,
-        value_pt = 9.4 * compact_scale,
-        tick_pt = 8.8 * metric_scale,
-        cutoff_pt = 9.3 * metric_scale,
+        axis_y = 11.4,
+        value_pt = 10.2 * compact_scale,
+        tick_pt = 9.4 * metric_scale,
+        cutoff_pt = 9.9 * metric_scale,
         legend_pt = 11.2,
         data_ymin = 0.72,
         data_ymax_pad = 0.42 * row_scale,
         y_lower = 0.18,
         y_upper_pad = 0.72 * row_scale,
-        plain_label_offset = 0.16 + 0.06 * row_scale,
+        plain_label_offset = 0.20 + 0.07 * row_scale,
+        plain_label_vjust = -0.55,
         callout_label_offset = 0.22 + 0.08 * row_scale,
         callout_curve_offset = 0.14 + 0.07 * row_scale,
         tick_y = 0.34
@@ -735,6 +736,9 @@ plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code =
 
   pmax(ymin + visible_height * 0.10, marker_y)
 }
+
+
+
 
 
 
