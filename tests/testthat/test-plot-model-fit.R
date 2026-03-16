@@ -272,12 +272,13 @@ test_that("plot_model_fit derives variant labels from TEST, ESTIMATOR, or row fa
   expect_true(all(grepl("Row", duplicate_df$VARIANT)))
 })
 
-test_that("plot_model_fit dots uses color by model and shape by variant when needed", {
+test_that("plot_model_fit dots uses color by model and keeps variant shapes without a legend", {
   multi <- local_plot_model_fit_multirow_objects()
 
   plot_compare <- psymetrics::plot_model_fit(multi$compare, type = "dots")
   expect_equal(plot_compare$labels$colour, "Model")
-  expect_equal(plot_compare$labels$shape, "Variant")
+  expect_null(plot_compare$labels$shape)
+  expect_true(any(vapply(plot_compare$scales$scales, function(x) "shape" %in% x$aesthetics, logical(1))))
   expect_no_error(ggplot2::ggplot_build(plot_compare))
 })
 

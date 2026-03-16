@@ -330,15 +330,6 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
 
   if (show_variant_shape) {
     p <- p +
-      ggplot2::geom_curve(
-        data = callout_df,
-        ggplot2::aes(x = .data$Value, y = .data$MODEL_y + layout$callout_point_offset, xend = .data$curve_xend, yend = .data$curve_yend, color = .data$MODEL_BASE),
-        inherit.aes = FALSE,
-        curvature = 0.18,
-        linewidth = 0.82,
-        arrow = grid::arrow(length = grid::unit(0.045, "inches"), type = "closed"),
-        show.legend = FALSE
-      ) +
       ggplot2::geom_point(
         data = point_df,
         ggplot2::aes(x = .data$Value, y = .data$MODEL_y, shape = .data$VARIANT),
@@ -355,15 +346,6 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       )
   } else {
     p <- p +
-      ggplot2::geom_curve(
-        data = callout_df,
-        ggplot2::aes(x = .data$Value, y = .data$MODEL_y + layout$callout_point_offset, xend = .data$curve_xend, yend = .data$curve_yend, color = .data$MODEL_BASE),
-        inherit.aes = FALSE,
-        curvature = 0.18,
-        linewidth = 0.82,
-        arrow = grid::arrow(length = grid::unit(0.045, "inches"), type = "closed"),
-        show.legend = FALSE
-      ) +
       ggplot2::geom_point(
         data = point_df,
         ggplot2::aes(x = .data$Value, y = .data$MODEL_y),
@@ -381,18 +363,28 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
   }
 
   p <- p +
-    ggplot2::geom_text(
+    plot_model_fit_geom_plain_label(
       data = plain_df,
-      ggplot2::aes(x = .data$Value, y = .data$label_y, label = .data$ValueLabel, color = .data$MODEL_BASE),
+      ggplot2::aes(x = .data$Value, y = .data$MODEL_y, label = .data$ValueLabel, colour = .data$MODEL_BASE),
       inherit.aes = FALSE,
       size = plot_model_fit_pt(size_spec$value_pt),
+      point_size = 5.1,
+      text_colour = "#1f1f1f",
+      gap_mm = 0.75,
       show.legend = FALSE
     ) +
-    ggplot2::geom_text(
+    plot_model_fit_geom_dot_callout(
       data = callout_df,
-      ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust, color = .data$MODEL_BASE),
+      ggplot2::aes(x = .data$Value, y = .data$MODEL_y, label = .data$ValueLabel, hjust = .data$label_hjust, colour = .data$MODEL_BASE),
       inherit.aes = FALSE,
       size = plot_model_fit_pt(size_spec$value_pt),
+      point_size = 5.1,
+      text_colour = "#1f1f1f",
+      label_dx_mm = size_spec$callout_label_dx_mm,
+      label_dy_mm = size_spec$callout_label_dy_mm,
+      anchor_rise_mm = size_spec$callout_anchor_rise_mm,
+      arrow_mm = size_spec$callout_arrow_mm,
+      linewidth = size_spec$callout_curve_linewidth,
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
@@ -426,13 +418,16 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       subtitle = "Threshold-aware dot plot",
       x = NULL,
       y = NULL,
-      color = "Model",
-      shape = if (show_variant_shape) "Variant" else NULL
+      color = "Model"
     ) +
     ggplot2::theme_minimal(base_size = size_spec$base) +
     ggplot2::theme(
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "bottom",
+      legend.box = "vertical",
+      legend.spacing.y = grid::unit(1.2, "mm"),
+      legend.box.spacing = grid::unit(1.0, "mm"),
+      legend.margin = ggplot2::margin(0, 0, 0, 0),
       plot.title.position = "plot",
       strip.text = ggplot2::element_text(face = "bold", size = size_spec$strip),
       plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
@@ -442,6 +437,10 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       legend.title = ggplot2::element_text(size = size_spec$legend_pt + 0.5),
       axis.text.x = ggplot2::element_blank(),
       axis.ticks.x = ggplot2::element_blank()
+    ) +
+    ggplot2::guides(
+      color = ggplot2::guide_legend(order = 1),
+      shape = "none"
     )
 
   if (show_variant_shape) {
@@ -787,6 +786,7 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
 }
+
 
 
 

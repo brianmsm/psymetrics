@@ -59,6 +59,42 @@ plot_model_fit_pt <- function(points) {
   points / ggplot2::.pt
 }
 
+plot_model_fit_halo_text_grob <- function(label, x, y, just, col, fontsize, family = "", fontface = 1, lineheight = 1.2, halo_mm = 0.30, halo_col = "#E7E7E7", halo_alpha = 0.96) {
+  offsets <- list(
+    c(-1, 0), c(1, 0), c(0, -1), c(0, 1),
+    c(-1, -1), c(-1, 1), c(1, -1), c(1, 1)
+  )
+  halo_grobs <- lapply(offsets, function(offset) {
+    grid::textGrob(
+      label = label,
+      x = x + grid::unit(offset[1] * halo_mm, "mm"),
+      y = y + grid::unit(offset[2] * halo_mm, "mm"),
+      just = just,
+      gp = grid::gpar(
+        col = grDevices::adjustcolor(halo_col, alpha.f = halo_alpha),
+        fontsize = fontsize,
+        fontfamily = family,
+        fontface = fontface,
+        lineheight = lineheight
+      )
+    )
+  })
+  main_grob <- grid::textGrob(
+    label = label,
+    x = x,
+    y = y,
+    just = just,
+    gp = grid::gpar(
+      col = col,
+      fontsize = fontsize,
+      fontfamily = family,
+      fontface = fontface,
+      lineheight = lineheight
+    )
+  )
+  do.call(grid::grobTree, c(halo_grobs, list(main_grob)))
+}
+
 GeomPlotModelFitBarMarker <- ggplot2::ggproto(
   'GeomPlotModelFitBarMarker',
   ggplot2::Geom,
@@ -110,6 +146,145 @@ plot_model_fit_geom_bar_marker <- function(mapping = NULL, data = NULL, ..., siz
   )
 }
 
+GeomPlotModelFitPlainLabel <- ggplot2::ggproto(
+  'GeomPlotModelFitPlainLabel',
+  ggplot2::Geom,
+  required_aes = c('x', 'y', 'label'),
+  default_aes = ggplot2::aes(colour = '#202020', alpha = 1),
+  draw_key = ggplot2::draw_key_blank,
+  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f') {
+    if (nrow(data) == 0L) {
+      return(grid::nullGrob())
+    }
+
+    coords <- coord$transform(data, panel_params)
+    alpha_vec <- if ("alpha" %in% names(coords)) coords$alpha else rep(1, nrow(coords))
+    col_vec <- mapply(function(col, alpha) grDevices::adjustcolor(col, alpha.f = alpha), coords$colour, alpha_vec, USE.NAMES = FALSE)
+    text_col_vec <- rep(text_colour, length.out = nrow(coords))
+    text_y <- grid::unit(coords$y, "npc") + grid::unit(point_size / 2 + gap_mm, "mm")
+    fontsize <- size * get(".pt", envir = asNamespace("ggplot2"))
+    text_grobs <- lapply(seq_len(nrow(coords)), function(i) {
+      plot_model_fit_halo_text_grob(
+        label = coords$label[i],
+        x = grid::unit(coords$x[i], "npc"),
+        y = text_y[i],
+        just = c("centre", "bottom"),
+        col = text_col_vec[i],
+        fontsize = fontsize,
+        family = family,
+        fontface = fontface,
+        lineheight = lineheight
+      )
+    })
+    do.call(grid::grobTree, text_grobs)
+  }
+)
+
+plot_model_fit_geom_plain_label <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
+  ggplot2::layer(
+    geom = GeomPlotModelFitPlainLabel,
+    mapping = mapping,
+    data = data,
+    stat = 'identity',
+    position = 'identity',
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(
+      size = size,
+      point_size = point_size,
+      gap_mm = gap_mm,
+      family = family,
+      fontface = fontface,
+      lineheight = lineheight,
+      text_colour = text_colour,
+      na.rm = na.rm,
+      ...
+    )
+  )
+}
+
+GeomPlotModelFitDotCallout <- ggplot2::ggproto(
+  'GeomPlotModelFitDotCallout',
+  ggplot2::Geom,
+  required_aes = c('x', 'y', 'label'),
+  default_aes = ggplot2::aes(colour = '#202020', alpha = 1, hjust = 0),
+  draw_key = ggplot2::draw_key_blank,
+  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f') {
+    if (nrow(data) == 0L) {
+      return(grid::nullGrob())
+    }
+
+    coords <- coord$transform(data, panel_params)
+    alpha_vec <- if ('alpha' %in% names(coords)) coords$alpha else rep(1, nrow(coords))
+    col_vec <- mapply(function(col, alpha) grDevices::adjustcolor(col, alpha.f = alpha), coords$colour, alpha_vec, USE.NAMES = FALSE)
+    text_col_vec <- rep(text_colour, length.out = nrow(coords))
+    hjust_vec <- if ('hjust' %in% names(data)) data$hjust else rep(0, nrow(data))
+    direction <- ifelse(hjust_vec > 0.5, -1, 1)
+    text_x <- grid::unit(coords$x, 'npc') + grid::unit(direction * (point_size / 2 + label_dx_mm), 'mm')
+    text_y <- grid::unit(coords$y, 'npc') + grid::unit(label_dy_mm, 'mm')
+    seg_x0 <- grid::unit(coords$x, 'npc') + grid::unit(direction * (point_size / 2 - 0.1), 'mm')
+    seg_y0 <- grid::unit(coords$y, 'npc') + grid::unit(anchor_rise_mm, 'mm')
+    seg_x1 <- text_x - grid::unit(direction * 0.55, 'mm')
+    seg_y1 <- text_y - grid::unit(0.55, 'mm')
+    text_grobs <- lapply(seq_len(nrow(coords)), function(i) {
+      plot_model_fit_halo_text_grob(
+        label = coords$label[i],
+        x = text_x[i],
+        y = text_y[i],
+        just = c(if (direction[i] > 0) "left" else "right", "bottom"),
+        col = text_col_vec[i],
+        fontsize = size * get(".pt", envir = asNamespace("ggplot2")),
+        family = family,
+        fontface = fontface,
+        lineheight = lineheight
+      )
+    })
+
+    do.call(
+      grid::grobTree,
+      c(
+        list(
+          grid::segmentsGrob(
+            x0 = seg_x0,
+            y0 = seg_y0,
+            x1 = seg_x1,
+            y1 = seg_y1,
+            gp = grid::gpar(col = col_vec, lwd = linewidth * get('.stroke', envir = asNamespace('ggplot2'))),
+            arrow = grid::arrow(length = grid::unit(arrow_mm, 'mm'), type = 'closed')
+          )
+        ),
+        text_grobs
+      )
+    )
+  }
+)
+
+plot_model_fit_geom_dot_callout <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
+  ggplot2::layer(
+    geom = GeomPlotModelFitDotCallout,
+    mapping = mapping,
+    data = data,
+    stat = 'identity',
+    position = 'identity',
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(
+      size = size,
+      point_size = point_size,
+      label_dx_mm = label_dx_mm,
+      label_dy_mm = label_dy_mm,
+      anchor_rise_mm = anchor_rise_mm,
+      arrow_mm = arrow_mm,
+      linewidth = linewidth,
+      family = family,
+      fontface = fontface,
+      lineheight = lineheight,
+      text_colour = text_colour,
+      na.rm = na.rm,
+      ...
+    )
+  )
+}
 plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
   style <- match.arg(style, c("bullet", "dots", "bars", "heatmap"))
   metric_scale <- plot_model_fit_density_scale(n_metrics, reference = 4, min_scale = 0.92, max_scale = 1.10)
@@ -131,7 +306,7 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         title = 20,
         subtitle = 14.5,
         strip = 17,
-        value_pt = 10.2 * compact_scale,
+        value_pt = 10.8 * compact_scale,
         tick_pt = 8.6 * metric_scale,
         cutoff_pt = 9.2 * metric_scale,
         tick_y = 0.72,
@@ -157,6 +332,11 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         plain_label_vjust = -0.55,
         callout_label_offset = 0.22 + 0.08 * row_scale,
         callout_curve_offset = 0.14 + 0.07 * row_scale,
+        callout_curve_linewidth = 0.72 * compact_scale,
+        callout_arrow_mm = 0.90 * compact_scale,
+        callout_label_dx_mm = 1.95 * compact_scale,
+        callout_label_dy_mm = 1.45 * compact_scale,
+        callout_anchor_rise_mm = 0.75 * compact_scale,
         tick_y = 0.34
       ),
       bars = list(
