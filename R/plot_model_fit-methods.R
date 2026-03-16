@@ -776,12 +776,12 @@ plot_model_fit_heatmap_scorecard <- function(fit_df, metric_spec) {
       plot.title = ggplot2::element_text(size = size_spec$title, face = "bold"),
       plot.subtitle = ggplot2::element_text(size = size_spec$subtitle),
       panel.grid = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(size = size_spec$axis_pt, face = "plain"),
-      axis.text.y = ggplot2::element_text(size = size_spec$axis_pt, face = "plain"),
+      axis.text.x = ggplot2::element_text(size = size_spec$axis_pt, face = "plain", color = "#4a4a4a"),
+      axis.text.y = ggplot2::element_text(size = size_spec$axis_pt, face = "plain", color = "#4a4a4a"),
       legend.position = "bottom",
       legend.direction = "horizontal",
-      legend.title = ggplot2::element_text(size = size_spec$legend_title_pt, hjust = 0.5),
-      legend.text = ggplot2::element_text(size = size_spec$legend_text_pt),
+      legend.title = ggplot2::element_text(size = size_spec$legend_title_pt, hjust = 0.5, color = "#2f2f2f"),
+      legend.text = ggplot2::element_text(size = size_spec$legend_text_pt, color = "#2f2f2f"),
       legend.box.margin = ggplot2::margin(t = 6, r = 0, b = 0, l = 0),
       legend.margin = ggplot2::margin(0, 0, 0, 0)
     )
