@@ -11,7 +11,7 @@ plot_model_fit_metric_spec <- function(metrics = NULL) {
     Poor = c(0.80, 0.80, 0.12, 0.12),
     Primary = c(0.95, 0.90, 0.08, 0.05),
     AxisMin = c(0.80, 0.80, 0.00, 0.00),
-    AxisMax = c(1.00, 1.00, 0.14, 0.14),
+    AxisMax = c(1.00, 1.00, 0.15, 0.15),
     Panel = c(
       "Incremental fit (CFI & TLI)",
       "Incremental fit (CFI & TLI)",
@@ -59,7 +59,7 @@ plot_model_fit_pt <- function(points) {
   points / ggplot2::.pt
 }
 
-plot_model_fit_halo_text_grob <- function(label, x, y, just, col, fontsize, family = "", fontface = 1, lineheight = 1.2, halo_mm = 0.30, halo_col = "#E7E7E7", halo_alpha = 0.96) {
+plot_model_fit_halo_text_grob <- function(label, x, y, just, col, fontsize, family = "", fontface = 1, lineheight = 1.2, halo_mm = 0.30, halo_col = "#E7E7E7", halo_alpha = 0.96, responsive_ref_width_mm = NULL, responsive_min_scale = 0.90, responsive_max_scale = 1.00) {
   offsets <- list(
     c(-1, 0), c(1, 0), c(0, -1), c(0, 1),
     c(-1, -1), c(-1, 1), c(1, -1), c(1, 1)
@@ -152,7 +152,7 @@ GeomPlotModelFitPlainLabel <- ggplot2::ggproto(
   required_aes = c('x', 'y', 'label'),
   default_aes = ggplot2::aes(colour = '#202020', alpha = 1),
   draw_key = ggplot2::draw_key_blank,
-  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f') {
+  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', responsive_ref_width_mm = NULL, responsive_min_scale = 0.90, responsive_max_scale = 1.00) {
     if (nrow(data) == 0L) {
       return(grid::nullGrob())
     }
@@ -173,14 +173,17 @@ GeomPlotModelFitPlainLabel <- ggplot2::ggproto(
         fontsize = fontsize,
         family = family,
         fontface = fontface,
-        lineheight = lineheight
+        lineheight = lineheight,
+        responsive_ref_width_mm = responsive_ref_width_mm,
+        responsive_min_scale = responsive_min_scale,
+        responsive_max_scale = responsive_max_scale
       )
     })
     do.call(grid::grobTree, text_grobs)
   }
 )
 
-plot_model_fit_geom_plain_label <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
+plot_model_fit_geom_plain_label <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, gap_mm = 0.8, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', responsive_ref_width_mm = NULL, responsive_min_scale = 0.90, responsive_max_scale = 1.00, na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
   ggplot2::layer(
     geom = GeomPlotModelFitPlainLabel,
     mapping = mapping,
@@ -197,6 +200,9 @@ plot_model_fit_geom_plain_label <- function(mapping = NULL, data = NULL, ..., si
       fontface = fontface,
       lineheight = lineheight,
       text_colour = text_colour,
+      responsive_ref_width_mm = responsive_ref_width_mm,
+      responsive_min_scale = responsive_min_scale,
+      responsive_max_scale = responsive_max_scale,
       na.rm = na.rm,
       ...
     )
@@ -209,7 +215,7 @@ GeomPlotModelFitDotCallout <- ggplot2::ggproto(
   required_aes = c('x', 'y', 'label'),
   default_aes = ggplot2::aes(colour = '#202020', alpha = 1, hjust = 0),
   draw_key = ggplot2::draw_key_blank,
-  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f') {
+  draw_panel = function(data, panel_params, coord, size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', responsive_ref_width_mm = NULL, responsive_min_scale = 0.90, responsive_max_scale = 1.00) {
     if (nrow(data) == 0L) {
       return(grid::nullGrob())
     }
@@ -236,7 +242,10 @@ GeomPlotModelFitDotCallout <- ggplot2::ggproto(
         fontsize = size * get(".pt", envir = asNamespace("ggplot2")),
         family = family,
         fontface = fontface,
-        lineheight = lineheight
+        lineheight = lineheight,
+        responsive_ref_width_mm = responsive_ref_width_mm,
+        responsive_min_scale = responsive_min_scale,
+        responsive_max_scale = responsive_max_scale
       )
     })
 
@@ -259,7 +268,7 @@ GeomPlotModelFitDotCallout <- ggplot2::ggproto(
   }
 )
 
-plot_model_fit_geom_dot_callout <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
+plot_model_fit_geom_dot_callout <- function(mapping = NULL, data = NULL, ..., size = 3.8, point_size = 5.1, label_dx_mm = 1.95, label_dy_mm = 1.45, anchor_rise_mm = 0.75, arrow_mm = 0.90, linewidth = 0.72, family = '', fontface = 1, lineheight = 1.2, text_colour = '#1f1f1f', responsive_ref_width_mm = NULL, responsive_min_scale = 0.90, responsive_max_scale = 1.00, na.rm = FALSE, show.legend = FALSE, inherit.aes = FALSE) {
   ggplot2::layer(
     geom = GeomPlotModelFitDotCallout,
     mapping = mapping,
@@ -280,6 +289,9 @@ plot_model_fit_geom_dot_callout <- function(mapping = NULL, data = NULL, ..., si
       fontface = fontface,
       lineheight = lineheight,
       text_colour = text_colour,
+      responsive_ref_width_mm = responsive_ref_width_mm,
+      responsive_min_scale = responsive_min_scale,
+      responsive_max_scale = responsive_max_scale,
       na.rm = na.rm,
       ...
     )
@@ -306,13 +318,16 @@ plot_model_fit_size_spec <- function(style, n_metrics = 4L, n_rows = 1L) {
         title = 20,
         subtitle = 14.5,
         strip = 17,
-        value_pt = 10.8 * compact_scale,
+        value_pt = 10.0 * compact_scale,
         tick_pt = 8.6 * metric_scale,
         cutoff_pt = 9.2 * metric_scale,
         tick_y = 0.72,
-        plain_label_y = 1.205 + 0.02 * metric_scale,
-        curve_yend = 1.145 + 0.02 * metric_scale,
-        band_padding = 0.02 * metric_scale
+        band_padding = 0.02 * metric_scale,
+        callout_curve_linewidth = 0.78 * compact_scale,
+        callout_arrow_mm = 1.10 * compact_scale,
+        callout_label_dx_mm = 2.25 * compact_scale,
+        callout_label_dy_mm = 1.90 * compact_scale,
+        callout_anchor_rise_mm = 0.95 * compact_scale
       ),
       dots = list(
         base = 14.5,
@@ -685,14 +700,117 @@ plot_model_fit_extract_interval_df <- function(fit_df, metric_spec) {
   do.call(rbind, rows)
 }
 
-plot_model_fit_single_band_spec <- function(metrics) {
+plot_model_fit_floor_nice <- function(x, step) {
+  if (!is.finite(x) || !is.finite(step) || step <= 0) {
+    return(x)
+  }
+  round(step * floor((x + 1e-9) / step), 8)
+}
+
+plot_model_fit_ceiling_nice <- function(x, step) {
+  if (!is.finite(x) || !is.finite(step) || step <= 0) {
+    return(x)
+  }
+  round(step * ceiling((x - 1e-9) / step), 8)
+}
+
+plot_model_fit_single_axis_step <- function(metric) {
+  0.05
+}
+
+plot_model_fit_round_midpoint <- function(x) {
+  if (!is.finite(x)) {
+    return(x)
+  }
+  round(x, 2)
+}
+
+plot_model_fit_single_tick_near_threshold <- function(axis_min, axis_max, auto_breaks, cutoff_breaks) {
+  candidate_diffs <- diff(sort(unique(c(axis_min, auto_breaks, axis_max))))
+  candidate_diffs <- candidate_diffs[is.finite(candidate_diffs) & candidate_diffs > 0]
+  ref_gap <- if (length(candidate_diffs) > 0L) stats::median(candidate_diffs) else (axis_max - axis_min) / 4
+  min(ref_gap * 0.45, (axis_max - axis_min) * 0.12)
+}
+
+plot_model_fit_single_tick_spec_for_metric <- function(metric, axis_min, axis_max, cutoff_breaks) {
+  auto_breaks <- scales::breaks_extended(n = if (metric %in% c("CFI", "TLI")) 5 else 5)(c(axis_min, axis_max))
+  auto_breaks <- auto_breaks[is.finite(auto_breaks)]
+  auto_breaks <- auto_breaks[auto_breaks >= axis_min - 1e-9 & auto_breaks <= axis_max + 1e-9]
+  auto_breaks <- auto_breaks[!(abs(auto_breaks - axis_min) < 1e-9 | abs(auto_breaks - axis_max) < 1e-9)]
+
+  near_threshold <- plot_model_fit_single_tick_near_threshold(axis_min, axis_max, auto_breaks, cutoff_breaks)
+  between_cutoffs <- vapply(auto_breaks, function(x) {
+    any(x > cutoff_breaks[-length(cutoff_breaks)] & x < cutoff_breaks[-1])
+  }, logical(1))
+  near_cutoff <- vapply(auto_breaks, function(x) {
+    any(abs(x - cutoff_breaks) <= near_threshold)
+  }, logical(1))
+
+  kept_breaks <- auto_breaks[!(between_cutoffs | near_cutoff)]
+  left_interval_breaks <- kept_breaks[kept_breaks > axis_min & kept_breaks < min(cutoff_breaks)]
+  if (length(left_interval_breaks) == 0L && axis_min < min(cutoff_breaks)) {
+    midpoint <- plot_model_fit_round_midpoint(mean(c(axis_min, min(cutoff_breaks))))
+    if (midpoint > axis_min + 1e-9 && midpoint < min(cutoff_breaks) - 1e-9) {
+      kept_breaks <- c(kept_breaks, midpoint)
+    }
+  }
+
+  if (identical(metric, "RMSEA") && axis_min <= 0.10 && axis_max >= 0.10) {
+    kept_breaks <- c(kept_breaks, 0.10)
+  }
+
+  sort(unique(c(axis_min, kept_breaks, cutoff_breaks, axis_max)))
+}
+
+plot_model_fit_single_axis_spec <- function(metric_spec, value_df, interval_df = NULL) {
+  out <- metric_spec
+  interval_split <- NULL
+  if (!is.null(interval_df) && nrow(interval_df) > 0L) {
+    interval_split <- split(interval_df, as.character(interval_df$Metric))
+  }
+
+  for (i in seq_len(nrow(out))) {
+    metric <- out$Metric[i]
+    axis_min <- out$AxisMin[i]
+    axis_max <- out$AxisMax[i]
+    step <- plot_model_fit_single_axis_step(metric)
+    observed <- value_df$Value[value_df$Metric == metric]
+    observed <- observed[is.finite(observed)]
+
+    if (!is.null(interval_split) && metric %in% names(interval_split)) {
+      metric_interval <- interval_split[[metric]]
+      observed <- c(observed, metric_interval$CI_low, metric_interval$CI_high)
+    }
+
+    observed <- observed[is.finite(observed)]
+    if (length(observed) == 0L) {
+      next
+    }
+
+    lower_bound <- min(axis_min, observed)
+    upper_bound <- max(axis_max, observed)
+
+    out$AxisMin[i] <- plot_model_fit_floor_nice(lower_bound, step)
+    out$AxisMax[i] <- plot_model_fit_ceiling_nice(upper_bound, step)
+  }
+
+  out
+}
+
+plot_model_fit_single_band_spec <- function(metrics, axis_spec = NULL) {
+  if (is.null(axis_spec)) {
+    axis_spec <- plot_model_fit_metric_spec(metrics)
+  }
   rows <- list()
   for (metric in metrics) {
+    axis_row <- axis_spec[match(metric, axis_spec$Metric), , drop = FALSE]
+    axis_min <- axis_row$AxisMin
+    axis_max <- axis_row$AxisMax
     if (metric %in% c("CFI", "TLI")) {
       rows[[length(rows) + 1L]] <- data.frame(
         Metric = metric,
-        xmin = c(0.80, 0.90, 0.95),
-        xmax = c(0.90, 0.95, 1.00),
+        xmin = c(axis_min, 0.90, 0.95),
+        xmax = c(0.90, 0.95, axis_max),
         band = c("Needs work", "Acceptable", "Good"),
         stringsAsFactors = FALSE
       )
@@ -700,7 +818,7 @@ plot_model_fit_single_band_spec <- function(metrics) {
       rows[[length(rows) + 1L]] <- data.frame(
         Metric = metric,
         xmin = c(0.00, 0.05, 0.08, 0.10),
-        xmax = c(0.05, 0.08, 0.10, 0.14),
+        xmax = c(0.05, 0.08, 0.10, axis_max),
         band = c("Good", "Acceptable", "Near limit", "Needs work"),
         stringsAsFactors = FALSE
       )
@@ -708,7 +826,7 @@ plot_model_fit_single_band_spec <- function(metrics) {
       rows[[length(rows) + 1L]] <- data.frame(
         Metric = metric,
         xmin = c(0.00, 0.06, 0.08),
-        xmax = c(0.06, 0.08, 0.14),
+        xmax = c(0.06, 0.08, axis_max),
         band = c("Good", "Almost good", "Needs work"),
         stringsAsFactors = FALSE
       )
@@ -745,35 +863,28 @@ plot_model_fit_cutoff_spec <- function(metrics, style = c("single", "grouped")) 
   out
 }
 
-plot_model_fit_tick_spec <- function(metrics) {
+plot_model_fit_tick_spec <- function(metrics, axis_spec = NULL) {
+  if (is.null(axis_spec)) {
+    axis_spec <- plot_model_fit_metric_spec(metrics)
+  }
+  cutoff_df <- plot_model_fit_cutoff_spec(metrics, style = "single")
   rows <- list()
   for (metric in metrics) {
-    if (metric %in% c("CFI", "TLI")) {
-      rows[[length(rows) + 1L]] <- data.frame(
-        Metric = metric,
-        x = c(0.80, 0.85, 0.90, 0.95, 1.00),
-        label = c("0.80", "0.85", "0.90", "0.95", "1.00"),
-        stringsAsFactors = FALSE
-      )
-    } else if (metric == "RMSEA") {
-      rows[[length(rows) + 1L]] <- data.frame(
-        Metric = metric,
-        x = c(0.00, 0.05, 0.08, 0.10),
-        label = c("0.00", "0.05", "0.08", "0.10"),
-        stringsAsFactors = FALSE
-      )
-    } else if (metric == "SRMR") {
-      rows[[length(rows) + 1L]] <- data.frame(
-        Metric = metric,
-        x = c(0.00, 0.06, 0.08, 0.10),
-        label = c("0.00", "0.06", "0.08", "0.10"),
-        stringsAsFactors = FALSE
-      )
-    }
+    axis_row <- axis_spec[match(metric, axis_spec$Metric), , drop = FALSE]
+    axis_min <- axis_row$AxisMin
+    axis_max <- axis_row$AxisMax
+    cutoff_breaks <- cutoff_df$cutoff[cutoff_df$Metric == metric]
+    ticks <- plot_model_fit_single_tick_spec_for_metric(metric, axis_min, axis_max, cutoff_breaks)
+
+    rows[[length(rows) + 1L]] <- data.frame(
+      Metric = metric,
+      x = ticks,
+      label = sprintf("%.2f", ticks),
+      stringsAsFactors = FALSE
+    )
   }
   out <- do.call(rbind, rows)
   out$Metric <- factor(out$Metric, levels = metrics)
-  cutoff_df <- plot_model_fit_cutoff_spec(metrics, style = "single")
   out$is_cutoff <- mapply(function(metric, x) {
     x %in% cutoff_df$cutoff[cutoff_df$Metric == metric]
   }, as.character(out$Metric), out$x)

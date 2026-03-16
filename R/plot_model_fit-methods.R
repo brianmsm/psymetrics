@@ -39,9 +39,6 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
 
   metrics <- metric_spec$Metric
   size_spec <- plot_model_fit_size_spec("bullet", n_metrics = length(metrics), n_rows = 1L)
-  band_spec <- plot_model_fit_single_band_spec(metrics)
-  cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
-  tick_spec <- plot_model_fit_tick_spec(metrics)
   interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
 
   value_df <- data.frame(
@@ -52,11 +49,6 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     stringsAsFactors = FALSE
   )
   value_df$ValueLabel <- ifelse(is.na(value_df$Value), "", sprintf("%.3f", value_df$Value))
-  value_df$Status <- vapply(
-    seq_len(nrow(value_df)),
-    function(i) plot_model_fit_assign_band(as.character(value_df$Metric[i]), value_df$Value[i], band_spec),
-    character(1)
-  )
 
   if (!is.null(interval_df) && nrow(interval_df) > 0L) {
     idx <- match(interval_df$Metric, value_df$Metric)
@@ -67,22 +59,32 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     )
   }
 
+  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, value_df, interval_df)
+  band_spec <- plot_model_fit_single_band_spec(metrics, axis_spec = metric_spec)
+  cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
+  tick_spec <- plot_model_fit_tick_spec(metrics, axis_spec = metric_spec)
+  value_df$AxisMin <- metric_spec$AxisMin[match(as.character(value_df$Metric), metric_spec$Metric)]
+  value_df$AxisMax <- metric_spec$AxisMax[match(as.character(value_df$Metric), metric_spec$Metric)]
+  value_df$Status <- vapply(
+    seq_len(nrow(value_df)),
+    function(i) plot_model_fit_assign_band(as.character(value_df$Metric[i]), value_df$Value[i], band_spec),
+    character(1)
+  )
+
   layout <- list(
     point_y = 1.00,
     band_ymin = 0.80,
     band_ymax = 1.20,
     tick_y = size_spec$tick_y,
-    plain_label_y = size_spec$plain_label_y,
-    curve_yend = size_spec$curve_yend,
     proximity_threshold = 0.035,
-    callout_x_offset = 0.05,
-    callout_xend_offset = 0.010
+    callout_x_offset = 0.05
   )
 
   value_df <- plot_model_fit_single_callout_layout(value_df, cutoff_spec, layout)
   valid_df <- value_df[is.finite(value_df$Value), , drop = FALSE]
-  callout_df <- valid_df[valid_df$use_callout, , drop = FALSE]
   plain_df <- valid_df[!valid_df$use_callout, , drop = FALSE]
+  callout_df <- valid_df[valid_df$use_callout, , drop = FALSE]
+  callout_df$PointY <- rep(layout$point_y, nrow(callout_df))
 
   axis_df <- data.frame(
     Metric = factor(metrics, levels = metrics),
@@ -135,14 +137,6 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
   }
 
   p <- p +
-    ggplot2::geom_curve(
-      data = callout_df,
-      ggplot2::aes(x = .data$Value, y = layout$point_y + 0.02, xend = .data$curve_xend, yend = layout$curve_yend),
-      curvature = 0.18,
-      linewidth = 0.75,
-      color = "#505050",
-      arrow = grid::arrow(length = grid::unit(0.11, "inches"), type = "closed")
-    ) +
     ggplot2::geom_point(
       data = valid_df,
       ggplot2::aes(x = .data$Value, y = layout$point_y, fill = .data$Status),
@@ -151,17 +145,36 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
       color = "white",
       stroke = 1.2
     ) +
-    ggplot2::geom_text(
+    plot_model_fit_geom_plain_label(
       data = plain_df,
-      ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel),
-      color = "#1f1f1f",
-      size = plot_model_fit_pt(size_spec$value_pt)
+      ggplot2::aes(x = .data$Value, y = layout$point_y, label = .data$ValueLabel),
+      inherit.aes = FALSE,
+      size = plot_model_fit_pt(size_spec$value_pt),
+      point_size = 6.6,
+      gap_mm = 1.15,
+      text_colour = "#1f1f1f",
+      responsive_ref_width_mm = 145,
+      responsive_min_scale = 0.90,
+      responsive_max_scale = 1.00,
+      show.legend = FALSE
     ) +
-    ggplot2::geom_text(
+    plot_model_fit_geom_dot_callout(
       data = callout_df,
-      ggplot2::aes(x = .data$label_x, y = .data$label_y, label = .data$ValueLabel, hjust = .data$label_hjust),
-      color = "#1f1f1f",
-      size = plot_model_fit_pt(size_spec$value_pt)
+      ggplot2::aes(x = .data$Value, y = .data$PointY, label = .data$ValueLabel, hjust = .data$label_hjust),
+      inherit.aes = FALSE,
+      colour = "#505050",
+      text_colour = "#1f1f1f",
+      size = plot_model_fit_pt(size_spec$value_pt),
+      point_size = 6.6,
+      label_dx_mm = size_spec$callout_label_dx_mm,
+      label_dy_mm = size_spec$callout_label_dy_mm,
+      anchor_rise_mm = size_spec$callout_anchor_rise_mm,
+      arrow_mm = size_spec$callout_arrow_mm,
+      linewidth = size_spec$callout_curve_linewidth,
+      responsive_ref_width_mm = 145,
+      responsive_min_scale = 0.90,
+      responsive_max_scale = 1.00,
+      show.legend = FALSE
     ) +
     ggplot2::geom_text(
       data = tick_spec[!tick_spec$is_cutoff, , drop = FALSE],
@@ -224,11 +237,15 @@ plot_model_fit_single_callout_layout <- function(value_df, cutoff_df, layout) {
     ifelse(default_side == "left" & left_near & !right_near, "right", default_side)
   )
 
-  out$use_callout <- is.finite(out$Value)
-  out$label_x <- ifelse(label_side == "right", right_x, left_x)
-  out$label_y <- layout$plain_label_y
-  out$curve_xend <- ifelse(label_side == "right", out$label_x - range_width * layout$callout_xend_offset, out$label_x + range_width * layout$callout_xend_offset)
-  out$curve_yend <- layout$curve_yend
+  point_near_cutoff <- mapply(function(metric_name, x, width) {
+    cutoffs <- cutoff_df$cutoff[cutoff_df$Metric == metric_name]
+    if (length(cutoffs) == 0L || !is.finite(x) || !is.finite(width)) {
+      return(FALSE)
+    }
+    min(abs(x - cutoffs)) <= width * layout$proximity_threshold
+  }, as.character(out$Metric), out$Value, range_width)
+
+  out$use_callout <- is.finite(out$Value) & point_near_cutoff
   out$label_hjust <- ifelse(label_side == "right", 0, 1)
   out
 }
