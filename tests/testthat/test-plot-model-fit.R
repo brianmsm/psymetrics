@@ -434,6 +434,21 @@ test_that("plot_model_fit bars and heatmap build cleanly for multi-row compare o
   expect_no_error(ggplot2::ggplot_build(psymetrics::plot_model_fit(multi$compare, type = "heatmap")))
 })
 
+test_that("plot_model_fit bars preserves panel-specific metric counts for subset metrics", {
+  multi <- local_plot_model_fit_multirow_objects()
+
+  plot_bars <- psymetrics::plot_model_fit(multi$compare, type = "bars", metrics = c("CFI", "TLI", "RMSEA"))
+  built <- ggplot2::ggplot_build(plot_bars)
+
+  axis_max_df <- built$data[[length(built$data)]][, c("PANEL", "x")]
+  panel_layout <- built$layout$layout[, c("PANEL", "Panel")]
+  axis_max_df$Panel <- panel_layout$Panel[match(axis_max_df$PANEL, panel_layout$PANEL)]
+  axis_max_by_panel <- stats::setNames(axis_max_df$x, axis_max_df$Panel)
+
+  expect_equal(unname(axis_max_by_panel["Incremental fit (CFI & TLI)"]), 2.52)
+  expect_equal(unname(axis_max_by_panel["Approximation error (RMSEA & SRMR)"]), 1.52)
+})
+
 test_that("plot_model_fit surfaces guided errors for raw fits and invalid test_mode results", {
   fit <- lm(mpg ~ wt, data = mtcars)
   multi <- local_plot_model_fit_multirow_objects()
@@ -453,4 +468,3 @@ test_that("plot_model_fit surfaces guided errors for raw fits and invalid test_m
     "left no rows available to plot"
   )
 })
-
