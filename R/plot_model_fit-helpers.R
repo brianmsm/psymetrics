@@ -711,6 +711,19 @@ plot_model_fit_single_axis_step <- function(metric) {
   0.05
 }
 
+plot_model_fit_display_axis_padding <- function(axis_min, axis_max, step) {
+  if (!is.finite(axis_min) || !is.finite(axis_max) || !is.finite(step) || step <= 0) {
+    return(0)
+  }
+
+  span <- axis_max - axis_min
+  if (!is.finite(span) || span <= 0) {
+    return(0)
+  }
+
+  max(span * 0.035, step * 0.10)
+}
+
 plot_model_fit_round_midpoint <- function(x) {
   if (!is.finite(x)) {
     return(x)
@@ -725,13 +738,30 @@ plot_model_fit_single_tick_near_threshold <- function(axis_min, axis_max, auto_b
   min(ref_gap * 0.45, (axis_max - axis_min) * 0.12)
 }
 
+plot_model_fit_auto_breaks <- function(metric, axis_min, axis_max) {
+  metric <- as.character(metric)[1]
+  axis_min <- suppressWarnings(min(axis_min, na.rm = TRUE))
+  axis_max <- suppressWarnings(max(axis_max, na.rm = TRUE))
+
+  if (!is.finite(axis_min) || !is.finite(axis_max) || axis_max <= axis_min) {
+    return(numeric())
+  }
+
+  span <- axis_max - axis_min
+  pretty_n <- if (metric %in% c("CFI", "TLI") && span > 0.22) 3 else 4
+  breaks <- pretty(c(axis_min, axis_max), n = pretty_n)
+  breaks <- breaks[is.finite(breaks)]
+  breaks <- breaks[breaks >= axis_min - 1e-9 & breaks <= axis_max + 1e-9]
+  unique(round(breaks, 10))
+}
+
 plot_model_fit_single_tick_spec_for_metric <- function(metric, axis_min, axis_max, cutoff_breaks) {
   canonical_row <- plot_model_fit_metric_spec(metric)
   canonical_min <- canonical_row$AxisMin
   canonical_max <- canonical_row$AxisMax
   expanded_high <- is.finite(axis_max) && axis_max > canonical_max + 1e-9
 
-  auto_breaks <- scales::breaks_extended(n = if (metric %in% c("CFI", "TLI")) 5 else 5)(c(axis_min, axis_max))
+  auto_breaks <- plot_model_fit_auto_breaks(metric, axis_min, axis_max)
   auto_breaks <- auto_breaks[is.finite(auto_breaks)]
   auto_breaks <- auto_breaks[auto_breaks >= axis_min - 1e-9 & auto_breaks <= axis_max + 1e-9]
   auto_breaks <- auto_breaks[!(abs(auto_breaks - axis_min) < 1e-9 | abs(auto_breaks - axis_max) < 1e-9)]
@@ -775,6 +805,8 @@ plot_model_fit_single_tick_spec_for_metric <- function(metric, axis_min, axis_ma
 plot_model_fit_single_axis_spec <- function(metric_spec, value_df, interval_df = NULL, upper_expand = c("nice", "data")) {
   upper_expand <- match.arg(upper_expand)
   out <- metric_spec
+  out$DisplayMin <- out$AxisMin
+  out$DisplayMax <- out$AxisMax
   interval_split <- NULL
   if (!is.null(interval_df) && nrow(interval_df) > 0L) {
     interval_split <- split(interval_df, as.character(interval_df$Metric))
@@ -800,27 +832,33 @@ plot_model_fit_single_axis_spec <- function(metric_spec, value_df, interval_df =
 
     lower_bound <- min(axis_min, observed)
     upper_bound <- max(axis_max, observed)
-
+    expanded_high <- upper_bound > axis_max + 1e-9
     out$AxisMin[i] <- plot_model_fit_floor_nice(lower_bound, step)
     out$AxisMax[i] <- if (identical(upper_expand, "nice")) {
       plot_model_fit_ceiling_nice(upper_bound, step)
     } else {
       round(upper_bound, 3)
     }
+    out$DisplayMin[i] <- out$AxisMin[i]
+    out$DisplayMax[i] <- if (identical(upper_expand, "data") && expanded_high) {
+      round(out$AxisMax[i] + plot_model_fit_display_axis_padding(out$AxisMin[i], out$AxisMax[i], step), 3)
+    } else {
+      out$AxisMax[i]
+    }
   }
 
   out
 }
 
-plot_model_fit_single_band_spec <- function(metrics, axis_spec = NULL) {
+plot_model_fit_single_band_spec <- function(metrics, axis_spec = NULL, display = FALSE) {
   if (is.null(axis_spec)) {
     axis_spec <- plot_model_fit_metric_spec(metrics)
   }
   rows <- list()
   for (metric in metrics) {
     axis_row <- axis_spec[match(metric, axis_spec$Metric), , drop = FALSE]
-    axis_min <- axis_row$AxisMin
-    axis_max <- axis_row$AxisMax
+    axis_min <- if (isTRUE(display) && "DisplayMin" %in% names(axis_row)) axis_row$DisplayMin else axis_row$AxisMin
+    axis_max <- if (isTRUE(display) && "DisplayMax" %in% names(axis_row)) axis_row$DisplayMax else axis_row$AxisMax
     if (metric %in% c("CFI", "TLI")) {
       rows[[length(rows) + 1L]] <- data.frame(
         Metric = metric,

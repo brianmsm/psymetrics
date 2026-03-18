@@ -301,6 +301,21 @@ test_that("plot_model_fit assigns exact cutoff values to the better CFI/TLI band
   expect_equal(psymetrics:::plot_model_fit_assign_band("RMSEA", 0.08, band_df), "Acceptable")
 })
 
+test_that("plot_model_fit internal auto breaks stay close to the approved plotting behavior", {
+  expect_equal(
+    psymetrics:::plot_model_fit_auto_breaks("CFI", 0.80, 1.00),
+    c(0.80, 0.85, 0.90, 0.95, 1.00)
+  )
+  expect_equal(
+    psymetrics:::plot_model_fit_auto_breaks("TLI", 0.70, 1.00),
+    c(0.70, 0.80, 0.90, 1.00)
+  )
+  expect_equal(
+    psymetrics:::plot_model_fit_auto_breaks("RMSEA", 0.00, 0.223),
+    c(0.00, 0.05, 0.10, 0.15, 0.20)
+  )
+})
+
 test_that("plot_model_fit dots uses color by model and keeps variant shapes without a legend", {
   multi <- local_plot_model_fit_multirow_objects()
 

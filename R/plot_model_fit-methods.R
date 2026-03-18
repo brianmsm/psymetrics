@@ -58,8 +58,8 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     )
   }
 
-  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, value_df, interval_df, upper_expand = "nice")
-  band_spec <- plot_model_fit_single_band_spec(metrics, axis_spec = metric_spec)
+  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, value_df, interval_df, upper_expand = "data")
+  band_spec <- plot_model_fit_single_band_spec(metrics, axis_spec = metric_spec, display = TRUE)
   cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
   tick_spec <- plot_model_fit_tick_spec(metrics, axis_spec = metric_spec)
   value_df$AxisMin <- metric_spec$AxisMin[match(as.character(value_df$Metric), metric_spec$Metric)]
@@ -87,13 +87,13 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
 
   axis_df <- data.frame(
     Metric = factor(metrics, levels = metrics),
-    x = metric_spec$AxisMin,
+    x = metric_spec$DisplayMin,
     y = layout$tick_y,
     stringsAsFactors = FALSE
   )
   axis_df2 <- data.frame(
     Metric = factor(metrics, levels = metrics),
-    x = metric_spec$AxisMax,
+    x = metric_spec$DisplayMax,
     y = layout$tick_y,
     stringsAsFactors = FALSE
   )
@@ -186,6 +186,7 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     ggplot2::geom_blank(data = axis_df2, ggplot2::aes(x = .data$x, y = .data$y)) +
     ggplot2::facet_wrap(~Metric, ncol = 1, scales = "free_x", strip.position = "left") +
     ggplot2::scale_fill_manual(values = c(band_fill, status_fill), guide = "none") +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0))) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(title = "Model fit indices", subtitle = "Single-fit bullet chart", x = NULL, y = NULL) +
     ggplot2::theme_minimal(base_size = size_spec$base) +
@@ -423,6 +424,7 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
       limits = layout$y_limits
     ) +
     ggplot2::facet_wrap(~Metric, scales = "free_x", ncol = min(2L, length(metrics))) +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.035))) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(
       title = "Model fit comparison",
