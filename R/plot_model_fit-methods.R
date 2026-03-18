@@ -59,7 +59,7 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
     )
   }
 
-  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, value_df, interval_df)
+  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, value_df, interval_df, upper_expand = "nice")
   band_spec <- plot_model_fit_single_band_spec(metrics, axis_spec = metric_spec)
   cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
   tick_spec <- plot_model_fit_tick_spec(metrics, axis_spec = metric_spec)
@@ -153,9 +153,6 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
       point_size = 6.6,
       gap_mm = 1.15,
       text_colour = "#1f1f1f",
-      responsive_ref_width_mm = 145,
-      responsive_min_scale = 0.90,
-      responsive_max_scale = 1.00,
       show.legend = FALSE
     ) +
     plot_model_fit_geom_dot_callout(
@@ -171,21 +168,18 @@ plot_model_fit_single_bullet <- function(fit_df, metric_spec) {
       anchor_rise_mm = size_spec$callout_anchor_rise_mm,
       arrow_mm = size_spec$callout_arrow_mm,
       linewidth = size_spec$callout_curve_linewidth,
-      responsive_ref_width_mm = 145,
-      responsive_min_scale = 0.90,
-      responsive_max_scale = 1.00,
       show.legend = FALSE
     ) +
     ggplot2::geom_text(
       data = tick_spec[!tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
-      color = "#5a5a5a",
+      color = "#5e5e5e",
       size = plot_model_fit_pt(size_spec$tick_pt)
     ) +
     ggplot2::geom_text(
       data = tick_spec[tick_spec$is_cutoff, , drop = FALSE],
       ggplot2::aes(x = .data$x, y = layout$tick_y, label = .data$label),
-      color = "#4b4b4b",
+      color = "#4a4a4a",
       size = plot_model_fit_pt(size_spec$cutoff_pt),
       fontface = "bold"
     ) +
@@ -282,24 +276,25 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
     interval_df$Metric <- factor(interval_df$Metric, levels = metrics)
   }
 
-  band_spec <- plot_model_fit_single_band_spec(metrics)
+  metric_spec <- plot_model_fit_single_axis_spec(metric_spec, long_df, interval_df, upper_expand = "data")
+  long_df$AxisMin <- metric_spec$AxisMin[match(as.character(long_df$Metric), metric_spec$Metric)]
+  long_df$AxisMax <- metric_spec$AxisMax[match(as.character(long_df$Metric), metric_spec$Metric)]
+  if (!is.null(interval_df) && nrow(interval_df) > 0L) {
+    interval_df$AxisMin <- metric_spec$AxisMin[match(as.character(interval_df$Metric), metric_spec$Metric)]
+    interval_df$AxisMax <- metric_spec$AxisMax[match(as.character(interval_df$Metric), metric_spec$Metric)]
+  }
+
+  band_spec <- plot_model_fit_single_band_spec(metrics, axis_spec = metric_spec)
   active_band_spec <- band_spec[band_spec$band != "Needs work", , drop = FALSE]
   cutoff_spec <- plot_model_fit_cutoff_spec(metrics, style = "single")
-  tick_spec <- plot_model_fit_tick_spec(metrics)
+  tick_spec <- plot_model_fit_tick_spec(metrics, axis_spec = metric_spec)
 
   layout <- list(
     data_ymin = size_spec$data_ymin,
     data_ymax = length(plot_levels) + size_spec$data_ymax_pad,
     tick_y = size_spec$tick_y,
     y_limits = c(size_spec$y_lower, length(plot_levels) + size_spec$y_upper_pad),
-    plain_label_offset = size_spec$plain_label_offset,
-    plain_label_vjust = size_spec$plain_label_vjust,
-    callout_label_offset = size_spec$callout_label_offset,
-    callout_curve_offset = size_spec$callout_curve_offset,
-    callout_point_offset = 0.02,
-    proximity_threshold = 0.035,
-    callout_x_offset = 0.05,
-    callout_xend_offset = 0.010
+    proximity_threshold = 0.035
   )
 
   long_df <- plot_model_fit_multi_callout_layout(long_df, cutoff_spec, layout)
@@ -470,11 +465,7 @@ plot_model_fit_threshold_dots <- function(fit_df, metric_spec) {
 plot_model_fit_multi_callout_layout <- function(df, cutoff_df, layout) {
   out <- df
   out$use_callout <- FALSE
-  out$label_x <- out$Value
-  out$label_y <- out$MODEL_y + layout$plain_label_offset
   out$label_hjust <- 0.5
-  out$curve_xend <- NA_real_
-  out$curve_yend <- NA_real_
 
   for (i in seq_len(nrow(out))) {
     if (!is.finite(out$Value[i])) {
@@ -493,11 +484,7 @@ plot_model_fit_multi_callout_layout <- function(df, cutoff_df, layout) {
 
     place_left <- out$Value[i] <= nearest_cutoff
     out$use_callout[i] <- TRUE
-    out$label_x[i] <- if (place_left) out$Value[i] - range_width * layout$callout_x_offset else out$Value[i] + range_width * layout$callout_x_offset
-    out$label_y[i] <- out$MODEL_y[i] + layout$callout_label_offset
     out$label_hjust[i] <- if (place_left) 1 else 0
-    out$curve_xend[i] <- if (place_left) out$label_x[i] + range_width * layout$callout_xend_offset else out$label_x[i] - range_width * layout$callout_xend_offset
-    out$curve_yend[i] <- out$MODEL_y[i] + layout$callout_curve_offset
   }
 
   out
