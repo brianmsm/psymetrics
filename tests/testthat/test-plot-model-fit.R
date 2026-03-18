@@ -1,6 +1,5 @@
 local_plot_model_fit_objects <- function() {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   hs_data <- lavaan::HolzingerSwineford1939
   model_1 <- "visual =~ x1 + x2 + x3 + x4"
@@ -339,15 +338,3 @@ test_that("plot_model_fit surfaces guided errors for raw fits and invalid test_m
   )
 })
 
-test_that("plot_model_fit surfaces a clear message when ggplot2 is unavailable", {
-  objects <- local_plot_model_fit_objects()
-
-  expect_error(
-    testthat::with_mocked_bindings(
-      check_installed = function(...) rlang::abort("ggplot2 is required to create model fit plots."),
-      psymetrics::plot_model_fit(objects$single),
-      .package = "rlang"
-    ),
-    "ggplot2 is required"
-  )
-})

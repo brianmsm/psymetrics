@@ -53,8 +53,7 @@ remains, and a threshold-aware dot plot otherwise. For \code{compare_model_fit},
 the default is always the threshold-aware dot plot.
 }
 \examples{
-if (requireNamespace("lavaan", quietly = TRUE) &&
-    requireNamespace("ggplot2", quietly = TRUE)) {
+if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
 

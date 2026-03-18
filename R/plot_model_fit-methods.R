@@ -1,5 +1,4 @@
 plot_model_fit_dispatch <- function(x, type = "default", metrics = NULL, test_mode = "all", verbose = TRUE) {
-  rlang::check_installed("ggplot2", reason = "to create model fit plots.")
   input_class <- plot_model_fit_validate_input(x)
   resolved_metrics <- plot_model_fit_resolve_metrics(x, metrics = metrics, verbose = verbose)
   resolved_test_mode <- plot_model_fit_resolve_test_mode(test_mode)

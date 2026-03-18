@@ -32,9 +32,9 @@
 #'   plotting functions.
 #'
 #' @return A ggplot object for `factor_loadings` and `residuals`
-#'   plots if `ggplot2` is installed, or a `semPlot` diagram
-#'   object for `path` plots. An error message will be returned
-#'   if required packages are not available.
+#'   plots, or a `semPlot` diagram object for `path` plots.
+#'   An error message will be returned if other required packages
+#'   are not available.
 #' @details
 #'   - **Factor Loadings Plot**: Displays a dot plot of factor
 #'     loadings (`=~` parameters only), with items on the y-axis
@@ -52,8 +52,7 @@
 #'     for type = "factor_loadings".
 #' @exportS3Method graphics::plot lavaan
 #' @examples
-#' if (requireNamespace("lavaan", quietly = TRUE) &&
-#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
 #'   library(lavaan)
 #'   library(psymetrics)
 #'   hs_model <- 'visual  =~ x1 + x2 + x3
@@ -61,8 +60,6 @@
 #'                speed   =~ x7 + x8 + x9'
 #'   fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
 #'   plot(fit)
-#' } else {
-#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
 #' }
 plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = TRUE, ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
@@ -144,16 +141,14 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'   errors are still raised.
 #' @param ... Additional arguments passed to `ggplot2::ggplot`.
 #'
-#' @return A ggplot object if `ggplot2` is installed, otherwise
-#'   an error message.
+#' @return A ggplot object.
 #' @seealso
 #'   - [plot-methods] for an overview of plotting in the package.
 #'   - [plot.lavaan()] for more lavaan object plots.
 #' @importFrom rlang .data
 #' @export
 #' @examples
-#' if (requireNamespace("lavaan", quietly = TRUE) &&
-#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
 #'   library(lavaan)
 #'   library(psymetrics)
 #'   hs_model <- 'visual  =~ x1 + x2 + x3
@@ -168,8 +163,6 @@ plot.lavaan <- function(x, type = "factor_loadings", standardized = TRUE, ci = T
 #'                 speed ~ textual'
 #'   fit_sem <- sem(sem_model, data = HolzingerSwineford1939, group = "school")
 #'   plot_factor_loadings(fit_sem, facet_by = "group")
-#' } else {
-#'   message("Please install 'lavaan' and 'ggplot2' to run this example.")
 #' }
 plot_factor_loadings <- function(fit,
                                  sort = TRUE,
@@ -182,7 +175,6 @@ plot_factor_loadings <- function(fit,
                                  verbose = TRUE,
                                  ...) {
   rlang::check_installed("lavaan", reason = "to process 'lavaan' objects.")
-  rlang::check_installed("ggplot2", reason = "to create dot plots for factor loadings")
   if (!inherits(fit, "lavaan")) {
     cli::cli_abort("The {.arg fit} argument must be a fitted {.cls lavaan} object.")
   }

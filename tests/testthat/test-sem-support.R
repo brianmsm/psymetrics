@@ -38,7 +38,6 @@ s =~ 0*t1 + 1*t2 + 2*t3 + 3*t4
 
 test_that("canonical PoliticalDemocracy SEM works across core functions", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit_sem_mlr <- suppressWarnings(
     lavaan::sem(sem_political_model, data = lavaan::PoliticalDemocracy, estimator = "MLR")
@@ -116,7 +115,6 @@ test_that("SEM robust ML estimators return valid model_fit outputs", {
 
 test_that("categorical SEM with WLSMV works across fit and plotting", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   hs_ord <- lavaan::HolzingerSwineford1939
   ordered_vars <- paste0("x", 1:9)
@@ -144,7 +142,6 @@ test_that("categorical SEM with WLSMV works across fit and plotting", {
 
 test_that("multigroup SEM supports facet_by = group", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- suppressWarnings(
     lavaan::sem(
@@ -166,7 +163,6 @@ test_that("multigroup SEM supports facet_by = group", {
 
 test_that("multilevel SEM supports facet_by = level", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- suppressWarnings(
     lavaan::sem(
@@ -350,7 +346,6 @@ test_that("non-converged SEM keeps stable outputs for model_fit and compare_mode
 
 test_that("growth models are supported by model_fit and plot_factor_loadings", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- suppressWarnings(
     lavaan::growth(growth_model, data = lavaan::Demo.growth)
@@ -391,7 +386,6 @@ test_that("growth models work with compare_model_fit", {
 
 test_that("path-only SEM errors in plot_factor_loadings and plot.lavaan", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   path_data <- transform(mtcars, x1 = wt, x2 = hp, y = mpg)
   fit_path <- suppressWarnings(
@@ -429,7 +423,6 @@ test_that("path-only SEM errors in plot_factor_loadings and plot.lavaan", {
 
 test_that("facet_by falls back with informative message when metadata is unavailable", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- suppressWarnings(
     lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")
@@ -448,7 +441,6 @@ test_that("facet_by falls back with informative message when metadata is unavail
 
 test_that("facet_by fallback stays silent when verbose = FALSE", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- suppressWarnings(
     lavaan::sem(sem_hs_model, data = lavaan::HolzingerSwineford1939, estimator = "ML")

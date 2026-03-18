@@ -38,9 +38,9 @@ plotting functions.}
 }
 \value{
 A ggplot object for \code{factor_loadings} and \code{residuals}
-plots if \code{ggplot2} is installed, or a \code{semPlot} diagram
-object for \code{path} plots. An error message will be returned
-if required packages are not available.
+plots, or a \code{semPlot} diagram object for \code{path} plots.
+An error message will be returned if other required packages
+are not available.
 }
 \description{
 This is a plot method for fitted \code{lavaan} objects, including
@@ -65,8 +65,7 @@ estimated relationships between them.
 }
 }
 \examples{
-if (requireNamespace("lavaan", quietly = TRUE) &&
-    requireNamespace("ggplot2", quietly = TRUE)) {
+if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
   hs_model <- 'visual  =~ x1 + x2 + x3
@@ -74,8 +73,6 @@ if (requireNamespace("lavaan", quietly = TRUE) &&
                speed   =~ x7 + x8 + x9'
   fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   plot(fit)
-} else {
-  message("Please install 'lavaan' and 'ggplot2' to run this example.")
 }
 }
 \seealso{

@@ -10,6 +10,7 @@
 
 ## Robustness, Testing & Docs
 
+-   **Dependencies**: Moved `ggplot2` back to `Imports` so plotting APIs load as a supported core dependency rather than an optional add-on.
 -   **Validation**: Plotting now validates supported classes, metrics, `test_mode`, and raw fitted-model inputs with clearer guidance.
 -   **Multi-test handling**: `bullet` is now reserved for single-row summaries, while `dots`, `bars`, and `heatmap` can visualize multiple tests or standard/non-standard variants from the same fit object.
 -   **Testing**: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.
@@ -235,7 +236,6 @@
 
 -   The `NAMESPACE` file is now automatically managed using `roxygen2` to export the appropriate functions and maintain dependency order.
 -   Added a check in the examples to verify if `lavaan` is installed before running them.
-
 
 
 

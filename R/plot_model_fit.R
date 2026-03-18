@@ -33,8 +33,7 @@
 #' @seealso [model_fit()], [compare_model_fit()], and [plot_factor_loadings()].
 #' @export
 #' @examples
-#' if (requireNamespace("lavaan", quietly = TRUE) &&
-#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#' if (requireNamespace("lavaan", quietly = TRUE)) {
 #'   library(lavaan)
 #'   library(psymetrics)
 #'
