@@ -259,6 +259,25 @@ test_that("plot_model_fit test_mode filters rows as intended", {
   expect_equal(primary_df$TEST, "satorra.bentler")
 })
 
+test_that("plot_model_fit treats one-row summaries without TEST as standard and preserves order", {
+  objects <- local_plot_model_fit_objects()
+  metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
+
+  single_standard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single, metrics, "model_fit", "standard_only")
+  expect_equal(nrow(single_standard_df), 1)
+  expect_equal(single_standard_df$MODEL_BASE, "Model")
+
+  expect_error(
+    psymetrics:::plot_model_fit_prepare_data(objects$single, metrics, "model_fit", "non_standard"),
+    "left no rows available to plot"
+  )
+
+  reordered_compare <- objects$compare[c(2, 1), , drop = FALSE]
+  reordered_compare$MODEL <- c("Zeta", "Alpha")
+  compare_standard_df <- psymetrics:::plot_model_fit_prepare_data(reordered_compare, metrics, "compare_model_fit", "standard_only")
+  expect_equal(unique(compare_standard_df$MODEL_BASE), c("Zeta", "Alpha"))
+})
+
 test_that("plot_model_fit derives variant labels from TEST, ESTIMATOR, or row fallback", {
   multi <- local_plot_model_fit_multirow_objects()
   metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
@@ -270,6 +289,17 @@ test_that("plot_model_fit derives variant labels from TEST, ESTIMATOR, or row fa
   expect_true(all(compare_df$VARIANT %in% c("standard", "satorra.bentler", "mean.var.adjusted")))
   expect_equal(estimator_df$VARIANT, c("ML", "MLR"))
   expect_true(all(grepl("Row", duplicate_df$VARIANT)))
+})
+
+test_that("plot_model_fit assigns exact cutoff values to the better CFI/TLI band", {
+  band_df <- psymetrics:::plot_model_fit_single_band_spec(c("CFI", "TLI", "RMSEA", "SRMR"))
+
+  expect_equal(psymetrics:::plot_model_fit_assign_band("CFI", 0.90, band_df), "Acceptable")
+  expect_equal(psymetrics:::plot_model_fit_assign_band("CFI", 0.95, band_df), "Good")
+  expect_equal(psymetrics:::plot_model_fit_assign_band("TLI", 0.90, band_df), "Acceptable")
+  expect_equal(psymetrics:::plot_model_fit_assign_band("TLI", 0.95, band_df), "Good")
+  expect_equal(psymetrics:::plot_model_fit_assign_band("RMSEA", 0.05, band_df), "Good")
+  expect_equal(psymetrics:::plot_model_fit_assign_band("RMSEA", 0.08, band_df), "Acceptable")
 })
 
 test_that("plot_model_fit dots uses color by model and keeps variant shapes without a legend", {

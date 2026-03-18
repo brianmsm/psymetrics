@@ -505,13 +505,17 @@ plot_model_fit_prepare_compare_df <- function(x, metrics) {
   out
 }
 
+plot_model_fit_rows_by_model <- function(model_base) {
+  split(seq_along(model_base), factor(model_base, levels = unique(model_base)))
+}
+
 plot_model_fit_is_standard_row <- function(df) {
   out <- rep(FALSE, nrow(df))
   if (nrow(df) == 0L) {
     return(out)
   }
 
-  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+  rows_by_model <- plot_model_fit_rows_by_model(df$MODEL_BASE)
 
   for (idx in rows_by_model) {
     model_df <- df[idx, , drop = FALSE]
@@ -523,6 +527,11 @@ plot_model_fit_is_standard_row <- function(df) {
         out[idx] <- test_label %in% c("standard", "default", "none")
         next
       }
+    }
+
+    if (nrow(model_df) == 1L) {
+      out[idx] <- TRUE
+      next
     }
 
     if ("ESTIMATOR" %in% names(model_df) && nrow(model_df) > 1L) {
@@ -577,7 +586,7 @@ plot_model_fit_apply_test_mode <- function(df, test_mode) {
     return(df)
   }
 
-  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+  rows_by_model <- plot_model_fit_rows_by_model(df$MODEL_BASE)
   keep_idx <- integer(0)
 
   for (idx in rows_by_model) {
@@ -588,7 +597,7 @@ plot_model_fit_apply_test_mode <- function(df, test_mode) {
     selected_idx <- switch(
       test_mode,
       all = seq_len(nrow(model_df)),
-      non_standard = if (length(non_standard_idx) > 0L) non_standard_idx else seq_len(nrow(model_df)),
+      non_standard = non_standard_idx,
       standard_only = standard_idx,
       primary = if (length(non_standard_idx) > 0L) non_standard_idx[1] else 1L
     )
@@ -606,7 +615,7 @@ plot_model_fit_finalize_plot_rows <- function(df) {
     return(df)
   }
 
-  rows_by_model <- split(seq_len(nrow(df)), df$MODEL_BASE)
+  rows_by_model <- plot_model_fit_rows_by_model(df$MODEL_BASE)
   variant <- character(nrow(df))
   plot_id <- character(nrow(df))
 
@@ -905,6 +914,9 @@ plot_model_fit_assign_band <- function(metric, value, band_df) {
   hit <- which(value >= segments$xmin & value <= segments$xmax)
   if (length(hit) == 0L) {
     hit <- if (value < min(segments$xmin)) 1L else nrow(segments)
+  } else if (length(hit) > 1L) {
+    direction <- plot_model_fit_metric_spec(metric)$Direction[1]
+    hit <- if (identical(direction, "higher")) max(hit) else min(hit)
   }
   segments$band[hit[1]]
 }
