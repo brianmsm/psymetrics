@@ -4,7 +4,7 @@ title: "psymetrics: Psychometric Model Fit and Reporting Tools"
 
 # <span class="home-brand">psymetrics:</span> Psychometric Model Fit and Reporting Tools
 
-<img src="reference/figures/hexlogo.png" alt="psymetrics hex logo" align="right" width="180" class="home-logo" />
+<img src="man/figures/hexlogo.png" alt="psymetrics hex logo" align="right" width="180" class="home-logo" />
 
 `psymetrics` provides a unified workflow to inspect psychometric model fit,
 compare fitted models, extract parameter estimates, generate plots, and produce publication-ready outputs.
@@ -46,7 +46,7 @@ pak::pak("brianmsm/psymetrics@v0.5.0")
   - [Reporting and visualization](articles/reporting-and-visualization.html)
 - API reference: [Reference](reference/index.html)
 - Changes by release: [News](news/index.html)
-- Project roadmap: [ROADMAP](https://github.com/brianmsm/psymetrics/blob/main/ROADMAP.md)
+- Project roadmap: [ROADMAP](ROADMAP.html)
 
 ## Contributing
 
