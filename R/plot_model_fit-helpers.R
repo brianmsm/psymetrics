@@ -612,7 +612,7 @@ plot_model_fit_variant_labels <- function(df) {
 
   duplicated_variant <- duplicated(variant) | duplicated(variant, fromLast = TRUE)
   if (any(duplicated_variant)) {
-    dup_index <- ave(seq_len(n), variant, FUN = seq_along)
+    dup_index <- stats::ave(seq_len(n), variant, FUN = seq_along)
     variant[duplicated_variant] <- paste0(variant[duplicated_variant], " (Row ", dup_index[duplicated_variant], ")")
   }
 
@@ -685,7 +685,7 @@ plot_model_fit_prepare_data <- function(x, metrics, input_class, test_mode) {
   out$MODEL_BASE <- as.character(out$MODEL_BASE)
   out$IS_STANDARD <- plot_model_fit_is_standard_row(out, source = x)
   out$IS_PRIMARY <- plot_model_fit_is_primary_row(out, source = x)
-  out$ROW_IN_MODEL <- ave(seq_len(nrow(out)), out$MODEL_BASE, FUN = seq_along)
+  out$ROW_IN_MODEL <- stats::ave(seq_len(nrow(out)), out$MODEL_BASE, FUN = seq_along)
   plot_model_fit_validate_test_metadata(out, test_mode)
   out <- plot_model_fit_apply_test_mode(out, test_mode)
 
@@ -1124,7 +1124,6 @@ plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code =
 
   pmax(ymin + visible_height * 0.10, marker_y)
 }
-
 
 
 

@@ -507,7 +507,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   }
 
   metric_panel <- metric_spec[, c("Metric", "Panel", "Primary", "Direction", "ShowInterval", "IntervalLowCol", "IntervalHighCol"), drop = FALSE]
-  metric_panel$metric_id <- ave(seq_len(nrow(metric_panel)), metric_panel$Panel, FUN = seq_along)
+  metric_panel$metric_id <- stats::ave(seq_len(nrow(metric_panel)), metric_panel$Panel, FUN = seq_along)
   metric_panel$ThresholdLabel <- ifelse(
     metric_panel$Direction == "higher",
     paste0(">= ", formatC(metric_panel$Primary, format = "f", digits = 2)),
