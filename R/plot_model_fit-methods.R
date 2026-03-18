@@ -583,7 +583,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
 
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
-  metric_counts <- stats::setNames(as.integer(tapply(metric_panel$metric_id, metric_panel$Panel, max)), unique(metric_panel$Panel))
+  metric_counts <- tapply(metric_panel$metric_id, metric_panel$Panel, max)
   threshold_df$label_x <- unname(metric_counts[as.character(threshold_df$Panel)]) + 0.49
   threshold_df$label_y <- threshold_df$Threshold + ifelse(
     duplicated(threshold_df$Panel),
