@@ -118,7 +118,7 @@ GeomPlotModelFitBarMarker <- ggplot2::ggproto(
       gp = grid::gpar(
         col = colour,
         fill = fill,
-        lwd = stroke * get('.stroke', envir = asNamespace('ggplot2'))
+        lwd = stroke * ggplot2::.stroke
       )
     )
   }
@@ -162,7 +162,7 @@ GeomPlotModelFitPlainLabel <- ggplot2::ggproto(
     col_vec <- mapply(function(col, alpha) grDevices::adjustcolor(col, alpha.f = alpha), coords$colour, alpha_vec, USE.NAMES = FALSE)
     text_col_vec <- rep(text_colour, length.out = nrow(coords))
     text_y <- grid::unit(coords$y, "npc") + grid::unit(point_size / 2 + gap_mm, "mm")
-    fontsize <- size * get(".pt", envir = asNamespace("ggplot2"))
+    fontsize <- size * ggplot2::.pt
     text_grobs <- lapply(seq_len(nrow(coords)), function(i) {
       plot_model_fit_halo_text_grob(
         label = coords$label[i],
@@ -233,7 +233,7 @@ GeomPlotModelFitDotCallout <- ggplot2::ggproto(
         y = text_y[i],
         just = c(if (direction[i] > 0) "left" else "right", "bottom"),
         col = text_col_vec[i],
-        fontsize = size * get(".pt", envir = asNamespace("ggplot2")),
+        fontsize = size * ggplot2::.pt,
         family = family,
         fontface = fontface,
         lineheight = lineheight
@@ -249,7 +249,7 @@ GeomPlotModelFitDotCallout <- ggplot2::ggproto(
             y0 = seg_y0,
             x1 = seg_x1,
             y1 = seg_y1,
-            gp = grid::gpar(col = col_vec, lwd = linewidth * get('.stroke', envir = asNamespace('ggplot2'))),
+            gp = grid::gpar(col = col_vec, lwd = linewidth * ggplot2::.stroke),
             arrow = grid::arrow(length = grid::unit(arrow_mm, 'mm'), type = 'closed')
           )
         ),
@@ -1124,7 +1124,6 @@ plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code =
 
   pmax(ymin + visible_height * 0.10, marker_y)
 }
-
 
 
 
