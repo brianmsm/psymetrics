@@ -509,43 +509,81 @@ plot_model_fit_rows_by_model <- function(model_base) {
   split(seq_along(model_base), factor(model_base, levels = unique(model_base)))
 }
 
-plot_model_fit_is_standard_row <- function(df) {
-  out <- rep(FALSE, nrow(df))
+plot_model_fit_metadata_values <- function(df, source, getter) {
+  out <- rep(NA, nrow(df))
+  if (nrow(df) == 0L || is.null(source)) {
+    return(out)
+  }
+
+  meta <- getter(source)
+  if (length(meta) == 0L) {
+    return(out)
+  }
+
+  row_keys <- model_fit_metadata_row_keys(df)
+  out[] <- unname(meta[row_keys])
+  out
+}
+
+plot_model_fit_is_standard_row <- function(df, source = NULL) {
+  out <- rep(NA, nrow(df))
   if (nrow(df) == 0L) {
     return(out)
+  }
+
+  metadata_role <- plot_model_fit_metadata_values(
+    df,
+    source = source,
+    getter = model_fit_get_test_role
+  )
+  known <- !is.na(metadata_role)
+  out[known] <- metadata_role[known] == "standard"
+
+  out
+}
+
+plot_model_fit_is_primary_row <- function(df, source = NULL) {
+  out <- rep(NA, nrow(df))
+  if (nrow(df) == 0L) {
+    return(out)
+  }
+
+  metadata_primary <- plot_model_fit_metadata_values(
+    df,
+    source = source,
+    getter = model_fit_get_test_primary
+  )
+  known <- !is.na(metadata_primary)
+  out[known] <- metadata_primary[known]
+
+  out
+}
+
+plot_model_fit_validate_test_metadata <- function(df, test_mode) {
+  if (nrow(df) == 0L || identical(test_mode, "all")) {
+    return(invisible(NULL))
   }
 
   rows_by_model <- plot_model_fit_rows_by_model(df$MODEL_BASE)
 
   for (idx in rows_by_model) {
     model_df <- df[idx, , drop = FALSE]
-
-    if ("TEST" %in% names(model_df)) {
-      test_label <- trimws(as.character(model_df$TEST))
-      test_label[test_label == ""] <- NA_character_
-      if (any(!is.na(test_label))) {
-        out[idx] <- test_label %in% c("standard", "default", "none")
-        next
-      }
+    if (test_mode %in% c("non_standard", "standard_only") && any(is.na(model_df$IS_STANDARD))) {
+      cli::cli_abort(c(
+        "This fit object does not contain the internal test metadata required for `test_mode` filtering.",
+        "Recreate it with the current `model_fit()` or `compare_model_fit()` implementation."
+      ))
     }
 
-    if (nrow(model_df) == 1L) {
-      out[idx] <- TRUE
-      next
-    }
-
-    if ("ESTIMATOR" %in% names(model_df) && nrow(model_df) > 1L) {
-      estimator_label <- trimws(as.character(model_df$ESTIMATOR))
-      estimator_label[estimator_label == ""] <- NA_character_
-      if (length(unique(stats::na.omit(estimator_label))) > 1L &&
-          !is.na(estimator_label[1]) &&
-          !estimator_label[1] %in% estimator_label[-1]) {
-        out[idx[1]] <- TRUE
-      }
+    if (identical(test_mode, "primary") && any(is.na(model_df$IS_PRIMARY))) {
+      cli::cli_abort(c(
+        "This fit object does not contain the internal primary-test metadata required for `test_mode = 'primary'`.",
+        "Recreate it with the current `model_fit()` or `compare_model_fit()` implementation."
+      ))
     }
   }
 
-  out
+  invisible(NULL)
 }
 
 plot_model_fit_variant_labels <- function(df) {
@@ -591,15 +629,16 @@ plot_model_fit_apply_test_mode <- function(df, test_mode) {
 
   for (idx in rows_by_model) {
     model_df <- df[idx, , drop = FALSE]
-    standard_idx <- which(model_df$IS_STANDARD)
+    standard_idx <- which(model_df$IS_STANDARD %in% TRUE)
     non_standard_idx <- setdiff(seq_len(nrow(model_df)), standard_idx)
+    primary_idx <- which(model_df$IS_PRIMARY %in% TRUE)
 
     selected_idx <- switch(
       test_mode,
       all = seq_len(nrow(model_df)),
       non_standard = non_standard_idx,
       standard_only = standard_idx,
-      primary = if (length(non_standard_idx) > 0L) non_standard_idx[1] else 1L
+      primary = if (length(primary_idx) > 0L) primary_idx[1] else integer(0)
     )
 
     if (length(selected_idx) > 0L) {
@@ -644,8 +683,10 @@ plot_model_fit_prepare_data <- function(x, metrics, input_class, test_mode) {
   }
 
   out$MODEL_BASE <- as.character(out$MODEL_BASE)
-  out$IS_STANDARD <- plot_model_fit_is_standard_row(out)
+  out$IS_STANDARD <- plot_model_fit_is_standard_row(out, source = x)
+  out$IS_PRIMARY <- plot_model_fit_is_primary_row(out, source = x)
   out$ROW_IN_MODEL <- ave(seq_len(nrow(out)), out$MODEL_BASE, FUN = seq_along)
+  plot_model_fit_validate_test_metadata(out, test_mode)
   out <- plot_model_fit_apply_test_mode(out, test_mode)
 
   if (nrow(out) == 0L) {

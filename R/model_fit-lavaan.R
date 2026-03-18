@@ -270,6 +270,16 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       selected_tests = selected_tests,
       standard_test = standard_test
     )
+    nonconverged_role <- if (isTRUE(standard_test) || length(selected_tests) == 0L) {
+      "standard"
+    } else {
+      "non_standard"
+    }
+    fit_measure <- model_fit_attach_test_metadata(
+      fit_measure,
+      test_role = rep(nonconverged_role, nrow(fit_measure)),
+      is_primary = rep(TRUE, nrow(fit_measure))
+    )
     class(fit_measure) <- c("model_fit", class(fit_measure))
     return(fit_measure)
   }
@@ -278,6 +288,11 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   if (length(selected_tests) == 0L) {
     if (type_forced_standard && !is_default_test && !isTRUE(standard_test)) {
       fit_measure <- lavaan_empty_fit_measures(metrics, test_details = test_details)
+      fit_measure <- model_fit_attach_test_metadata(
+        fit_measure,
+        test_role = character(0),
+        is_primary = logical(0)
+      )
       class(fit_measure) <- c("model_fit", class(fit_measure))
       lavaan_emit_robust_warning(
         robust_warning_collector,
@@ -296,6 +311,11 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
       test_details = test_details,
       robust_warning_collector = robust_warning_collector,
       model_label = model_label
+    )
+    fit_measure <- model_fit_attach_test_metadata(
+      fit_measure,
+      test_role = rep("standard", nrow(fit_measure)),
+      is_primary = rep(TRUE, nrow(fit_measure))
     )
     lavaan_emit_robust_warning(
       robust_warning_collector,
@@ -343,6 +363,19 @@ model_fit.lavaan <- function(fit, type = NULL, metrics = "essential", verbose = 
   }
 
   fit_measure <- do.call(rbind, fit_measure_list)
+  test_role <- c(
+    if (isTRUE(standard_test)) "standard",
+    rep("non_standard", length(selected_tests))
+  )
+  is_primary <- c(
+    if (isTRUE(standard_test)) FALSE,
+    c(TRUE, rep(FALSE, max(length(selected_tests) - 1L, 0L)))
+  )
+  fit_measure <- model_fit_attach_test_metadata(
+    fit_measure,
+    test_role = test_role,
+    is_primary = is_primary
+  )
   class(fit_measure) <- unique(c("model_fit", class(fit_measure)))
   lavaan_emit_robust_warning(
     robust_warning_collector,
@@ -620,6 +653,83 @@ extract_fit_lavaan <- function(fit, type, metrics, verbose,
 
 
 # Helper functions ------------------------------------------------------------
+
+model_fit_metadata_row_keys <- function(x) {
+  keys <- rownames(x)
+  if (is.null(keys) || length(keys) != nrow(x)) {
+    keys <- as.character(seq_len(nrow(x)))
+  }
+  keys
+}
+
+model_fit_attach_test_metadata <- function(x, test_role, is_primary) {
+  n <- nrow(x)
+  if (length(test_role) != n) {
+    rlang::abort("`test_role` metadata must have one entry per row.")
+  }
+  if (length(is_primary) != n) {
+    rlang::abort("`is_primary` metadata must have one entry per row.")
+  }
+
+  row_keys <- model_fit_metadata_row_keys(x)
+
+  test_role <- as.character(test_role)
+  names(test_role) <- row_keys
+
+  is_primary <- as.logical(is_primary)
+  names(is_primary) <- row_keys
+
+  attr(x, "psymetrics_test_role") <- test_role
+  attr(x, "psymetrics_test_primary") <- is_primary
+  x
+}
+
+model_fit_resolve_row_metadata <- function(x, attr_name, default) {
+  meta <- attr(x, attr_name, exact = TRUE)
+  if (is.null(meta)) {
+    return(default)
+  }
+
+  row_keys <- model_fit_metadata_row_keys(x)
+  out <- default
+
+  if (!is.null(names(meta))) {
+    match_idx <- match(row_keys, names(meta))
+    matched <- !is.na(match_idx)
+    out[matched] <- unname(meta[match_idx[matched]])
+    return(out)
+  }
+
+  if (length(meta) == nrow(x)) {
+    out[] <- unname(meta)
+  }
+
+  out
+}
+
+model_fit_get_test_role <- function(x) {
+  default <- stats::setNames(rep(NA_character_, nrow(x)), model_fit_metadata_row_keys(x))
+  model_fit_resolve_row_metadata(x, "psymetrics_test_role", default)
+}
+
+model_fit_get_test_primary <- function(x) {
+  default <- stats::setNames(rep(NA, nrow(x)), model_fit_metadata_row_keys(x))
+  model_fit_resolve_row_metadata(x, "psymetrics_test_primary", default)
+}
+
+model_fit_bind_test_metadata <- function(objects, combined) {
+  test_role <- unlist(lapply(objects, model_fit_get_test_role), use.names = FALSE)
+  is_primary <- unlist(lapply(objects, model_fit_get_test_primary), use.names = FALSE)
+
+  if (length(test_role) != nrow(combined)) {
+    test_role <- rep(NA_character_, nrow(combined))
+  }
+  if (length(is_primary) != nrow(combined)) {
+    is_primary <- rep(NA, nrow(combined))
+  }
+
+  model_fit_attach_test_metadata(combined, test_role = test_role, is_primary = is_primary)
+}
 
 lavaan_init_robust_warning_collector <- function(collector = NULL) {
   if (is.null(collector)) {

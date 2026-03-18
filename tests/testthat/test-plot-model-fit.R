@@ -19,6 +19,59 @@ textual =~ x4 + x5 + x6"
   )
 }
 
+local_plot_model_fit_metadata_objects <- function() {
+  skip_if_not_installed("lavaan")
+
+  hs_data <- lavaan::HolzingerSwineford1939
+  standard_model <- "visual =~ x1 + x2 + x3 + x4"
+  robust_model_1 <- "visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6"
+  robust_model_2 <- "visual =~ x1 + x2 + x3 + x4
+textual =~ x5 + x6 + x7"
+
+  fit_standard <- suppressWarnings(
+    lavaan::cfa(standard_model, data = hs_data, estimator = "ML")
+  )
+  fit_nonstandard <- suppressWarnings(
+    lavaan::cfa(robust_model_1, data = hs_data, estimator = "MLR")
+  )
+  fit_multi_1 <- suppressWarnings(
+    lavaan::cfa(
+      robust_model_1,
+      data = hs_data,
+      estimator = "MLR",
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+  fit_multi_2 <- suppressWarnings(
+    lavaan::cfa(
+      robust_model_2,
+      data = hs_data,
+      estimator = "MLR",
+      test = c("satorra.bentler", "mean.var.adjusted")
+    )
+  )
+
+  list(
+    single_standard = psymetrics::model_fit(fit_standard),
+    single_nonstandard = psymetrics::model_fit(fit_nonstandard),
+    single_multi = psymetrics::model_fit(fit_multi_1, standard_test = TRUE),
+    compare_multi = psymetrics::compare_model_fit(
+      First = fit_multi_1,
+      Second = fit_multi_2,
+      standard_test = TRUE
+    )
+  )
+}
+
+local_plot_model_fit_attach_metadata <- function(x, test_role, is_primary) {
+  psymetrics:::model_fit_attach_test_metadata(
+    x,
+    test_role = test_role,
+    is_primary = is_primary
+  )
+}
+
 local_plot_model_fit_multirow_objects <- function() {
   single <- data.frame(
     ESTIMATOR = c("ML", "MLR", "MLR"),
@@ -33,6 +86,11 @@ local_plot_model_fit_multirow_objects <- function() {
     stringsAsFactors = FALSE
   )
   class(single) <- c("model_fit", "data.frame")
+  single <- local_plot_model_fit_attach_metadata(
+    single,
+    test_role = c("standard", "non_standard", "non_standard"),
+    is_primary = c(FALSE, TRUE, FALSE)
+  )
 
   compare <- data.frame(
     MODEL = c("MLR", "MLR", "ULSM", "ULSM"),
@@ -48,6 +106,11 @@ local_plot_model_fit_multirow_objects <- function() {
     stringsAsFactors = FALSE
   )
   class(compare) <- c("compare_model_fit", "model_fit", "data.frame")
+  compare <- local_plot_model_fit_attach_metadata(
+    compare,
+    test_role = c("standard", "non_standard", "standard", "non_standard"),
+    is_primary = c(FALSE, TRUE, FALSE, TRUE)
+  )
 
   estimator_only <- data.frame(
     MODEL = c("M1", "M1"),
@@ -258,23 +321,61 @@ test_that("plot_model_fit test_mode filters rows as intended", {
   expect_equal(primary_df$TEST, "satorra.bentler")
 })
 
-test_that("plot_model_fit treats one-row summaries without TEST as standard and preserves order", {
-  objects <- local_plot_model_fit_objects()
+test_that("plot_model_fit uses metadata for one-row summaries without TEST", {
+  objects <- local_plot_model_fit_metadata_objects()
   metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
 
-  single_standard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single, metrics, "model_fit", "standard_only")
+  single_standard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single_standard, metrics, "model_fit", "standard_only")
   expect_equal(nrow(single_standard_df), 1)
   expect_equal(single_standard_df$MODEL_BASE, "Model")
+  expect_equal(single_standard_df$ESTIMATOR, "ML")
 
   expect_error(
-    psymetrics:::plot_model_fit_prepare_data(objects$single, metrics, "model_fit", "non_standard"),
+    psymetrics:::plot_model_fit_prepare_data(objects$single_standard, metrics, "model_fit", "non_standard"),
     "left no rows available to plot"
   )
 
-  reordered_compare <- objects$compare[c(2, 1), , drop = FALSE]
-  reordered_compare$MODEL <- c("Zeta", "Alpha")
+  single_nonstandard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single_nonstandard, metrics, "model_fit", "non_standard")
+  expect_equal(nrow(single_nonstandard_df), 1)
+  expect_equal(single_nonstandard_df$ESTIMATOR, "MLR")
+
+  expect_error(
+    psymetrics:::plot_model_fit_prepare_data(objects$single_nonstandard, metrics, "model_fit", "standard_only"),
+    "left no rows available to plot"
+  )
+})
+
+test_that("plot_model_fit uses metadata for multi-row summaries without TEST", {
+  objects <- local_plot_model_fit_metadata_objects()
+  metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
+
+  standard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single_multi, metrics, "model_fit", "standard_only")
+  non_standard_df <- psymetrics:::plot_model_fit_prepare_data(objects$single_multi, metrics, "model_fit", "non_standard")
+  primary_df <- psymetrics:::plot_model_fit_prepare_data(objects$single_multi, metrics, "model_fit", "primary")
+
+  expect_equal(standard_df$ESTIMATOR, "ML")
+  expect_equal(non_standard_df$ESTIMATOR, c("MLR", "satorra.bentler", "mean.var.adjusted"))
+  expect_equal(primary_df$ESTIMATOR, "MLR")
+})
+
+test_that("plot_model_fit re-aligns metadata after reordering compare_model_fit rows", {
+  objects <- local_plot_model_fit_metadata_objects()
+  metrics <- c("CFI", "TLI", "RMSEA", "SRMR")
+
+  second_idx <- which(objects$compare_multi$MODEL == "Second")
+  first_idx <- which(objects$compare_multi$MODEL == "First")
+  reordered_compare <- objects$compare_multi[c(second_idx, first_idx), , drop = FALSE]
+  reordered_compare$MODEL <- c(
+    rep("Zeta", length(second_idx)),
+    rep("Alpha", length(first_idx))
+  )
+
   compare_standard_df <- psymetrics:::plot_model_fit_prepare_data(reordered_compare, metrics, "compare_model_fit", "standard_only")
+  compare_primary_df <- psymetrics:::plot_model_fit_prepare_data(reordered_compare, metrics, "compare_model_fit", "primary")
+
   expect_equal(unique(compare_standard_df$MODEL_BASE), c("Zeta", "Alpha"))
+  expect_equal(compare_standard_df$ESTIMATOR, c("ML", "ML"))
+  expect_equal(compare_primary_df$ESTIMATOR, c("MLR", "MLR"))
 })
 
 test_that("plot_model_fit derives variant labels from TEST, ESTIMATOR, or row fallback", {

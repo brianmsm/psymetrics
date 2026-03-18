@@ -249,6 +249,8 @@ compare_model_fit <- function(..., type = NULL, metrics = "essential", verbose =
   # Upper Text
   names(combined_measures)[1] <- "MODEL"
 
+  combined_measures <- model_fit_bind_test_metadata(fit_measures, combined_measures)
+
   # Assign the custom class for print method
   class(combined_measures) <- c("compare_model_fit", class(combined_measures))
 
