@@ -16,6 +16,7 @@
 -   **Multi-test handling**: `bullet` is now reserved for single-row summaries, while `dots`, `bars`, and `heatmap` can visualize multiple tests or standard/non-standard variants from the same fit object.
 -   **Testing**: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.
 -   **Documentation**: Added `plot_model_fit()` reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow.
+
 # psymetrics 0.4.0
 
 ## New Features
@@ -29,6 +30,7 @@
 
 -   **Alignment**: Parameter comparison aligns rows by structural identity (`Group`, `Level`, `Component`, `To`, `Operator`, `From`) so shared and model-specific parameters can be compared safely.
 -   **Testing**: Added dedicated tests for comparison alignment, multigroup support, non-converged fits, `select` validation, formatting outputs, and DOCX export.
+
 # psymetrics 0.3.0
 
 ## New Features
