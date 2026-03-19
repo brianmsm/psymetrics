@@ -96,7 +96,7 @@ plot_factor_loadings(
 
 ## Value
 
-A ggplot object if `ggplot2` is installed, otherwise an error message.
+A ggplot object.
 
 ## See also
 
@@ -109,8 +109,7 @@ A ggplot object if `ggplot2` is installed, otherwise an error message.
 ## Examples
 
 ``` r
-if (requireNamespace("lavaan", quietly = TRUE) &&
-    requireNamespace("ggplot2", quietly = TRUE)) {
+if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
   hs_model <- 'visual  =~ x1 + x2 + x3
@@ -125,7 +124,5 @@ if (requireNamespace("lavaan", quietly = TRUE) &&
                 speed ~ textual'
   fit_sem <- sem(sem_model, data = HolzingerSwineford1939, group = "school")
   plot_factor_loadings(fit_sem, facet_by = "group")
-} else {
-  message("Please install 'lavaan' and 'ggplot2' to run this example.")
 }
 ```

@@ -27,10 +27,17 @@
 
 ## Visualization
 
+- [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
+  :
+
+  Plot fit indices from `psymetrics` fit objects
+
 - [`plot_factor_loadings()`](https://brianmsm.github.io/psymetrics/reference/plot_factor_loadings.md)
   : Plot Factor Loadings for lavaan Models
+
 - [`plot(`*`<lavaan>`*`)`](https://brianmsm.github.io/psymetrics/reference/plot.lavaan.md)
   : Plot Method for lavaan Objects
+
 - [`plot-methods`](https://brianmsm.github.io/psymetrics/reference/plot-methods.md)
   : Generic Plot Function for Model Visualizations
 
@@ -40,7 +47,7 @@
   : Print Method for Model Fit Indices
 - [`print(`*`<compare_model_fit>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_fit.md)
   : Print Method for compare_model_fit Objects
-- [`print(`*`<compare_model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_estimates.md)
-  : Print Method for compare_model_estimates Objects
 - [`print(`*`<model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.model_estimates.md)
   : Print Method for model_estimates Objects
+- [`print(`*`<compare_model_estimates>`*`)`](https://brianmsm.github.io/psymetrics/reference/print.compare_model_estimates.md)
+  : Print Method for compare_model_estimates Objects

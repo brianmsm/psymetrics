@@ -21,7 +21,8 @@ GitHub Issues.
   - Expanded tests and pkgdown-facing documentation.
   - Tracked in **[Issue
     \#18](https://github.com/brianmsm/psymetrics/issues/18)**.
-- ⏭ Next planned milestone: `v0.5.0` - Implement `plot_model_fit()`
+- ⏭ Next planned milestone: `v0.5.0` - Implement
+  [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
   - Goal: add a visual workflow for fit indices.
   - Tracked in **[Issue
     \#19](https://github.com/brianmsm/psymetrics/issues/19)**.
@@ -73,7 +74,8 @@ models fitted with `lavaan`.
 - Details: **[Issue
   \#18](https://github.com/brianmsm/psymetrics/issues/18)**
 
-**`v0.5.0`**: Implement `plot_model_fit()`
+**`v0.5.0`**: Implement
+[`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
 
 - Add visual summaries for fit indices.
 - Details: **[Issue

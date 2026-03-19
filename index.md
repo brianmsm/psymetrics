@@ -3,8 +3,8 @@
 ![psymetrics hex logo](reference/figures/hexlogo.png)
 
 `psymetrics` provides a unified workflow to inspect psychometric model
-fit, compare fitted models, extract parameter estimates, and generate
-publication-ready outputs.
+fit, compare fitted models, extract parameter estimates, generate plots,
+and produce publication-ready outputs.
 
 ## Current scope
 
@@ -15,6 +15,8 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
     [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md)
   - Fit comparison with
     [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
+  - Fit visualization with
+    [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
   - Parameter extraction with
     [`model_estimates()`](https://brianmsm.github.io/psymetrics/reference/model_estimates.md)
   - Parameter comparison with
@@ -33,7 +35,7 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.4.0")
+pak::pak("brianmsm/psymetrics@v0.5.0")
 ```
 
 ## Recommended path
@@ -56,7 +58,7 @@ pak::pak("brianmsm/psymetrics@v0.4.0")
 - Changes by release:
   [News](https://brianmsm.github.io/psymetrics/news/index.md)
 - Project roadmap:
-  [ROADMAP](https://github.com/brianmsm/psymetrics/blob/main/ROADMAP.md)
+  [ROADMAP](https://brianmsm.github.io/psymetrics/ROADMAP.md)
 
 ## Contributing
 

@@ -58,9 +58,9 @@ plot(x, type = "factor_loadings", standardized = TRUE, ci = TRUE, ...)
 
 ## Value
 
-A ggplot object for `factor_loadings` and `residuals` plots if `ggplot2`
-is installed, or a `semPlot` diagram object for `path` plots. An error
-message will be returned if required packages are not available.
+A ggplot object for `factor_loadings` and `residuals` plots, or a
+`semPlot` diagram object for `path` plots. An error message will be
+returned if other required packages are not available.
 
 ## Details
 
@@ -86,8 +86,7 @@ message will be returned if required packages are not available.
 ## Examples
 
 ``` r
-if (requireNamespace("lavaan", quietly = TRUE) &&
-    requireNamespace("ggplot2", quietly = TRUE)) {
+if (requireNamespace("lavaan", quietly = TRUE)) {
   library(lavaan)
   library(psymetrics)
   hs_model <- 'visual  =~ x1 + x2 + x3
@@ -95,7 +94,5 @@ if (requireNamespace("lavaan", quietly = TRUE) &&
                speed   =~ x7 + x8 + x9'
   fit <- cfa(hs_model, data = HolzingerSwineford1939, estimator = "MLR")
   plot(fit)
-} else {
-  message("Please install 'lavaan' and 'ggplot2' to run this example.")
 }
 ```
