@@ -1,6 +1,5 @@
 test_that("plot_factor_loadings returns ggplot", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -25,7 +24,6 @@ test_that("plot.lavaan errors on unsupported type", {
 
 test_that("plot_factor_loadings errors clearly for non-lavaan objects", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   fit <- stats::lm(mpg ~ wt, data = mtcars)
 
@@ -37,7 +35,6 @@ test_that("plot_factor_loadings errors clearly for non-lavaan objects", {
 
 test_that("plot_factor_loadings respects ci alias and ci_bounds messaging", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -53,7 +50,6 @@ test_that("plot_factor_loadings respects ci alias and ci_bounds messaging", {
 
 test_that("plot_factor_loadings arrow uses 0-1 when all values are non-negative", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -85,7 +81,6 @@ test_that("plot_factor_loadings arrow uses 0-1 when all values are non-negative"
 
 test_that("plot_factor_loadings warns for non-converged models", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -109,7 +104,6 @@ test_that("plot_factor_loadings warns for non-converged models", {
 
 test_that("plot_factor_loadings is silent with verbose = FALSE for non-converged SEM", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   sem_model <- "
 visual =~ x1 + x2 + x3
@@ -168,7 +162,6 @@ speed ~ visual + textual
 
 test_that("plot_factor_loadings is silent for standardized = FALSE with verbose = FALSE", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   sem_model <- "
     visual =~ x1 + x2 + x3
@@ -231,7 +224,6 @@ test_that("plot_factor_loadings is silent for standardized = FALSE with verbose 
 
 test_that("plot_factor_loadings supports standardized = FALSE", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -258,7 +250,6 @@ test_that("plot_factor_loadings supports standardized = FALSE", {
 
 test_that("plot_factor_loadings supports group_by = FALSE", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -277,7 +268,6 @@ test_that("plot_factor_loadings supports group_by = FALSE", {
 
 test_that("plot_factor_loadings supports sort = FALSE", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -300,7 +290,6 @@ test_that("plot_factor_loadings supports sort = FALSE", {
 
 test_that("plot_factor_loadings maps est.std to est by name", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   model <- "visual =~ x1 + x2 + x3 + x4"
   fit <- suppressWarnings(
@@ -326,7 +315,6 @@ test_that("plot_factor_loadings maps est.std to est by name", {
 
 test_that("plot_factor_loadings errors for lavaan models without =~ loadings", {
   skip_if_not_installed("lavaan")
-  skip_if_not_installed("ggplot2")
 
   path_data <- transform(mtcars, x1 = wt, x2 = hp, y = mpg)
   fit <- suppressWarnings(

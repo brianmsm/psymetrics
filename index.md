@@ -4,11 +4,10 @@ title: "psymetrics: Psychometric Model Fit and Reporting Tools"
 
 # <span class="home-brand">psymetrics:</span> Psychometric Model Fit and Reporting Tools
 
-<img src="reference/figures/hexlogo.png" alt="psymetrics hex logo" align="right" width="180" class="home-logo" />
+<img src="man/figures/hexlogo.png" alt="psymetrics hex logo" align="right" width="180" class="home-logo" />
 
 `psymetrics` provides a unified workflow to inspect psychometric model fit,
-compare fitted models, extract parameter estimates, and generate publication-ready
-outputs.
+compare fitted models, extract parameter estimates, generate plots, and produce publication-ready outputs.
 
 ## Current scope
 
@@ -17,6 +16,7 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
 - Stable now:
   - Fit extraction with `model_fit()`
   - Fit comparison with `compare_model_fit()`
+  - Fit visualization with `plot_model_fit()`
   - Parameter extraction with `model_estimates()`
   - Parameter comparison with `compare_model_estimates()`
   - Reporting with `format_results()` and `save_table()`
@@ -29,7 +29,7 @@ The package currently focuses on `lavaan` CFA and SEM workflows.
 
 ```r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.4.0")
+pak::pak("brianmsm/psymetrics@v0.5.0")
 ```
 
 ## Recommended path
@@ -46,7 +46,7 @@ pak::pak("brianmsm/psymetrics@v0.4.0")
   - [Reporting and visualization](articles/reporting-and-visualization.html)
 - API reference: [Reference](reference/index.html)
 - Changes by release: [News](news/index.html)
-- Project roadmap: [ROADMAP](https://github.com/brianmsm/psymetrics/blob/main/ROADMAP.md)
+- Project roadmap: [ROADMAP](ROADMAP.html)
 
 ## Contributing
 
@@ -56,6 +56,3 @@ Issues and feature requests are welcome:
 - Feature requests: include the target workflow and expected output.
 
 GitHub issues: <https://github.com/brianmsm/psymetrics/issues>
-
-
-

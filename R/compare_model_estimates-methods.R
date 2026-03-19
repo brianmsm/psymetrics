@@ -52,7 +52,7 @@ prepare_table.compare_model_estimates <- function(x, digits = 3, ci_digits = dig
   if (length(blocks) == 0L) {
     empty_cols <- c(identity_cols, compare_model_estimates_default_display_cols(display_name_map))
     empty_block <- as.data.frame(
-      setNames(replicate(length(empty_cols), character(0), simplify = FALSE), empty_cols),
+      stats::setNames(replicate(length(empty_cols), character(0), simplify = FALSE), empty_cols),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
@@ -245,7 +245,7 @@ compare_model_estimates_format_numeric_columns <- function(x, digits, ci_digits,
   })
 
   out <- as.data.frame(
-    setNames(out, names(x)),
+    stats::setNames(out, names(x)),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )

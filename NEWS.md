@@ -1,3 +1,21 @@
+# psymetrics 0.5.0
+
+## New Features
+
+-   **Fit plotting**: Added `plot_model_fit()` as a public plotting entrypoint for `model_fit` and `compare_model_fit` objects.
+-   **Automatic defaults**: `type = "default"` now resolves to a single-fit bullet chart for `model_fit` objects and a threshold-aware dot plot for `compare_model_fit` objects.
+-   **Multiple styles**: Added `bullet`, `dots`, `bars`, and `heatmap` plot styles for the approved `v0.5.0` workflows.
+-   **Fit intervals**: RMSEA confidence intervals are now visualized automatically in styles that support them.
+-   **Multi-row plotting**: `plot_model_fit()` now supports `model_fit` and `compare_model_fit` objects with multiple test rows per model via `test_mode`, and defaults to `dots` whenever a single-model summary expands beyond one plotted row.
+
+## Robustness, Testing & Docs
+
+-   **Dependencies**: Moved `ggplot2` back to `Imports` so plotting APIs load as a supported core dependency rather than an optional add-on.
+-   **Validation**: Plotting now validates supported classes, metrics, `test_mode`, and raw fitted-model inputs with clearer guidance.
+-   **Fit metadata**: `model_fit()` and `compare_model_fit()` now store internal test-role metadata in attributes so downstream helpers such as `plot_model_fit()` can distinguish standard, non-standard, and primary test rows even when `TEST` is omitted from the visible table.
+-   **Multi-test handling**: `bullet` is now reserved for single-row summaries, while `dots`, `bars`, and `heatmap` can visualize multiple tests or standard/non-standard variants from the same fit object.
+-   **Testing**: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.
+-   **Documentation**: Added `plot_model_fit()` reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow.
 # psymetrics 0.4.0
 
 ## New Features
@@ -219,3 +237,5 @@
 
 -   The `NAMESPACE` file is now automatically managed using `roxygen2` to export the appropriate functions and maintain dependency order.
 -   Added a check in the examples to verify if `lavaan` is installed before running them.
+
+

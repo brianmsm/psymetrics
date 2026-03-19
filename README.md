@@ -10,7 +10,7 @@
 <img src="man/figures/hexlogo.png" align="right" width="200" />
 
 `psymetrics` provides unified tools for psychometric model fit analysis,
-parameter extraction, and reporting workflows.
+parameter extraction, reporting, and visualization workflows.
 
 ## Installation
 
@@ -18,8 +18,8 @@ Install the development version from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pak("brianmsm/psymetrics@v0.4.0")
-#remotes::install_github("brianmsm/psymetrics@v0.4.0")
+pak::pak("brianmsm/psymetrics@v0.5.0")
+#remotes::install_github("brianmsm/psymetrics@v0.5.0")
 ```
 
 ## Quick examples
@@ -48,6 +48,13 @@ Compare models:
 
 ``` r
 compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
+```
+
+Plot fit indices:
+
+``` r
+compared_fits <- compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
+plot_model_fit(compared_fits)
 ```
 
 Extract parameter estimates:
@@ -90,5 +97,3 @@ compared_estimates
 - Reporting + visualization article:
   <https://brianmsm.github.io/psymetrics/articles/reporting-and-visualization.html>
 - Development roadmap: [ROADMAP.md](ROADMAP.md)
-
-

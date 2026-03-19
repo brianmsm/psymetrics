@@ -62,6 +62,7 @@ reference:
       - save_table
   - title: Visualization
     contents:
+      - plot_model_fit
       - plot_factor_loadings
       - plot.lavaan
       - plot-methods
@@ -69,10 +70,5 @@ reference:
     contents:
       - print.model_fit
       - print.compare_model_fit
-      - print.compare_model_estimates
       - print.model_estimates
-
-
-
-
-
+      - print.compare_model_estimates

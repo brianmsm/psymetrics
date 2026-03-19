@@ -13,8 +13,6 @@ if (!requireNamespace("lavaan", quietly = TRUE)) {
 
 devtools::load_all(".", quiet = TRUE)
 
-has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
-
 results <- data.frame(
   case = character(),
   action = character(),
@@ -288,11 +286,6 @@ for (fit_name in names(fits)) {
       ),
       expect_silent = TRUE
     )
-  }
-
-  if (!isTRUE(has_ggplot2)) {
-    record_result(fit_name, "plot_factor_loadings", "skipped_no_ggplot2", note = "ggplot2 not installed.")
-    next
   }
 
   if (identical(fit_name, "sem_path_only")) {
