@@ -73,10 +73,13 @@
 <li>
 <strong>Testing</strong>: Added dedicated tests for plotting defaults, style coverage, metric selection, CI handling, and non-converged objects.</li>
 <li>
-<strong>Documentation</strong>: Added <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow. # psymetrics 0.4.0</li>
+<strong>Documentation</strong>: Added <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> reference docs and updated README, pkgdown configuration, index, and roadmap entries for the new plotting workflow.</li>
 </ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="psymetrics-040">psymetrics 0.4.0<a class="anchor" aria-label="anchor" href="#psymetrics-040"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-5-0-1">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0-1"></a></h3>
+<h3 id="new-features-0-4-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-4-0"></a></h3>
 <ul><li>
 <strong>Estimate Comparison</strong>: Added <code><a href="../reference/compare_model_estimates.html">compare_model_estimates()</a></code> for side-by-side comparison of <code>lavaan</code> parameter estimates across two or more fitted models.</li>
 <li>
@@ -87,14 +90,17 @@
 <strong>Exporting</strong>: <code><a href="../reference/save_table.html">save_table()</a></code> now supports <code>compare_model_estimates</code> objects through the existing DOCX block export pipeline.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="robustness--testing-0-5-0">Robustness &amp; Testing<a class="anchor" aria-label="anchor" href="#robustness--testing-0-5-0"></a></h3>
+<h3 id="robustness--testing-0-4-0">Robustness &amp; Testing<a class="anchor" aria-label="anchor" href="#robustness--testing-0-4-0"></a></h3>
 <ul><li>
 <strong>Alignment</strong>: Parameter comparison aligns rows by structural identity (<code>Group</code>, <code>Level</code>, <code>Component</code>, <code>To</code>, <code>Operator</code>, <code>From</code>) so shared and model-specific parameters can be compared safely.</li>
 <li>
-<strong>Testing</strong>: Added dedicated tests for comparison alignment, multigroup support, non-converged fits, <code>select</code> validation, formatting outputs, and DOCX export. # psymetrics 0.3.0</li>
+<strong>Testing</strong>: Added dedicated tests for comparison alignment, multigroup support, non-converged fits, <code>select</code> validation, formatting outputs, and DOCX export.</li>
 </ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="psymetrics-030">psymetrics 0.3.0<a class="anchor" aria-label="anchor" href="#psymetrics-030"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-5-0-2">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0-2"></a></h3>
+<h3 id="new-features-0-3-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-3-0"></a></h3>
 <ul><li>
 <strong>Parameter Extraction</strong>: Added <code><a href="../reference/model_estimates.html">model_estimates()</a></code> for <code>lavaan</code> CFA/SEM workflows, including optional standardized extraction (<code>std.all</code>, <code>std.lv</code>, <code>std.nox</code>) and component filtering.</li>
 <li>
@@ -105,7 +111,7 @@
 <strong>Exporting</strong>: <code><a href="../reference/save_table.html">save_table()</a></code> now supports list-based table exports (used by <code>model_estimates</code>) and writes DOCX output as per-component blocks.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="robustness--testing-0-5-0-1">Robustness &amp; Testing<a class="anchor" aria-label="anchor" href="#robustness--testing-0-5-0-1"></a></h3>
+<h3 id="robustness--testing-0-3-0">Robustness &amp; Testing<a class="anchor" aria-label="anchor" href="#robustness--testing-0-3-0"></a></h3>
 <ul><li>
 <strong>Non-convergence</strong>: <code><a href="../reference/model_estimates.lavaan.html">model_estimates.lavaan()</a></code> now returns available parameter rows even when the fit does not converge, flags rows with <code>converged = FALSE</code>, and keeps unavailable inferential columns as <code>NA</code>.</li>
 <li>

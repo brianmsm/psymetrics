@@ -44,7 +44,9 @@
 - **Documentation**: Added
   [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
   reference docs and updated README, pkgdown configuration, index, and
-  roadmap entries for the new plotting workflow. \# psymetrics 0.4.0
+  roadmap entries for the new plotting workflow.
+
+## psymetrics 0.4.0
 
 ### New Features
 
@@ -74,7 +76,9 @@
   and model-specific parameters can be compared safely.
 - **Testing**: Added dedicated tests for comparison alignment,
   multigroup support, non-converged fits, `select` validation,
-  formatting outputs, and DOCX export. \# psymetrics 0.3.0
+  formatting outputs, and DOCX export.
+
+## psymetrics 0.3.0
 
 ### New Features
 
