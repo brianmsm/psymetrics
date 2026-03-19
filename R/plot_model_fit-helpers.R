@@ -99,7 +99,7 @@ GeomPlotModelFitBarMarker <- ggplot2::ggproto(
   'GeomPlotModelFitBarMarker',
   ggplot2::Geom,
   required_aes = c('x', 'y', 'shape_code'),
-  default_aes = ggplot2::aes(alpha = 1),
+  default_aes = ggplot2::aes(alpha = 1, placement = "inside", inside_scale = 1),
   draw_key = ggplot2::draw_key_blank,
   draw_panel = function(data, panel_params, coord, size = 2.8, stroke = 0.7, colour = '#202020', fill = '#202020', gap_mm = 0.9, tall_gap_mm = 0.35) {
     if (nrow(data) == 0L) {
@@ -109,10 +109,13 @@ GeomPlotModelFitBarMarker <- ggplot2::ggproto(
     coords <- coord$transform(data, panel_params)
     tall_shape <- is.finite(coords$shape_code) & coords$shape_code %in% c(17, 24, 25)
     gap_vec <- gap_mm + ifelse(tall_shape, tall_gap_mm, 0)
+    placement_vec <- if ("placement" %in% names(coords)) as.character(coords$placement) else rep("inside", nrow(coords))
+    inside_scale <- if ("inside_scale" %in% names(coords)) coords$inside_scale else rep(1, nrow(coords))
+    y_adjust_mm <- ifelse(placement_vec == "inside", -(gap_vec + size / 2) * inside_scale, 0)
 
     grid::pointsGrob(
       x = grid::unit(coords$x, 'npc'),
-      y = grid::unit(coords$y, 'npc') - grid::unit(gap_vec + size / 2, 'mm'),
+      y = grid::unit(coords$y, 'npc') + grid::unit(y_adjust_mm, 'mm'),
       pch = coords$shape_code,
       size = grid::unit(rep(size, nrow(coords)), 'mm'),
       gp = grid::gpar(
@@ -1037,17 +1040,43 @@ plot_model_fit_compute_band_score <- function(value, direction, poor, good, idea
 }
 
 plot_model_fit_choose_incremental_ymin <- function(values) {
-  min_value <- suppressWarnings(min(values, na.rm = TRUE))
-  if (!is.finite(min_value) || min_value >= 0.80) {
+  values <- values[is.finite(values)]
+  if (length(values) == 0L) {
     return(0.80)
   }
-  if (min_value >= 0.50) {
-    return(0.50)
+
+  min_value <- min(values)
+  candidates <- seq(0.80, 0.00, by = -0.05)
+  candidates <- candidates[candidates <= min_value + 1e-9]
+  if (length(candidates) == 0L) {
+    return(0.00)
   }
-  if (min_value >= 0.20) {
-    return(0.20)
+
+  visible_fraction <- (min_value - candidates) / (1 - candidates)
+  keep <- candidates[visible_fraction >= 0.08]
+  if (length(keep) > 0L) {
+    return(max(keep))
   }
-  0.00
+
+  min(candidates)
+}
+
+plot_model_fit_choose_error_ymax <- function(values, ci_high = NULL) {
+  observed <- c(values, ci_high)
+  observed <- observed[is.finite(observed)]
+  required_max <- if (length(observed) > 0L) {
+    max(c(0.08, observed))
+  } else {
+    0.08
+  }
+
+  candidates <- c(0.08, 0.10, 0.12, 0.15, 0.20, 0.25)
+  keep <- candidates[candidates >= required_max - 1e-9]
+  if (length(keep) > 0L) {
+    return(min(keep))
+  }
+
+  max(0.08, plot_model_fit_ceiling_nice(required_max, 0.05))
 }
 
 plot_model_fit_build_model_spec <- function(model_names) {
@@ -1098,6 +1127,47 @@ plot_model_fit_bar_expand <- function(n_metrics) {
   ggplot2::expansion(mult = c(0.05, 0.03))
 }
 
+plot_model_fit_group_bar_breaks <- function(limits) {
+  axis_min <- suppressWarnings(min(limits, na.rm = TRUE))
+  axis_max <- suppressWarnings(max(limits, na.rm = TRUE))
+  if (!is.finite(axis_min) || !is.finite(axis_max) || axis_max <= axis_min) {
+    return(numeric())
+  }
+
+  if (abs(axis_max - 1.00) <= 1e-9) {
+    return(round(seq(axis_min, axis_max, by = 0.05), 2))
+  }
+
+  step <- if (axis_max <= 0.10 + 1e-9) 0.02 else 0.05
+  base_breaks <- seq(axis_min, axis_max, by = step)
+  threshold_breaks <- c(0.05, 0.08)
+  threshold_breaks <- threshold_breaks[threshold_breaks >= axis_min - 1e-9 & threshold_breaks <= axis_max + 1e-9]
+  unique(round(sort(c(base_breaks, threshold_breaks, axis_max)), 2))
+}
+
+plot_model_fit_group_bar_limits <- function(limits) {
+  axis_min <- suppressWarnings(min(limits, na.rm = TRUE))
+  axis_max <- suppressWarnings(max(limits, na.rm = TRUE))
+  if (!is.finite(axis_min) || !is.finite(axis_max) || axis_max <= axis_min) {
+    return(limits)
+  }
+
+  if (axis_max > 0.30) {
+    lower <- min(0.80, plot_model_fit_ceiling_nice(axis_min, 0.05))
+    return(c(lower, 1.00))
+  }
+
+  if (axis_max <= 0.085) {
+    return(c(0.00, 0.08))
+  }
+
+  c(0.00, plot_model_fit_choose_error_ymax(axis_max))
+}
+
+plot_model_fit_group_bar_labels <- function(x) {
+  formatC(x, format = "f", digits = 2)
+}
+
 plot_model_fit_bar_label_y <- function(anchor, ymin, ymax, threshold, min_offset, proximity = 0.02, threshold_bonus = 0.0012) {
   panel_span <- ymax - ymin
   if (!is.finite(anchor) || !is.finite(panel_span) || panel_span <= 0) {
@@ -1111,26 +1181,36 @@ plot_model_fit_bar_label_y <- function(anchor, ymin, ymax, threshold, min_offset
   anchor + total_offset
 }
 
-plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code = NA_integer_) {
+plot_model_fit_bar_marker_placement <- function(value, ymin, ymax, min_visible_fraction = 0.08) {
+  panel_span <- ymax - ymin
+  visible_height <- value - ymin
+  if (!is.finite(value) || !is.finite(visible_height) || !is.finite(panel_span) || panel_span <= 0 || visible_height <= 0) {
+    return("above")
+  }
+
+  if (visible_height / panel_span >= min_visible_fraction) {
+    return("inside")
+  }
+
+  "above"
+}
+
+plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code = NA_integer_, placement = c("inside", "above")) {
+  placement <- match.arg(placement)
   panel_span <- ymax - ymin
   visible_height <- value - ymin
   if (!is.finite(value) || !is.finite(visible_height) || !is.finite(panel_span) || panel_span <= 0 || visible_height <= 0) {
     return(value)
   }
 
+  if (identical(placement, "inside")) {
+    return(value)
+  }
+
   tall_shape <- is.finite(shape_code) && shape_code %in% c(17, 24, 25)
-  depth_fraction <- 0.09 + if (tall_shape) 0.012 else 0
-  marker_y <- value - visible_height * depth_fraction
-
-  pmax(ymin + visible_height * 0.10, marker_y)
+  rise_fraction <- 0.018 + if (tall_shape) 0.004 else 0
+  value + panel_span * rise_fraction
 }
-
-
-
-
-
-
-
 
 
 

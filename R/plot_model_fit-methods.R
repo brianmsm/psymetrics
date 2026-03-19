@@ -544,21 +544,25 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   bar_df$xmax <- bar_df$x + group_layout$half_width
   bar_df$ValueLabel <- ifelse(is.na(bar_df$Value), "", sprintf("%.3f", bar_df$Value))
 
+  interval_source_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
   panel_levels <- levels(bar_df$Panel)
   incremental_ymin <- plot_model_fit_choose_incremental_ymin(bar_df$Value[bar_df$Panel == "Incremental fit (CFI & TLI)"])
+  approximation_ymax <- plot_model_fit_choose_error_ymax(
+    bar_df$Value[bar_df$Panel == "Approximation error (RMSEA & SRMR)"],
+    ci_high = if (!is.null(interval_source_df) && nrow(interval_source_df) > 0L) interval_source_df$CI_high else NULL
+  )
   axis_df <- data.frame(
     Panel = factor(panel_levels, levels = panel_levels),
     ymin = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin, 0.00),
-    ymax = ifelse(panel_levels == "Incremental fit (CFI & TLI)", 1.00, 0.12),
+    ymax = ifelse(panel_levels == "Incremental fit (CFI & TLI)", 1.00, approximation_ymax),
     axis_label_y = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin - (size_spec$axis_panel_offset + 0.004), -size_spec$axis_panel_offset),
     stringsAsFactors = FALSE
   )
 
   bar_df <- merge(bar_df, axis_df, by = "Panel", all.x = TRUE, sort = FALSE)
 
-  interval_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
-  if (!is.null(interval_df) && nrow(interval_df) > 0L) {
-    bar_df <- merge(bar_df, interval_df[, c("PLOT_ID", "Metric", "CI_low", "CI_high")], by = c("PLOT_ID", "Metric"), all.x = TRUE, sort = FALSE)
+  if (!is.null(interval_source_df) && nrow(interval_source_df) > 0L) {
+    bar_df <- merge(bar_df, interval_source_df[, c("PLOT_ID", "Metric", "CI_low", "CI_high")], by = c("PLOT_ID", "Metric"), all.x = TRUE, sort = FALSE)
   } else {
     bar_df$CI_low <- NA_real_
     bar_df$CI_high <- NA_real_
@@ -566,6 +570,37 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
 
   bar_df <- bar_df[order(bar_df$Panel, bar_df$metric_id, bar_df$PLOT_ID), ]
   bar_df$label_anchor <- bar_df$Value
+  marker_df <- NULL
+  if (isTRUE(show_variant_shape)) {
+    marker_df <- bar_df[is.finite(bar_df$Value), c('PLOT_ID', 'MODEL_BASE', 'VARIANT', 'Metric', 'Panel', 'x', 'Value', 'ymin', 'ymax', 'CI_high'), drop = FALSE]
+    marker_df$shape_code <- unname(shape_values[marker_df$VARIANT])
+    marker_df$marker_x <- ifelse(marker_df$Metric == 'RMSEA' & is.finite(marker_df$CI_high), marker_df$x + group_layout$half_width * 0.38, marker_df$x)
+    marker_df$inside_scale <- ifelse(marker_df$Panel == "Approximation error (RMSEA & SRMR)", 0.62, 1.00)
+    marker_df$placement <- mapply(
+      plot_model_fit_bar_marker_placement,
+      value = marker_df$Value,
+      ymin = marker_df$ymin,
+      ymax = marker_df$ymax,
+      USE.NAMES = FALSE
+    )
+    marker_df$marker_y <- mapply(
+      plot_model_fit_bar_marker_y,
+      value = marker_df$Value,
+      label_y = marker_df$Value,
+      ymin = marker_df$ymin,
+      ymax = marker_df$ymax,
+      shape_code = marker_df$shape_code,
+      placement = marker_df$placement,
+      USE.NAMES = FALSE
+    )
+
+    marker_key <- paste(marker_df$PLOT_ID, marker_df$Metric)
+    bar_key <- paste(bar_df$PLOT_ID, bar_df$Metric)
+    marker_idx <- match(bar_key, marker_key)
+    above_idx <- !is.na(marker_idx) & marker_df$placement[marker_idx] == "above"
+    bar_df$label_anchor[above_idx] <- marker_df$marker_y[marker_idx[above_idx]]
+  }
+
   bar_df$label_y <- mapply(
     plot_model_fit_bar_label_y,
     anchor = bar_df$label_anchor,
@@ -574,24 +609,26 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     threshold = bar_df$Threshold,
     min_offset = ifelse(bar_df$Panel == "Incremental fit (CFI & TLI)", size_spec$upper_label_offset, size_spec$lower_label_offset)
   )
-  marker_df <- NULL
-  if (isTRUE(show_variant_shape)) {
-    marker_df <- bar_df[is.finite(bar_df$Value), c('PLOT_ID', 'MODEL_BASE', 'VARIANT', 'Metric', 'Panel', 'x', 'Value', 'label_y', 'ymin', 'ymax', 'CI_high'), drop = FALSE]
-    marker_df$shape_code <- unname(shape_values[marker_df$VARIANT])
-    marker_df$marker_x <- ifelse(marker_df$Metric == 'RMSEA' & is.finite(marker_df$CI_high), marker_df$x + group_layout$half_width * 0.38, marker_df$x)
-  }
 
 
   threshold_df <- unique(bar_df[c("Panel", "Metric", "metric_id", "Threshold", "ThresholdLabel")])
   metric_counts <- tapply(metric_panel$metric_id, metric_panel$Panel, max)
+  threshold_df <- merge(threshold_df, axis_df[, c("Panel", "ymax")], by = "Panel", all.x = TRUE, sort = FALSE)
   threshold_df$label_x <- unname(metric_counts[as.character(threshold_df$Panel)]) + 0.49
-  threshold_df$label_y <- threshold_df$Threshold + ifelse(
-    duplicated(threshold_df$Panel),
-    -ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", size_spec$threshold_panel_offset, size_spec$threshold_stack_offset),
-    ifelse(threshold_df$Panel == "Incremental fit (CFI & TLI)", size_spec$threshold_panel_offset, size_spec$threshold_stack_offset)
+  threshold_df$label_above <- !duplicated(threshold_df$Panel)
+  threshold_offset <- ifelse(
+    threshold_df$Panel == "Incremental fit (CFI & TLI)",
+    size_spec$threshold_panel_offset,
+    size_spec$threshold_stack_offset
   )
+  threshold_df$label_above <- ifelse(
+    threshold_df$label_above & (threshold_df$Threshold + threshold_offset > threshold_df$ymax),
+    FALSE,
+    threshold_df$label_above
+  )
+  threshold_df$label_y <- threshold_df$Threshold + ifelse(threshold_df$label_above, threshold_offset, -threshold_offset)
   threshold_df$hjust <- 1
-  threshold_df$vjust <- ifelse(duplicated(threshold_df$Panel), 1, 0)
+  threshold_df$vjust <- ifelse(threshold_df$label_above, 0, 1)
 
   axis_label_df <- merge(metric_panel[, c("Panel", "metric_id", "Metric")], axis_df[, c("Panel", "axis_label_y")], by = "Panel", all.x = TRUE, sort = FALSE)
   names(axis_label_df)[names(axis_label_df) == "metric_id"] <- "x"
@@ -634,7 +671,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   if (isTRUE(show_variant_shape) && !is.null(marker_df) && nrow(marker_df) > 0L) {
     p <- p + plot_model_fit_geom_bar_marker(
       data = marker_df,
-      ggplot2::aes(x = .data$marker_x, y = .data$Value, shape_code = .data$shape_code),
+      ggplot2::aes(x = .data$marker_x, y = .data$marker_y, shape_code = .data$shape_code, placement = .data$placement, inside_scale = .data$inside_scale),
       inherit.aes = FALSE,
       size = size_spec$variant_marker_size,
       stroke = size_spec$variant_marker_stroke,
@@ -644,7 +681,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     ) +
       ggplot2::geom_point(
         data = marker_df,
-        ggplot2::aes(x = .data$marker_x, y = .data$Value, shape = .data$VARIANT),
+        ggplot2::aes(x = .data$marker_x, y = .data$marker_y, shape = .data$VARIANT),
         inherit.aes = FALSE,
         alpha = 0,
         size = size_spec$variant_marker_size,
@@ -679,15 +716,22 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
     ) +
     ggplot2::geom_text(
       data = axis_label_df,
-      ggplot2::aes(x = .data$x, y = .data$axis_label_y, label = .data$label),
+      ggplot2::aes(x = .data$x, y = -Inf, label = .data$label),
       inherit.aes = FALSE,
-      size = plot_model_fit_pt(size_spec$metric_pt)
+      size = plot_model_fit_pt(size_spec$metric_pt),
+      vjust = 1.35
     ) +
     ggplot2::geom_blank(data = axis_min_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
     ggplot2::geom_blank(data = axis_max_df, ggplot2::aes(x = .data$x, y = .data$y), inherit.aes = FALSE) +
     ggplot2::facet_wrap(~Panel, ncol = 1, scales = "free_y", as.table = FALSE) +
     ggplot2::scale_fill_manual(values = stats::setNames(model_spec$Fill, model_levels)) +
     ggplot2::scale_x_continuous(breaks = NULL, labels = NULL, expand = plot_model_fit_bar_expand(max(metric_counts))) +
+    ggplot2::scale_y_continuous(
+      limits = plot_model_fit_group_bar_limits,
+      breaks = plot_model_fit_group_bar_breaks,
+      labels = plot_model_fit_group_bar_labels,
+      expand = ggplot2::expansion(mult = c(0, 0))
+    ) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(title = "Model fit comparison", subtitle = "Grouped threshold bars", x = NULL, y = "Index value", fill = "Model", shape = if (show_variant_shape) "Variant" else NULL) +
     ggplot2::theme_minimal(base_size = size_spec$base) +

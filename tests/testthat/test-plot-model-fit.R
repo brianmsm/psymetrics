@@ -417,6 +417,32 @@ test_that("plot_model_fit internal auto breaks stay close to the approved plotti
   )
 })
 
+test_that("plot_model_fit grouped-bar axis helpers and marker fallback use the new thresholds", {
+  expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.82, 0.91)), 0.80)
+  expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.803, 0.91)), 0.75)
+  expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.68, 0.77)), 0.65)
+
+  expect_equal(psymetrics:::plot_model_fit_choose_error_ymax(c(0.060, 0.072), ci_high = c(0.070, 0.082)), 0.10)
+  expect_equal(psymetrics:::plot_model_fit_choose_error_ymax(c(0.160, 0.172), ci_high = c(0.175, 0.187)), 0.20)
+  expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(-0.014, 0.082)), c(0.00, 0.08))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(0.728, 0.981)), c(0.75, 1.00))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(-0.014, 0.092)), c(0.00, 0.10))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_breaks(c(0.75, 1.00)), c(0.75, 0.80, 0.85, 0.90, 0.95, 1.00))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_breaks(c(0.00, 0.08)), c(0.00, 0.02, 0.04, 0.05, 0.06, 0.08))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_labels(c(1.00, 0.90, 0.08)), c("1.00", "0.90", "0.08"))
+
+  expect_equal(psymetrics:::plot_model_fit_bar_marker_placement(0.006, 0.00, 0.08), "above")
+  expect_equal(psymetrics:::plot_model_fit_bar_marker_placement(0.009, 0.00, 0.08), "inside")
+  expect_gt(
+    psymetrics:::plot_model_fit_bar_marker_y(0.006, 0.006, 0.00, 0.08, shape_code = 16, placement = "above"),
+    0.006
+  )
+  expect_equal(
+    psymetrics:::plot_model_fit_bar_marker_y(0.009, 0.009, 0.00, 0.08, shape_code = 16, placement = "inside"),
+    0.009
+  )
+})
+
 test_that("plot_model_fit dots uses color by model and keeps variant shapes without a legend", {
   multi <- local_plot_model_fit_multirow_objects()
 
