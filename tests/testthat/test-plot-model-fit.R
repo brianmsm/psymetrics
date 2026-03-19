@@ -421,13 +421,16 @@ test_that("plot_model_fit grouped-bar axis helpers and marker fallback use the n
   expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.82, 0.91)), 0.80)
   expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.803, 0.91)), 0.75)
   expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymin(c(0.68, 0.77)), 0.65)
+  expect_equal(psymetrics:::plot_model_fit_choose_incremental_ymax(c(0.98, 1.02)), 1.05)
 
   expect_equal(psymetrics:::plot_model_fit_choose_error_ymax(c(0.060, 0.072), ci_high = c(0.070, 0.082)), 0.10)
   expect_equal(psymetrics:::plot_model_fit_choose_error_ymax(c(0.160, 0.172), ci_high = c(0.175, 0.187)), 0.20)
   expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(-0.014, 0.082)), c(0.00, 0.08))
   expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(0.728, 0.981)), c(0.75, 1.00))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(0.728, 1.02)), c(0.75, 1.05))
   expect_equal(psymetrics:::plot_model_fit_group_bar_limits(c(-0.014, 0.092)), c(0.00, 0.10))
   expect_equal(psymetrics:::plot_model_fit_group_bar_breaks(c(0.75, 1.00)), c(0.75, 0.80, 0.85, 0.90, 0.95, 1.00))
+  expect_equal(psymetrics:::plot_model_fit_group_bar_breaks(c(0.75, 1.05)), c(0.75, 0.80, 0.85, 0.90, 0.95, 1.00))
   expect_equal(psymetrics:::plot_model_fit_group_bar_breaks(c(0.00, 0.08)), c(0.00, 0.02, 0.04, 0.05, 0.06, 0.08))
   expect_equal(psymetrics:::plot_model_fit_group_bar_labels(c(1.00, 0.90, 0.08)), c("1.00", "0.90", "0.08"))
 
@@ -473,6 +476,21 @@ test_that("plot_model_fit bars preserves panel-specific metric counts for subset
 
   expect_equal(unname(axis_max_by_panel["Incremental fit (CFI & TLI)"]), 2.52)
   expect_equal(unname(axis_max_by_panel["Approximation error (RMSEA & SRMR)"]), 1.52)
+})
+
+test_that("plot_model_fit bars preserves incremental values above 1.00 while keeping axis labels capped at 1.00", {
+  multi <- local_plot_model_fit_multirow_objects()
+  multi$compare$CFI[1] <- 1.02
+
+  built <- ggplot2::ggplot_build(psymetrics::plot_model_fit(multi$compare, type = "bars"))
+  panel_layout <- built$layout$layout[, c("PANEL", "Panel")]
+  incremental_panel <- panel_layout$PANEL[panel_layout$Panel == "Incremental fit (CFI & TLI)"]
+  rect_df <- built$data[[1]]
+  incremental_scale <- built$layout$panel_scales_y[[incremental_panel]]
+
+  expect_true(any(abs(rect_df$ymax[rect_df$PANEL == incremental_panel] - 1.02) < 1e-9))
+  expect_equal(incremental_scale$get_limits(), c(0.80, 1.05))
+  expect_equal(incremental_scale$get_breaks(), c(0.80, 0.85, 0.90, 0.95, 1.00))
 })
 
 test_that("plot_model_fit surfaces guided errors for raw fits and invalid test_mode results", {

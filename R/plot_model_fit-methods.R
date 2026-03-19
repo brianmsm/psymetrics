@@ -547,6 +547,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   interval_source_df <- plot_model_fit_extract_interval_df(fit_df, metric_spec)
   panel_levels <- levels(bar_df$Panel)
   incremental_ymin <- plot_model_fit_choose_incremental_ymin(bar_df$Value[bar_df$Panel == "Incremental fit (CFI & TLI)"])
+  incremental_ymax <- plot_model_fit_choose_incremental_ymax(bar_df$Value[bar_df$Panel == "Incremental fit (CFI & TLI)"])
   approximation_ymax <- plot_model_fit_choose_error_ymax(
     bar_df$Value[bar_df$Panel == "Approximation error (RMSEA & SRMR)"],
     ci_high = if (!is.null(interval_source_df) && nrow(interval_source_df) > 0L) interval_source_df$CI_high else NULL
@@ -554,7 +555,7 @@ plot_model_fit_grouped_threshold_bars <- function(fit_df, metric_spec) {
   axis_df <- data.frame(
     Panel = factor(panel_levels, levels = panel_levels),
     ymin = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin, 0.00),
-    ymax = ifelse(panel_levels == "Incremental fit (CFI & TLI)", 1.00, approximation_ymax),
+    ymax = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymax, approximation_ymax),
     axis_label_y = ifelse(panel_levels == "Incremental fit (CFI & TLI)", incremental_ymin - (size_spec$axis_panel_offset + 0.004), -size_spec$axis_panel_offset),
     stringsAsFactors = FALSE
   )

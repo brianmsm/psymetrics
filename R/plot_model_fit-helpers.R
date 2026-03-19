@@ -1061,6 +1061,15 @@ plot_model_fit_choose_incremental_ymin <- function(values) {
   min(candidates)
 }
 
+plot_model_fit_choose_incremental_ymax <- function(values) {
+  values <- values[is.finite(values)]
+  if (length(values) == 0L) {
+    return(1.00)
+  }
+
+  max(1.00, plot_model_fit_ceiling_nice(max(values), 0.05))
+}
+
 plot_model_fit_choose_error_ymax <- function(values, ci_high = NULL) {
   observed <- c(values, ci_high)
   observed <- observed[is.finite(observed)]
@@ -1134,8 +1143,8 @@ plot_model_fit_group_bar_breaks <- function(limits) {
     return(numeric())
   }
 
-  if (abs(axis_max - 1.00) <= 1e-9) {
-    return(round(seq(axis_min, axis_max, by = 0.05), 2))
+  if (axis_max > 0.30) {
+    return(round(seq(axis_min, min(1.00, axis_max), by = 0.05), 2))
   }
 
   step <- if (axis_max <= 0.10 + 1e-9) 0.02 else 0.05
@@ -1154,7 +1163,8 @@ plot_model_fit_group_bar_limits <- function(limits) {
 
   if (axis_max > 0.30) {
     lower <- min(0.80, plot_model_fit_ceiling_nice(axis_min, 0.05))
-    return(c(lower, 1.00))
+    upper <- plot_model_fit_choose_incremental_ymax(axis_max)
+    return(c(lower, upper))
   }
 
   if (axis_max <= 0.085) {
@@ -1211,7 +1221,6 @@ plot_model_fit_bar_marker_y <- function(value, label_y, ymin, ymax, shape_code =
   rise_fraction <- 0.018 + if (tall_shape) 0.004 else 0
   value + panel_span * rise_fraction
 }
-
 
 
 
