@@ -9,18 +9,19 @@ Detailed technical discussion for each milestone lives in the linked GitHub Issu
 
 ## Status at a glance
 
-- ✅ Latest completed milestone: `v0.4.0` - Implement `compare_model_estimates()`
-  - Added parameter-level comparison for fitted `lavaan` models.
-  - Integrated with `print()`, `format_results()`, and `save_table()`.
+- ✅ Latest completed milestone: `v0.5.0` - Implement `plot_model_fit()`
+  - Added visual summaries for `model_fit()` and `compare_model_fit()` results.
+  - Implemented the default single-fit and multi-fit plot styles plus two alternative multi-fit layouts.
+  - Initial plotting support currently targets the documented `CFI`/`TLI`/`RMSEA`/`SRMR` workflows; future work should expand advanced documented customization, additional fit indices, and broader support for more customized `model_fit()` / `compare_model_fit()` objects.
   - Expanded tests and pkgdown-facing documentation.
-  - Tracked in **[Issue #18](https://github.com/brianmsm/psymetrics/issues/18)**.
-
-- ⏭ Next planned milestone: `v0.5.0` - Implement `plot_model_fit()`
-  - Goal: add a visual workflow for fit indices.
   - Tracked in **[Issue #19](https://github.com/brianmsm/psymetrics/issues/19)**.
 
-## Recently completed milestones
+- ⏭ Next planned milestone: `v0.6.0` - Enhance `compare_model_fit()` for measurement invariance (MG-CFA)
+  - Goal: improve invariance-oriented fit comparison workflows.
+  - Tracked in **[Issue #20](https://github.com/brianmsm/psymetrics/issues/20)**.
 
+## Recently completed milestones
+- ✅ **`v0.5.0`** - Implement `plot_model_fit()` *(completed March 13, 2026)*
 - ✅ **`v0.4.0`** - Implement `compare_model_estimates()` *(completed March 6, 2026)*
 - ✅ **`v0.3.0`** - Implement `model_estimates()` *(completed February 25, 2026)*
 - ✅ **`v0.2.0`** - Extend SEM support across existing workflows *(completed February 8, 2026)*
@@ -47,8 +48,9 @@ The goal of this phase is a robust, end-to-end CFA/SEM workflow for models fitte
   - Add parameter comparison across two or more fitted models.
   - Details: **[Issue #18](https://github.com/brianmsm/psymetrics/issues/18)**
 
-- [ ] **`v0.5.0`**: Implement `plot_model_fit()`
+- [x] **`v0.5.0`**: Implement `plot_model_fit()`
   - Add visual summaries for fit indices.
+  - Initial support centers on the documented `CFI`/`TLI`/`RMSEA`/`SRMR` plotting workflows; future enhancements should cover advanced user-facing customization, additional fit indices, and more customized `model_fit()` / `compare_model_fit()` signatures.
   - Details: **[Issue #19](https://github.com/brianmsm/psymetrics/issues/19)**
 
 - [ ] **`v0.6.0`**: Enhance `compare_model_fit()` for measurement invariance (MG-CFA)

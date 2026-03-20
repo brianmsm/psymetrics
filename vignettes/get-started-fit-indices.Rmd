@@ -119,5 +119,7 @@ compare_model_fit(MLR = fit_mlr, WLSMV = fit_wlsmv)
 
 ## Next steps
 
+- Continue with [Reporting and visualization](reporting-and-visualization.html) to
+  turn fit outputs into tables and plots.
 - Continue with [SEM and parameter estimates](sem-and-estimates-lavaan.html).
 - See full API details in the [Reference](../reference/index.html).
