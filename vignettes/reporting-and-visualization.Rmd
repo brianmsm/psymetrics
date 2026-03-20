@@ -1,8 +1,9 @@
 ---
 title: "Reporting and visualization"
 description: >
-  Turn psymetrics outputs into markdown/Word tables and visualize factor loadings
-  for communication-ready psychometric reporting.
+  Turn psymetrics fit objects into markdown/Word tables, visualize fit indices
+  with plot_model_fit(), and add complementary loading plots for
+  communication-ready psychometric reporting.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Reporting and visualization}
@@ -24,11 +25,12 @@ has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 
 ## Goal
 
-This guide focuses on output workflows:
+This guide focuses on communication-ready output workflows:
 
-1. Prepare comparison tables for markdown reports.
+1. Format fit results for markdown and HTML reports.
 2. Export fit tables to Word.
-3. Visualize standardized factor loadings.
+3. Visualize single-model and multi-model fit summaries with `plot_model_fit()`.
+4. Use `plot_factor_loadings()` as a complementary structural view.
 
 ## Setup
 
@@ -52,7 +54,16 @@ fit_ulsm <- cfa(
   data = HolzingerSwineford1939,
   estimator = "ULSM"
 )
-fit_table <- compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
+fit_mlr_multi <- cfa(
+  model,
+  data = HolzingerSwineford1939,
+  estimator = "MLR",
+  test = c("satorra.bentler", "mean.var.adjusted")
+)
+
+single_fit <- model_fit(fit_mlr)
+compared_fits <- compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
+single_fit_multi <- model_fit(fit_mlr_multi, standard_test = TRUE)
 ```
 
 ## Format results for markdown, HTML, and auto output
@@ -60,40 +71,100 @@ fit_table <- compare_model_fit(MLR = fit_mlr, ULSM = fit_ulsm)
 To request markdown output explicitly:
 
 ```{r, eval=FALSE}
-format_results(fit_table, output = "markdown")
+format_results(compared_fits, output = "markdown")
 ```
 
-```{r, echo=FALSE, results='asis'}
-md_table <- format_results(fit_table, output = "markdown")
+```{r, eval=has_lavaan, echo=FALSE, results='asis'}
+md_table <- format_results(compared_fits, output = "markdown")
 md_table_txt <- paste(md_table, collapse = "\n")
 knitr::asis_output(paste0("```markdown\n", md_table_txt, "\n```"))
 ```
 
-In an HTML report/article, running that call renders a formatted table:
+In an HTML report or pkgdown article, the same object can render directly as a
+formatted table:
 
 ```{r, eval=has_lavaan, echo=FALSE}
-format_results(fit_table, output = "markdown")
+format_results(compared_fits, output = "markdown")
 ```
 
-By default, `format_results(fit_table)` uses `output = "auto"` and chooses markdown or HTML according to the rendering context:
+By default, `format_results(compared_fits)` uses `output = "auto"` and chooses
+markdown or HTML according to the rendering context.
 
-In HTML-capable contexts, you can explicitly request HTML:
+In HTML-capable contexts, you can also request HTML explicitly:
 
-```{r}
-format_results(fit_table, output = "html")
+```{r, eval=has_lavaan}
+format_results(compared_fits, output = "html")
 ```
 
 ## Export to Word
 
 ```{r, eval=FALSE}
 save_table(
-  fit_table,
+  compared_fits,
   path = "model_fit.docx",
   orientation = "landscape"
 )
 ```
 
-## Visualize factor loadings
+## Visualize a single fitted model
+
+`plot_model_fit()` is the public plotting entrypoint for `model_fit()` and
+`compare_model_fit()` objects. For a one-row `model_fit` summary, the default
+style resolves to the single-fit bullet chart.
+
+```{r, eval=has_lavaan && has_ggplot2, fig.width=6, fig.height=5.4, fig.dpi=300, fig.alt="Bullet chart of CFI, TLI, RMSEA, and SRMR for a single fitted model."}
+plot_model_fit(single_fit)
+```
+
+## Visualize a model comparison
+
+For `compare_model_fit()` objects, the default plot is the threshold-aware dot
+plot, which works well as a quick side-by-side comparison.
+
+```{r, eval=has_lavaan && has_ggplot2, fig.width=7, fig.height=5.8, fig.dpi=300, fig.alt="Threshold-aware dot plot comparing CFI, TLI, RMSEA, and SRMR across two fitted models."}
+plot_model_fit(compared_fits)
+```
+
+## Try an alternative plot style
+
+In `v0.5.0`, the supported plot styles are `default`, `bullet`, `dots`,
+`bars`, and `heatmap`. The article keeps to the main workflow, while the
+[plot_model_fit reference](../reference/plot_model_fit.html) documents the full
+argument surface and supported constraints.
+
+```{r, eval=has_lavaan && has_ggplot2, fig.width=7, fig.height=6.4, fig.dpi=300, fig.alt="Grouped threshold bar chart comparing fit indices for two fitted models."}
+plot_model_fit(compared_fits, type = "bars")
+```
+
+## Focus on selected metrics
+
+If you only want to communicate part of the fit summary, pass a subset with
+`metrics`.
+
+```{r, eval=has_lavaan && has_ggplot2, fig.width=7, fig.height=5.8, fig.dpi=300, fig.alt="Grouped threshold bar chart using only CFI, TLI, and RMSEA."}
+plot_model_fit(
+  compared_fits,
+  type = "bars",
+  metrics = c("CFI", "TLI", "RMSEA")
+)
+```
+
+## Work with multiple test rows
+
+When the fit object keeps both standard and non-standard test summaries,
+`plot_model_fit()` can filter which rows to show with `test_mode`. Here,
+`standard_test = TRUE` keeps multiple rows in the `model_fit()` result, and
+`test_mode = "primary"` reduces the view to the primary non-standard summary.
+
+```{r, eval=has_lavaan && has_ggplot2, fig.width=6, fig.height=5.4, fig.dpi=300, fig.alt="Bullet chart for the primary non-standard fit summary selected from a multi-row model_fit object."}
+plot_model_fit(single_fit_multi, test_mode = "primary")
+```
+
+## Visualize factor loadings as a complementary check
+
+`plot_model_fit()` answers how well the model fits overall. `plot_factor_loadings()`
+adds a complementary view of the measurement structure after the fit summary
+looks acceptable.
 
 ```{r, eval=has_lavaan && has_ggplot2, fig.width=6, fig.height=4.5, fig.dpi=300, fig.alt="Dot plot of standardized factor loadings by item with confidence intervals."}
 plot_factor_loadings(fit_mlr)
@@ -101,11 +172,15 @@ plot_factor_loadings(fit_mlr)
 
 ## Practical notes
 
-- `format_results()` is useful for reproducible reports.
-- `save_table()` is ideal for manuscript-ready `.docx` tables.
-- Use plotting as a communication layer after checking fit and parameters.
+- Use `format_results()` when you want the same fit object rendered in reports.
+- Use `save_table()` when the output needs to go into a `.docx` workflow.
+- Use `plot_model_fit()` for the supported `CFI`/`TLI`/`RMSEA`/`SRMR` workflows in
+  `v0.5.0`, and keep the reference page nearby for argument-level detail.
+- Use `plot_factor_loadings()` after fit checking when you want to discuss item
+  structure rather than overall fit.
 
 ## Next steps
 
 - Return to [Get started with fit indices](get-started-fit-indices.html).
+- Continue with [SEM and parameter estimates](sem-and-estimates-lavaan.html).
 - Explore the [Reference](../reference/index.html) for argument-level control.
