@@ -11,24 +11,38 @@ GitHub Issues.
 
 ## Status at a glance
 
-- ✅ Latest completed milestone: `v0.4.0` - Implement
-  [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
-  - Added parameter-level comparison for fitted `lavaan` models.
-  - Integrated with [`print()`](https://rdrr.io/r/base/print.html),
-    [`format_results()`](https://brianmsm.github.io/psymetrics/reference/format_results.md),
+- ✅ Latest completed milestone: `v0.5.0` - Implement
+  [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
+  - Added visual summaries for
+    [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md)
     and
-    [`save_table()`](https://brianmsm.github.io/psymetrics/reference/save_table.md).
+    [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
+    results.
+  - Implemented the default single-fit and multi-fit plot styles plus
+    two alternative multi-fit layouts.
+  - Initial plotting support currently targets the documented
+    `CFI`/`TLI`/`RMSEA`/`SRMR` workflows; future work should expand
+    advanced documented customization, additional fit indices, and
+    broader support for more customized
+    [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md)
+    /
+    [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
+    objects.
   - Expanded tests and pkgdown-facing documentation.
   - Tracked in **[Issue
-    \#18](https://github.com/brianmsm/psymetrics/issues/18)**.
-- ⏭ Next planned milestone: `v0.5.0` - Implement
-  [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
-  - Goal: add a visual workflow for fit indices.
-  - Tracked in **[Issue
     \#19](https://github.com/brianmsm/psymetrics/issues/19)**.
+- ⏭ Next planned milestone: `v0.6.0` - Enhance
+  [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
+  for measurement invariance (MG-CFA)
+  - Goal: improve invariance-oriented fit comparison workflows.
+  - Tracked in **[Issue
+    \#20](https://github.com/brianmsm/psymetrics/issues/20)**.
 
 ## Recently completed milestones
 
+- ✅ **`v0.5.0`** - Implement
+  [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
+  *(completed March 13, 2026)*
 - ✅ **`v0.4.0`** - Implement
   [`compare_model_estimates()`](https://brianmsm.github.io/psymetrics/reference/compare_model_estimates.md)
   *(completed March 6, 2026)*
@@ -78,6 +92,13 @@ models fitted with `lavaan`.
 [`plot_model_fit()`](https://brianmsm.github.io/psymetrics/reference/plot_model_fit.md)
 
 - Add visual summaries for fit indices.
+- Initial support centers on the documented `CFI`/`TLI`/`RMSEA`/`SRMR`
+  plotting workflows; future enhancements should cover advanced
+  user-facing customization, additional fit indices, and more customized
+  [`model_fit()`](https://brianmsm.github.io/psymetrics/reference/model_fit.md)
+  /
+  [`compare_model_fit()`](https://brianmsm.github.io/psymetrics/reference/compare_model_fit.md)
+  signatures.
 - Details: **[Issue
   \#19](https://github.com/brianmsm/psymetrics/issues/19)**
 

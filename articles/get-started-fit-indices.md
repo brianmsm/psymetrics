@@ -137,6 +137,9 @@ compare_model_fit(MLR = fit_mlr, WLSMV = fit_wlsmv)
 
 ## Next steps
 
+- Continue with [Reporting and
+  visualization](https://brianmsm.github.io/psymetrics/articles/reporting-and-visualization.md)
+  to turn fit outputs into tables and plots.
 - Continue with [SEM and parameter
   estimates](https://brianmsm.github.io/psymetrics/articles/sem-and-estimates-lavaan.md).
 - See full API details in the

@@ -12,9 +12,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Reporting and visualization">
-<meta name="description" content="Turn psymetrics outputs into markdown/Word tables and visualize factor loadings for communication-ready psychometric reporting.
+<meta name="description" content="Turn psymetrics fit objects into markdown/Word tables, visualize fit indices with plot_model_fit(), and add complementary loading plots for communication-ready psychometric reporting.
 ">
-<meta property="og:description" content="Turn psymetrics outputs into markdown/Word tables and visualize factor loadings for communication-ready psychometric reporting.
+<meta property="og:description" content="Turn psymetrics fit objects into markdown/Word tables, visualize fit indices with plot_model_fit(), and add complementary loading plots for communication-ready psychometric reporting.
 ">
 </head>
 <body>
@@ -84,11 +84,14 @@
 <div class="section level2">
 <h2 id="goal">Goal<a class="anchor" aria-label="anchor" href="#goal"></a>
 </h2>
-<p>This guide focuses on output workflows:</p>
+<p>This guide focuses on communication-ready output workflows:</p>
 <ol style="list-style-type: decimal">
-<li>Prepare comparison tables for markdown reports.</li>
+<li>Format fit results for markdown and HTML reports.</li>
 <li>Export fit tables to Word.</li>
-<li>Visualize standardized factor loadings.</li>
+<li>Visualize single-model and multi-model fit summaries with
+<code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code>.</li>
+<li>Use <code><a href="../reference/plot_factor_loadings.html">plot_factor_loadings()</a></code> as a complementary
+structural view.</li>
 </ol>
 </div>
 <div class="section level2">
@@ -114,20 +117,29 @@
 <span>  data <span class="op">=</span> <span class="va">HolzingerSwineford1939</span>,</span>
 <span>  estimator <span class="op">=</span> <span class="st">"ULSM"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">fit_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_model_fit.html">compare_model_fit</a></span><span class="op">(</span>MLR <span class="op">=</span> <span class="va">fit_mlr</span>, ULSM <span class="op">=</span> <span class="va">fit_ulsm</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fit_mlr_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">cfa</a></span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">HolzingerSwineford1939</span>,</span>
+<span>  estimator <span class="op">=</span> <span class="st">"MLR"</span>,</span>
+<span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"satorra.bentler"</span>, <span class="st">"mean.var.adjusted"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">single_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_fit.html">model_fit</a></span><span class="op">(</span><span class="va">fit_mlr</span><span class="op">)</span></span>
+<span><span class="va">compared_fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_model_fit.html">compare_model_fit</a></span><span class="op">(</span>MLR <span class="op">=</span> <span class="va">fit_mlr</span>, ULSM <span class="op">=</span> <span class="va">fit_ulsm</span><span class="op">)</span></span>
+<span><span class="va">single_fit_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_fit.html">model_fit</a></span><span class="op">(</span><span class="va">fit_mlr_multi</span>, standard_test <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="format-results-for-markdown-html-and-auto-output">Format results for markdown, HTML, and auto output<a class="anchor" aria-label="anchor" href="#format-results-for-markdown-html-and-auto-output"></a>
 </h2>
 <p>To request markdown output explicitly:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span><span class="va">fit_table</span>, output <span class="op">=</span> <span class="st">"markdown"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span><span class="va">compared_fits</span>, output <span class="op">=</span> <span class="st">"markdown"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="pp">|</span>MODEL <span class="pp">|</span> NOBS <span class="pp">|</span> ESTIMATOR <span class="pp">|</span> NPAR <span class="pp">|</span> Chi2(24) <span class="pp">|</span> p (Chi2) <span class="pp">|</span>   CFI <span class="pp">|</span>   TLI <span class="pp">|</span> RMSEA <span class="pp">|</span>      RMSEA  CI <span class="pp">|</span>  SRMR <span class="pp">|</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="pp">|:-----|:----:|:---------:|:----:|:--------:|:--------:|:-----:|:-----:|:-----:|:--------------:|:-----:|</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="pp">|</span>MLR   <span class="pp">|</span>  301 <span class="pp">|</span>       MLR <span class="pp">|</span>   21 <span class="pp">|</span>    87.13 <span class="pp">|</span>   &lt; .001 <span class="pp">|</span> 0.925 <span class="pp">|</span> 0.888 <span class="pp">|</span> 0.093 <span class="pp">|</span> <span class="co">[</span><span class="ot">0.073, 0.115</span><span class="co">]</span> <span class="pp">|</span> 0.065 <span class="pp">|</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="pp">|</span>ULSM  <span class="pp">|</span>  301 <span class="pp">|</span>      ULSM <span class="pp">|</span>   21 <span class="pp">|</span>    90.60 <span class="pp">|</span>   &lt; .001 <span class="pp">|</span> 0.931 <span class="pp">|</span> 0.897 <span class="pp">|</span> 0.096 <span class="pp">|</span> <span class="co">[</span><span class="ot">0.073, 0.120</span><span class="co">]</span> <span class="pp">|</span> 0.059 <span class="pp">|</span></span></code></pre></div>
-<p>In an HTML report/article, running that call renders a formatted
-table:</p>
+<p>In an HTML report or pkgdown article, the same object can render
+directly as a formatted table:</p>
 <table class="table">
 <colgroup>
 <col width="6%">
@@ -184,12 +196,12 @@ table:</p>
 </tr>
 </tbody>
 </table>
-<p>By default, <code>format_results(fit_table)</code> uses
+<p>By default, <code>format_results(compared_fits)</code> uses
 <code>output = "auto"</code> and chooses markdown or HTML according to
-the rendering context:</p>
-<p>In HTML-capable contexts, you can explicitly request HTML:</p>
+the rendering context.</p>
+<p>In HTML-capable contexts, you can also request HTML explicitly:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span><span class="va">fit_table</span>, output <span class="op">=</span> <span class="st">"html"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/format_results.html">format_results</a></span><span class="op">(</span><span class="va">compared_fits</span>, output <span class="op">=</span> <span class="st">"html"</span><span class="op">)</span></span></code></pre></div>
 <!-- preamble start -->
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
@@ -268,30 +280,94 @@ the rendering context:</p>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_table.html">save_table</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit_table</span>,</span>
+<span>  <span class="va">compared_fits</span>,</span>
 <span>  path <span class="op">=</span> <span class="st">"model_fit.docx"</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"landscape"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="visualize-factor-loadings">Visualize factor loadings<a class="anchor" aria-label="anchor" href="#visualize-factor-loadings"></a>
+<h2 id="visualize-a-single-fitted-model">Visualize a single fitted model<a class="anchor" aria-label="anchor" href="#visualize-a-single-fitted-model"></a>
 </h2>
+<p><code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> is the public plotting entrypoint for
+<code><a href="../reference/model_fit.html">model_fit()</a></code> and <code><a href="../reference/compare_model_fit.html">compare_model_fit()</a></code> objects.
+For a one-row <code>model_fit</code> summary, the default style resolves
+to the single-fit bullet chart.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">single_fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="Bullet chart of CFI, TLI, RMSEA, and SRMR for a single fitted model." width="1800"></p>
+</div>
+<div class="section level2">
+<h2 id="visualize-a-model-comparison">Visualize a model comparison<a class="anchor" aria-label="anchor" href="#visualize-a-model-comparison"></a>
+</h2>
+<p>For <code><a href="../reference/compare_model_fit.html">compare_model_fit()</a></code> objects, the default plot is the
+threshold-aware dot plot, which works well as a quick side-by-side
+comparison.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">compared_fits</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="Threshold-aware dot plot comparing CFI, TLI, RMSEA, and SRMR across two fitted models." width="2100"></p>
+</div>
+<div class="section level2">
+<h2 id="try-an-alternative-plot-style">Try an alternative plot style<a class="anchor" aria-label="anchor" href="#try-an-alternative-plot-style"></a>
+</h2>
+<p>In <code>v0.5.0</code>, the supported plot styles are
+<code>default</code>, <code>bullet</code>, <code>dots</code>,
+<code>bars</code>, and <code>heatmap</code>. The article keeps to the
+main workflow, while the <a href="../reference/plot_model_fit.html">plot_model_fit reference</a>
+documents the full argument surface and supported constraints.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">compared_fits</span>, type <span class="op">=</span> <span class="st">"bars"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="Grouped threshold bar chart comparing fit indices for two fitted models." width="2100"></p>
+</div>
+<div class="section level2">
+<h2 id="focus-on-selected-metrics">Focus on selected metrics<a class="anchor" aria-label="anchor" href="#focus-on-selected-metrics"></a>
+</h2>
+<p>If you only want to communicate part of the fit summary, pass a
+subset with <code>metrics</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">compared_fits</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"bars"</span>,</span>
+<span>  metrics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CFI"</span>, <span class="st">"TLI"</span>, <span class="st">"RMSEA"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="Grouped threshold bar chart using only CFI, TLI, and RMSEA." width="2100"></p>
+</div>
+<div class="section level2">
+<h2 id="work-with-multiple-test-rows">Work with multiple test rows<a class="anchor" aria-label="anchor" href="#work-with-multiple-test-rows"></a>
+</h2>
+<p>When the fit object keeps both standard and non-standard test
+summaries, <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> can filter which rows to show
+with <code>test_mode</code>. Here, <code>standard_test = TRUE</code>
+keeps multiple rows in the <code><a href="../reference/model_fit.html">model_fit()</a></code> result, and
+<code>test_mode = "primary"</code> reduces the view to the primary
+non-standard summary.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">single_fit_multi</span>, test_mode <span class="op">=</span> <span class="st">"primary"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="Bullet chart for the primary non-standard fit summary selected from a multi-row model_fit object." width="1800"></p>
+</div>
+<div class="section level2">
+<h2 id="visualize-factor-loadings-as-a-complementary-check">Visualize factor loadings as a complementary check<a class="anchor" aria-label="anchor" href="#visualize-factor-loadings-as-a-complementary-check"></a>
+</h2>
+<p><code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> answers how well the model fits
+overall. <code><a href="../reference/plot_factor_loadings.html">plot_factor_loadings()</a></code> adds a complementary view
+of the measurement structure after the fit summary looks acceptable.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_factor_loadings.html">plot_factor_loadings</a></span><span class="op">(</span><span class="va">fit_mlr</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="Dot plot of standardized factor loadings by item with confidence intervals." width="1800"></p>
+<p><img src="reporting-and-visualization_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="Dot plot of standardized factor loadings by item with confidence intervals." width="1800"></p>
 </div>
 <div class="section level2">
 <h2 id="practical-notes">Practical notes<a class="anchor" aria-label="anchor" href="#practical-notes"></a>
 </h2>
 <ul>
-<li>
-<code><a href="../reference/format_results.html">format_results()</a></code> is useful for reproducible
-reports.</li>
-<li>
-<code><a href="../reference/save_table.html">save_table()</a></code> is ideal for manuscript-ready
-<code>.docx</code> tables.</li>
-<li>Use plotting as a communication layer after checking fit and
-parameters.</li>
+<li>Use <code><a href="../reference/format_results.html">format_results()</a></code> when you want the same fit object
+rendered in reports.</li>
+<li>Use <code><a href="../reference/save_table.html">save_table()</a></code> when the output needs to go into a
+<code>.docx</code> workflow.</li>
+<li>Use <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> for the supported
+<code>CFI</code>/<code>TLI</code>/<code>RMSEA</code>/<code>SRMR</code>
+workflows in <code>v0.5.0</code>, and keep the reference page nearby for
+argument-level detail.</li>
+<li>Use <code><a href="../reference/plot_factor_loadings.html">plot_factor_loadings()</a></code> after fit checking when you
+want to discuss item structure rather than overall fit.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -300,6 +376,8 @@ parameters.</li>
 <ul>
 <li>Return to <a href="get-started-fit-indices.html">Get started with
 fit indices</a>.</li>
+<li>Continue with <a href="sem-and-estimates-lavaan.html">SEM and
+parameter estimates</a>.</li>
 <li>Explore the <a href="../reference/index.html">Reference</a> for
 argument-level control.</li>
 </ul>

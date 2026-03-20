@@ -115,7 +115,7 @@ if (requireNamespace("lavaan", quietly = TRUE)) {
   message("Please install 'lavaan' to run this example.")
 }
 #> Table successfully saved as a Word document at
-#> /tmp/RtmpAuWve1/file1c96a423a49.docx.
+#> /tmp/RtmpPQGp7C/file1c3b23af574b.docx.
 #> Table successfully saved as a Word document at
-#> /tmp/RtmpAuWve1/file1c96a423a49.docx.
+#> /tmp/RtmpPQGp7C/file1c3b23af574b.docx.
 ```

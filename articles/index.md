@@ -18,5 +18,6 @@
 - [Reporting and
   visualization](https://brianmsm.github.io/psymetrics/articles/reporting-and-visualization.md):
 
-  Turn psymetrics outputs into markdown/Word tables and visualize factor
-  loadings for communication-ready psychometric reporting.
+  Turn psymetrics fit objects into markdown/Word tables, visualize fit
+  indices with plot_model_fit(), and add complementary loading plots for
+  communication-ready psychometric reporting.

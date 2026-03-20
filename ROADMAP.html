@@ -53,20 +53,23 @@
 </ol><p>Detailed technical discussion for each milestone lives in the linked GitHub Issues.</p>
 <div class="section level2">
 <h2 id="status-at-a-glance">Status at a glance<a class="anchor" aria-label="anchor" href="#status-at-a-glance"></a></h2>
-<ul><li>✅ Latest completed milestone: <code>v0.4.0</code> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code>
-<ul><li>Added parameter-level comparison for fitted <code>lavaan</code> models.</li>
-<li>Integrated with <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="reference/format_results.html">format_results()</a></code>, and <code><a href="reference/save_table.html">save_table()</a></code>.</li>
+<ul><li>✅ Latest completed milestone: <code>v0.5.0</code> - Implement <code><a href="reference/plot_model_fit.html">plot_model_fit()</a></code>
+<ul><li>Added visual summaries for <code><a href="reference/model_fit.html">model_fit()</a></code> and <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> results.</li>
+<li>Implemented the default single-fit and multi-fit plot styles plus two alternative multi-fit layouts.</li>
+<li>Initial plotting support currently targets the documented <code>CFI</code>/<code>TLI</code>/<code>RMSEA</code>/<code>SRMR</code> workflows; future work should expand advanced documented customization, additional fit indices, and broader support for more customized <code><a href="reference/model_fit.html">model_fit()</a></code> / <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> objects.</li>
 <li>Expanded tests and pkgdown-facing documentation.</li>
-<li>Tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/18" class="external-link">Issue #18</a></strong>.</li>
-</ul></li>
-<li>⏭ Next planned milestone: <code>v0.5.0</code> - Implement <code><a href="reference/plot_model_fit.html">plot_model_fit()</a></code>
-<ul><li>Goal: add a visual workflow for fit indices.</li>
 <li>Tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/19" class="external-link">Issue #19</a></strong>.</li>
+</ul></li>
+<li>⏭ Next planned milestone: <code>v0.6.0</code> - Enhance <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> for measurement invariance (MG-CFA)
+<ul><li>Goal: improve invariance-oriented fit comparison workflows.</li>
+<li>Tracked in <strong><a href="https://github.com/brianmsm/psymetrics/issues/20" class="external-link">Issue #20</a></strong>.</li>
 </ul></li>
 </ul></div>
 <div class="section level2">
 <h2 id="recently-completed-milestones">Recently completed milestones<a class="anchor" aria-label="anchor" href="#recently-completed-milestones"></a></h2>
-<ul><li>✅ <strong><code>v0.4.0</code></strong> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code> <em>(completed March 6, 2026)</em>
+<ul><li>✅ <strong><code>v0.5.0</code></strong> - Implement <code><a href="reference/plot_model_fit.html">plot_model_fit()</a></code> <em>(completed March 13, 2026)</em>
+</li>
+<li>✅ <strong><code>v0.4.0</code></strong> - Implement <code><a href="reference/compare_model_estimates.html">compare_model_estimates()</a></code> <em>(completed March 6, 2026)</em>
 </li>
 <li>✅ <strong><code>v0.3.0</code></strong> - Implement <code><a href="reference/model_estimates.html">model_estimates()</a></code> <em>(completed February 25, 2026)</em>
 </li>
@@ -98,8 +101,9 @@
 </li>
 </ul></li>
 <li>
-<label><input type="checkbox"><strong><code>v0.5.0</code></strong>: Implement <code><a href="reference/plot_model_fit.html">plot_model_fit()</a></code></label>
+<label><input type="checkbox" checked><strong><code>v0.5.0</code></strong>: Implement <code><a href="reference/plot_model_fit.html">plot_model_fit()</a></code></label>
 <ul><li>Add visual summaries for fit indices.</li>
+<li>Initial support centers on the documented <code>CFI</code>/<code>TLI</code>/<code>RMSEA</code>/<code>SRMR</code> plotting workflows; future enhancements should cover advanced user-facing customization, additional fit indices, and more customized <code><a href="reference/model_fit.html">model_fit()</a></code> / <code><a href="reference/compare_model_fit.html">compare_model_fit()</a></code> signatures.</li>
 <li>Details: <strong><a href="https://github.com/brianmsm/psymetrics/issues/19" class="external-link">Issue #19</a></strong>
 </li>
 </ul></li>
